@@ -1,18 +1,18 @@
-# DeSciOS Launcher
+# AxonOS Launcher
 
-A GUI application for customizing DeSciOS Docker builds with an intuitive interface.
+A GUI application for customizing AxonOS Docker builds with an intuitive interface.
 
 ## Features
 
-- **Application Selection**: Choose which scientific applications to include in your DeSciOS build
+- **Application Selection**: Choose which scientific applications to include in your AxonOS build
 - **🧩 Custom Applications**: Create and manage your own applications using templates or plugins
 - **Template System**: Built-in templates for Python packages, APT packages, GitHub releases, web apps, and custom commands
-- **Plugin Support**: Load applications from external YAML/JSON files in the `descios_plugins/` directory
+- **Plugin Support**: Load applications from external YAML/JSON files in the `axonos_plugins/` directory
 - **Ollama Model Configuration**: Customize which AI models to install
 - **User Settings**: Configure username and VNC password
 - **GPU Support**: Enable/disable GPU acceleration with automatic Docker command generation
 - **Docker Build Integration**: Generate custom Dockerfiles and build images directly
-- **One-Click Deployment**: Deploy and automatically launch DeSciOS with the Deploy button
+- **One-Click Deployment**: Deploy and automatically launch AxonOS with the Deploy button
 - **Configuration Management**: Save and load your build configurations
 
 ## Usage
@@ -20,14 +20,14 @@ A GUI application for customizing DeSciOS Docker builds with an intuitive interf
 ### Running the Launcher
 
 ```bash
-python3 descios_launcher/main.py
+python3 axonos_launcher/main.py
 ```
 
 ### Tabs Overview
 
 1. **Applications Tab**
    - Select which applications to install
-   - Mandatory: DeSciOS Assistant, Font, and Python3-pip (always included)
+   - Mandatory: AxonOS Assistant, Font, and Python3-pip (always included)
    - Optional: All other scientific applications (JupyterLab is now truly optional!)
    - Custom applications marked with 🧩 emoji
    - Use "Select All", "Select None", or "Reset to Defaults" buttons
@@ -78,16 +78,16 @@ python3 descios_launcher/main.py
 - **Nault** - Nano cryptocurrency wallet (browser-based)
 - **CellModeller** - Bacterial cell growth simulation
 
-## Building and Deploying Custom DeSciOS
+## Building and Deploying Custom AxonOS
 
 ### Quick Start (Recommended)
-1. Open the launcher: `python3 descios_launcher/main.py`
+1. Open the launcher: `python3 axonos_launcher/main.py`
 2. Select desired applications in the **Applications** tab
 3. Configure settings in the **Settings** tab (enable GPU if available)
 4. Go to **Build & Deploy** tab
 5. Click **"Generate Dockerfile"** to create `Dockerfile.custom` (skip if using defaults)
 6. Click **"Build Docker Image"** to build your custom image
-7. Click **"Deploy!"** to automatically launch DeSciOS and open web interface
+7. Click **"Deploy!"** to automatically launch AxonOS and open web interface
 
 ### Default Configuration Fast Track
 If you want all applications with default settings:
@@ -102,10 +102,10 @@ The launcher automatically detects when you're using the default configuration a
 After building, you can also run manually:
 ```bash
 # With GPU support
-docker run -d --gpus all -p 6080:6080 --name descios your-custom-tag
+docker run -d --gpus all -p 6080:6080 --name axonos your-custom-tag
 
 # Without GPU
-docker run -d -p 6080:6080 --name descios your-custom-tag
+docker run -d -p 6080:6080 --name axonos your-custom-tag
 ```
 
 ## Deploy Button Features
@@ -129,7 +129,7 @@ The launcher features smart build detection:
 
 ## GPU Support
 
-DeSciOS supports GPU acceleration for scientific computing workloads:
+AxonOS supports GPU acceleration for scientific computing workloads:
 
 ### Requirements
 - NVIDIA GPU with CUDA support
@@ -142,9 +142,9 @@ DeSciOS supports GPU acceleration for scientific computing workloads:
 3. GPU-enabled applications (like ML frameworks) will have access to GPU acceleration
 4. The Deploy button respects GPU settings automatically
 
-## Access DeSciOS
+## Access AxonOS
 
-After deployment, access DeSciOS through:
+After deployment, access AxonOS through:
 - **Web Interface**: http://localhost:6080/vnc.html (automatically opened by Deploy button)
 - **Direct VNC**: localhost:5901 (with configured password)
 
@@ -152,16 +152,16 @@ After deployment, access DeSciOS through:
 
 ```bash
 # Stop the container
-docker stop descios
+docker stop axonos
 
 # Restart the container
-docker start descios
+docker start axonos
 
 # Remove the container
-docker rm descios
+docker rm axonos
 
 # View logs
-docker logs descios
+docker logs axonos
 ```
 
 ## Requirements

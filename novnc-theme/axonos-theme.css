@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-/* DeSciOS Theme for noVNC */
+/* AxonOS Theme for noVNC */
 /* Transforms the default noVNC UI into a scientific computing environment theme */
 
 /* 
- * DeSciOS Color Palette:
+ * AxonOS Color Palette:
  * Primary: #2E8B57 (Sea Green) - Scientific/research green
  * Secondary: #4682B4 (Steel Blue) - Data visualization blue  
  * Accent: #FFD700 (Gold) - Highlight color for important elements
@@ -35,13 +35,13 @@ SOFTWARE.
  */
 
 :root {
-  --descios-primary: #2E8B57;
-  --descios-secondary: #4682B4;
-  --descios-accent: #FFD700;
-  --descios-dark: #1C1C1C;
-  --descios-light: #F5F5F5;
-  --descios-hover: #32CD32;
-  --descios-shadow: rgba(46, 139, 87, 0.3);
+  --axonos-primary: #2E8B57;
+  --axonos-secondary: #4682B4;
+  --axonos-accent: #FFD700;
+  --axonos-dark: #1C1C1C;
+  --axonos-light: #F5F5F5;
+  --axonos-hover: #32CD32;
+  --axonos-shadow: rgba(46, 139, 87, 0.3);
 }
 
 /* Space Background - Only when not connected */
@@ -58,7 +58,7 @@ html:not(.noVNC_connected) body {
 
 /* Normal background when connected */
 html.noVNC_connected body {
-  background: var(--descios-dark) !important;
+  background: var(--axonos-dark) !important;
   overflow: auto;
 }
 
@@ -69,108 +69,108 @@ html:not(.noVNC_connected) #noVNC_container {
 }
 
 html.noVNC_connected #noVNC_container {
-  background-color: var(--descios-dark) !important;
+  background-color: var(--axonos-dark) !important;
   border-bottom-right-radius: 20px !important;
 }
 
 /* Control bar styling */
 #noVNC_control_bar {
-  background-color: var(--descios-primary) !important;
-  border: 2px solid var(--descios-secondary);
-  box-shadow: 0 4px 15px var(--descios-shadow) !important;
+  background-color: var(--axonos-primary) !important;
+  border: 2px solid var(--axonos-secondary);
+  box-shadow: 0 4px 15px var(--axonos-shadow) !important;
 }
 
 #noVNC_control_bar.noVNC_open {
-  box-shadow: 0 6px 20px var(--descios-shadow) !important;
+  box-shadow: 0 6px 20px var(--axonos-shadow) !important;
 }
 
 /* Control bar handle */
 #noVNC_control_bar_handle {
-  background-color: var(--descios-secondary) !important;
-  border: 1px solid var(--descios-primary);
-  box-shadow: 0 3px 10px var(--descios-shadow) !important;
+  background-color: var(--axonos-secondary) !important;
+  border: 1px solid var(--axonos-primary);
+  box-shadow: 0 3px 10px var(--axonos-shadow) !important;
 }
 
 #noVNC_control_bar_handle:hover {
-  background-color: var(--descios-hover) !important;
+  background-color: var(--axonos-hover) !important;
 }
 
 /* Panel headings */
 .noVNC_panel .noVNC_heading {
-  background: linear-gradient(135deg, var(--descios-primary), var(--descios-secondary)) !important;
-  color: var(--descios-light) !important;
-  border: 1px solid var(--descios-accent);
+  background: linear-gradient(135deg, var(--axonos-primary), var(--axonos-secondary)) !important;
+  color: var(--axonos-light) !important;
+  border: 1px solid var(--axonos-accent);
   text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 /* Connect button */
 #noVNC_connect_button {
-  background: linear-gradient(135deg, var(--descios-primary), var(--descios-secondary)) !important;
-  border: 2px solid var(--descios-accent);
-  color: var(--descios-light) !important;
-  box-shadow: 0 4px 15px var(--descios-shadow) !important;
+  background: linear-gradient(135deg, var(--axonos-primary), var(--axonos-secondary)) !important;
+  border: 2px solid var(--axonos-accent);
+  color: var(--axonos-light) !important;
+  box-shadow: 0 4px 15px var(--axonos-shadow) !important;
 }
 
 #noVNC_connect_button:hover {
-  background: linear-gradient(135deg, var(--descios-hover), var(--descios-primary)) !important;
+  background: linear-gradient(135deg, var(--axonos-hover), var(--axonos-primary)) !important;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--descios-shadow) !important;
+  box-shadow: 0 6px 20px var(--axonos-shadow) !important;
 }
 
 #noVNC_connect_button div {
-  border: 1px solid var(--descios-accent) !important;
-  background: linear-gradient(to top, var(--descios-primary), var(--descios-secondary)) !important;
+  border: 1px solid var(--axonos-accent) !important;
+  background: linear-gradient(to top, var(--axonos-primary), var(--axonos-secondary)) !important;
 }
 
 /* Panels */
 .noVNC_panel {
   background-color: rgba(28, 28, 28, 0.95) !important;
-  border: 2px solid var(--descios-primary);
+  border: 2px solid var(--axonos-primary);
   border-radius: 10px;
-  box-shadow: 0 8px 25px var(--descios-shadow);
+  box-shadow: 0 8px 25px var(--axonos-shadow);
 }
 
 /* Logo customization */
 .noVNC_logo {
-  color: var(--descios-accent) !important;
+  color: var(--axonos-accent) !important;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
   font-weight: bold;
 }
 
 .noVNC_logo span {
-  color: var(--descios-light) !important;
+  color: var(--axonos-light) !important;
 }
 
 /* Input fields */
 input[type="text"], input[type="password"], select {
-  background-color: var(--descios-dark) !important;
-  border: 2px solid var(--descios-secondary) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  border: 2px solid var(--axonos-secondary) !important;
+  color: var(--axonos-light) !important;
   border-radius: 5px;
   padding: 8px;
 }
 
 input[type="text"]:focus, input[type="password"]:focus, select:focus {
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 10px var(--descios-shadow);
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 10px var(--axonos-shadow);
 }
 
-/* Custom DeSciOS branding elements */
-.descios-branding {
+/* Custom AxonOS branding elements */
+.axonos-branding {
   position: absolute;
   bottom: 10px;
   right: 15px;
-  color: var(--descios-accent);
+  color: var(--axonos-accent);
   font-size: 12px;
   opacity: 0.8;
   font-family: "Orbitron", monospace;
 }
 
-.descios-version {
+.axonos-version {
   position: absolute;
   top: 10px;
   right: 15px;
-  color: var(--descios-light);
+  color: var(--axonos-light);
   font-size: 10px;
   opacity: 0.6;
   font-family: "Orbitron", monospace;
@@ -178,7 +178,7 @@ input[type="text"]:focus, input[type="password"]:focus, select:focus {
 
 /* Animation for scientific feel */
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 var(--descios-shadow); }
+  0% { box-shadow: 0 0 0 0 var(--axonos-shadow); }
   70% { box-shadow: 0 0 0 10px rgba(46, 139, 87, 0); }
   100% { box-shadow: 0 0 0 0 rgba(46, 139, 87, 0); }
 }
@@ -187,9 +187,9 @@ input[type="text"]:focus, input[type="password"]:focus, select:focus {
   animation: pulse 2s infinite;
 }
 
-/* Force DeSciOS logo styling */
+/* Force AxonOS logo styling */
 .noVNC_logo {
-  color: var(--descios-accent) !important;
+  color: var(--axonos-accent) !important;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.7) !important;
   font-weight: bold !important;
   font-size: 24px !important;
@@ -197,7 +197,7 @@ input[type="text"]:focus, input[type="password"]:focus, select:focus {
 }
 
 .noVNC_logo span {
-  color: var(--descios-light) !important;
+  color: var(--axonos-light) !important;
   font-weight: 900 !important;
 }
 
@@ -220,9 +220,9 @@ input[type="text"]:focus, input[type="password"]:focus, select:focus {
 
 /* Fix password input field visibility */
 input[type="password"] {
-  background-color: var(--descios-dark) !important;
-  border: 2px solid var(--descios-secondary) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  border: 2px solid var(--axonos-secondary) !important;
+  color: var(--axonos-light) !important;
   border-radius: 5px;
   padding: 8px;
   font-family: monospace !important;
@@ -230,8 +230,8 @@ input[type="password"] {
 }
 
 input[type="password"]:focus {
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 10px var(--descios-shadow);
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 10px var(--axonos-shadow);
   background-color: #2C2C2C !important;
 }
 
@@ -246,26 +246,26 @@ input[type="password"]::placeholder {
 
 /* Fix all credential form inputs */
 #noVNC_credentials_dlg input {
-  background-color: var(--descios-dark) !important;
-  border: 2px solid var(--descios-secondary) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  border: 2px solid var(--axonos-secondary) !important;
+  color: var(--axonos-light) !important;
   border-radius: 5px !important;
   padding: 8px !important;
   margin: 5px 0 !important;
 }
 
 #noVNC_credentials_dlg input:focus {
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 10px var(--descios-shadow) !important;
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 10px var(--axonos-shadow) !important;
   background-color: #2C2C2C !important;
   outline: none !important;
 }
 
 /* Style the credentials button */
 #noVNC_credentials_button {
-  background: linear-gradient(135deg, var(--descios-primary), var(--descios-secondary)) !important;
-  border: 2px solid var(--descios-accent) !important;
-  color: var(--descios-light) !important;
+  background: linear-gradient(135deg, var(--axonos-primary), var(--axonos-secondary)) !important;
+  border: 2px solid var(--axonos-accent) !important;
+  color: var(--axonos-light) !important;
   padding: 10px 20px !important;
   border-radius: 5px !important;
   cursor: pointer !important;
@@ -273,17 +273,17 @@ input[type="password"]::placeholder {
 }
 
 #noVNC_credentials_button:hover {
-  background: linear-gradient(135deg, var(--descios-hover), var(--descios-primary)) !important;
+  background: linear-gradient(135deg, var(--axonos-hover), var(--axonos-primary)) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 15px var(--descios-shadow) !important;
+  box-shadow: 0 4px 15px var(--axonos-shadow) !important;
 }
 
 /* Force password field dark theme - override all defaults */
 #noVNC_password_input {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  border: 2px solid var(--descios-secondary) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  border: 2px solid var(--axonos-secondary) !important;
+  color: var(--axonos-light) !important;
   border-radius: 5px !important;
   padding: 8px !important;
   font-family: monospace !important;
@@ -294,45 +294,45 @@ input[type="password"]::placeholder {
 #noVNC_password_input:focus {
   background-color: #2C2C2C !important;
   background: #2C2C2C !important;
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 10px var(--descios-shadow), inset 0 1px 3px rgba(0,0,0,0.3) !important;
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 10px var(--axonos-shadow), inset 0 1px 3px rgba(0,0,0,0.3) !important;
   outline: none !important;
 }
 
 /* Also target by attribute selector */
 input[type="password"]#noVNC_password_input {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
 }
 
 /* Override any webkit autofill styles */
 #noVNC_password_input:-webkit-autofill,
 #noVNC_password_input:-webkit-autofill:hover,
 #noVNC_password_input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px var(--descios-dark) inset !important;
-  -webkit-text-fill-color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--axonos-dark) inset !important;
+  -webkit-text-fill-color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
 }
 
 /* Ensure all credentials dialog inputs are dark */
 #noVNC_credentials_dlg {
   background-color: rgba(28, 28, 28, 0.95) !important;
-  border: 2px solid var(--descios-primary) !important;
+  border: 2px solid var(--axonos-primary) !important;
   border-radius: 10px !important;
 }
 
 #noVNC_credentials_dlg label {
-  color: var(--descios-light) !important;
+  color: var(--axonos-light) !important;
   font-weight: bold !important;
 }
 
 /* Settings panel dark theme styling */
 #noVNC_settings {
   background-color: rgba(28, 28, 28, 0.95) !important;
-  border: 2px solid var(--descios-primary) !important;
+  border: 2px solid var(--axonos-primary) !important;
   border-radius: 10px !important;
-  box-shadow: 0 8px 25px var(--descios-shadow) !important;
+  box-shadow: 0 8px 25px var(--axonos-shadow) !important;
 }
 
 /* Settings panel inputs */
@@ -340,9 +340,9 @@ input[type="password"]#noVNC_password_input {
 #noVNC_settings input[type="number"],
 #noVNC_settings input[type="range"],
 #noVNC_settings select {
-  background-color: var(--descios-dark) !important;
-  border: 2px solid var(--descios-secondary) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  border: 2px solid var(--axonos-secondary) !important;
+  color: var(--axonos-light) !important;
   border-radius: 5px !important;
   padding: 6px 8px !important;
   margin: 2px 0 !important;
@@ -352,23 +352,23 @@ input[type="password"]#noVNC_password_input {
 #noVNC_settings input[type="text"]:focus,
 #noVNC_settings input[type="number"]:focus,
 #noVNC_settings select:focus {
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 8px var(--descios-shadow) !important;
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 8px var(--axonos-shadow) !important;
   background-color: #2C2C2C !important;
   outline: none !important;
 }
 
 /* Range sliders */
 #noVNC_settings input[type="range"] {
-  background: var(--descios-dark) !important;
-  border: 1px solid var(--descios-secondary) !important;
+  background: var(--axonos-dark) !important;
+  border: 1px solid var(--axonos-secondary) !important;
   border-radius: 5px !important;
   height: 8px !important;
 }
 
 #noVNC_settings input[type="range"]::-webkit-slider-thumb {
-  background: var(--descios-accent) !important;
-  border: 2px solid var(--descios-primary) !important;
+  background: var(--axonos-accent) !important;
+  border: 2px solid var(--axonos-primary) !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   height: 18px !important;
@@ -376,8 +376,8 @@ input[type="password"]#noVNC_password_input {
 }
 
 #noVNC_settings input[type="range"]::-moz-range-thumb {
-  background: var(--descios-accent) !important;
-  border: 2px solid var(--descios-primary) !important;
+  background: var(--axonos-accent) !important;
+  border: 2px solid var(--axonos-primary) !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   height: 18px !important;
@@ -386,23 +386,23 @@ input[type="password"]#noVNC_password_input {
 
 /* Checkboxes */
 #noVNC_settings input[type="checkbox"] {
-  accent-color: var(--descios-accent) !important;
+  accent-color: var(--axonos-accent) !important;
   transform: scale(1.2) !important;
   margin-right: 8px !important;
 }
 
 /* Labels */
 #noVNC_settings label {
-  color: var(--descios-light) !important;
+  color: var(--axonos-light) !important;
   font-weight: normal !important;
   font-size: 14px !important;
 }
 
 /* Settings headings */
 #noVNC_settings .noVNC_heading {
-  background: linear-gradient(135deg, var(--descios-primary), var(--descios-secondary)) !important;
-  color: var(--descios-light) !important;
-  border: 1px solid var(--descios-accent) !important;
+  background: linear-gradient(135deg, var(--axonos-primary), var(--axonos-secondary)) !important;
+  color: var(--axonos-light) !important;
+  border: 1px solid var(--axonos-accent) !important;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important;
   border-radius: 5px !important;
   padding: 8px !important;
@@ -411,9 +411,9 @@ input[type="password"]#noVNC_password_input {
 
 /* Expander sections */
 #noVNC_settings .noVNC_expander {
-  background-color: var(--descios-secondary) !important;
-  color: var(--descios-light) !important;
-  border: 1px solid var(--descios-primary) !important;
+  background-color: var(--axonos-secondary) !important;
+  color: var(--axonos-light) !important;
+  border: 1px solid var(--axonos-primary) !important;
   border-radius: 5px !important;
   padding: 6px 10px !important;
   cursor: pointer !important;
@@ -421,12 +421,12 @@ input[type="password"]#noVNC_password_input {
 }
 
 #noVNC_settings .noVNC_expander:hover {
-  background-color: var(--descios-hover) !important;
+  background-color: var(--axonos-hover) !important;
 }
 
 /* Version info */
 #noVNC_settings .noVNC_version {
-  color: var(--descios-accent) !important;
+  color: var(--axonos-accent) !important;
   font-weight: bold !important;
 }
 
@@ -436,23 +436,23 @@ input[type="password"]#noVNC_password_input {
 #noVNC_setting_path,
 #noVNC_setting_repeaterID,
 #noVNC_setting_reconnect_delay {
-  background-color: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
 }
 
 /* Select dropdowns */
 #noVNC_setting_resize,
 #noVNC_setting_logging {
-  background-color: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
 }
 
 /* Quality and compression sliders */
 #noVNC_setting_quality,
 #noVNC_setting_compression {
-  background: linear-gradient(to right, var(--descios-primary), var(--descios-secondary)) !important;
+  background: linear-gradient(to right, var(--axonos-primary), var(--axonos-secondary)) !important;
   border-radius: 5px !important;
 }
 
@@ -460,10 +460,10 @@ input[type="password"]#noVNC_password_input {
 select#noVNC_setting_resize,
 select#noVNC_setting_reconnect_delay,
 select#noVNC_setting_logging {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
   border-radius: 5px !important;
   padding: 6px 8px !important;
   font-family: monospace !important;
@@ -476,8 +476,8 @@ select#noVNC_setting_logging {
 select#noVNC_setting_resize:focus,
 select#noVNC_setting_reconnect_delay:focus,
 select#noVNC_setting_logging:focus {
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 8px var(--descios-shadow) !important;
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 8px var(--axonos-shadow) !important;
   background-color: #2C2C2C !important;
   outline: none !important;
 }
@@ -486,16 +486,16 @@ select#noVNC_setting_logging:focus {
 select#noVNC_setting_resize option,
 select#noVNC_setting_reconnect_delay option,
 select#noVNC_setting_logging option {
-  background-color: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
+  background-color: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
 }
 
 /* Force all select elements in settings */
 #noVNC_settings select {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
   border-radius: 5px !important;
   padding: 6px 8px !important;
   font-family: monospace !important;
@@ -515,10 +515,10 @@ select#noVNC_setting_logging option {
 
 /* Reconnect delay input field */
 input#noVNC_setting_reconnect_delay {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
   border-radius: 5px !important;
   padding: 6px 8px !important;
   font-family: monospace !important;
@@ -529,10 +529,10 @@ input#noVNC_setting_repeaterID,
 input#noVNC_setting_host,
 input#noVNC_setting_port,
 input#noVNC_setting_path {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
   border-radius: 5px !important;
   padding: 6px 8px !important;
   font-family: monospace !important;
@@ -546,8 +546,8 @@ input#noVNC_setting_port:focus,
 input#noVNC_setting_path:focus {
   background-color: #2C2C2C !important;
   background: #2C2C2C !important;
-  border-color: var(--descios-accent) !important;
-  box-shadow: 0 0 8px var(--descios-shadow), inset 0 1px 3px rgba(0,0,0,0.3) !important;
+  border-color: var(--axonos-accent) !important;
+  box-shadow: 0 0 8px var(--axonos-shadow), inset 0 1px 3px rgba(0,0,0,0.3) !important;
   outline: none !important;
 }
 
@@ -564,28 +564,28 @@ input#noVNC_setting_repeaterID:-webkit-autofill:focus,
 input#noVNC_setting_host:-webkit-autofill:focus,
 input#noVNC_setting_port:-webkit-autofill:focus,
 input#noVNC_setting_path:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px var(--descios-dark) inset !important;
-  -webkit-text-fill-color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--axonos-dark) inset !important;
+  -webkit-text-fill-color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
   transition: background-color 5000s ease-in-out 0s !important;
 }
 
 /* Force all WebSocket section inputs */
 .noVNC_expander + * input[type="text"],
 .noVNC_expander + * input[type="number"] {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
 }
 
 /* Additional broad targeting for stubborn inputs */
 #noVNC_settings input[type="text"],
 #noVNC_settings input[type="number"] {
-  background-color: var(--descios-dark) !important;
-  background: var(--descios-dark) !important;
-  color: var(--descios-light) !important;
-  border: 2px solid var(--descios-secondary) !important;
+  background-color: var(--axonos-dark) !important;
+  background: var(--axonos-dark) !important;
+  color: var(--axonos-light) !important;
+  border: 2px solid var(--axonos-secondary) !important;
   border-radius: 5px !important;
   padding: 6px 8px !important;
   font-family: monospace !important;
@@ -655,10 +655,10 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   margin-bottom: 8px !important;
 }
 
-/* DeSciOS Enhanced Login UI Styles */
+/* AxonOS Enhanced Login UI Styles */
 
 /* Vision Header Styling */
-.descios-vision-header {
+.axonos-vision-header {
   position: relative;
   text-align: center;
   margin-bottom: 30px;
@@ -671,13 +671,13 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.descios-main-title {
+.axonos-main-title {
   font-size: 4rem !important;
   font-weight: 900 !important;
-  color: var(--descios-light) !important;
+  color: var(--axonos-light) !important;
   text-shadow: 
-    0 0 30px var(--descios-primary), 
-    0 0 60px var(--descios-primary),
+    0 0 30px var(--axonos-primary), 
+    0 0 60px var(--axonos-primary),
     2px 2px 8px rgba(0,0,0,0.8) !important;
   margin: 0 0 15px 0 !important;
   font-family: "Orbitron", "Arial", sans-serif !important;
@@ -685,17 +685,17 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   animation: title-glow 3s ease-in-out infinite alternate;
 }
 
-.descios-highlight {
-  color: var(--descios-accent) !important;
+.axonos-highlight {
+  color: var(--axonos-accent) !important;
   text-shadow: 
-    0 0 40px var(--descios-accent),
-    0 0 80px var(--descios-accent) !important;
+    0 0 40px var(--axonos-accent),
+    0 0 80px var(--axonos-accent) !important;
   animation: accent-pulse 2s ease-in-out infinite alternate;
 }
 
-.descios-tagline {
+.axonos-tagline {
   font-size: 1.2rem;
-  color: var(--descios-secondary);
+  color: var(--axonos-secondary);
   font-weight: 300;
   margin: 0 0 15px 0;
   text-transform: uppercase;
@@ -704,18 +704,18 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 }
 
 /* Particle Animation Background */
-.descios-particles {
+.axonos-particles {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(2px 2px at 20px 30px, var(--descios-accent), transparent),
-    radial-gradient(2px 2px at 40px 70px, var(--descios-primary), transparent),
-    radial-gradient(1px 1px at 90px 40px, var(--descios-secondary), transparent),
-    radial-gradient(1px 1px at 130px 80px, var(--descios-accent), transparent),
-    radial-gradient(2px 2px at 160px 30px, var(--descios-primary), transparent);
+    radial-gradient(2px 2px at 20px 30px, var(--axonos-accent), transparent),
+    radial-gradient(2px 2px at 40px 70px, var(--axonos-primary), transparent),
+    radial-gradient(1px 1px at 90px 40px, var(--axonos-secondary), transparent),
+    radial-gradient(1px 1px at 130px 80px, var(--axonos-accent), transparent),
+    radial-gradient(2px 2px at 160px 30px, var(--axonos-primary), transparent);
   background-size: 200px 100px;
   animation: particles-float 20s infinite linear;
   opacity: 0.3;
@@ -730,7 +730,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 }
 
 /* DNA Animation */
-.descios-dna-animation {
+.axonos-dna-animation {
   position: absolute;
   top: 10px;
   right: 15px;
@@ -739,22 +739,22 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   opacity: 0.6;
 }
 
-.descios-dna-animation::before,
-.descios-dna-animation::after {
+.axonos-dna-animation::before,
+.axonos-dna-animation::after {
   content: '';
   position: absolute;
   width: 2px;
   height: 100%;
-  background: linear-gradient(to bottom, var(--descios-accent) 0%, transparent 50%, var(--descios-accent) 100%);
+  background: linear-gradient(to bottom, var(--axonos-accent) 0%, transparent 50%, var(--axonos-accent) 100%);
   animation: dna-twist 3s infinite ease-in-out;
 }
 
-.descios-dna-animation::before {
+.axonos-dna-animation::before {
   left: 10px;
   animation-delay: 0s;
 }
 
-.descios-dna-animation::after {
+.axonos-dna-animation::after {
   right: 10px;
   animation-delay: 1.5s;
 }
@@ -765,7 +765,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 }
 
 /* Mission Section */
-.descios-mission {
+.axonos-mission {
   text-align: center;
   margin: 25px 0;
   padding: 20px;
@@ -774,24 +774,24 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   border-radius: 10px;
 }
 
-.descios-mission-text {
+.axonos-mission-text {
   font-size: 1.1rem;
-  color: var(--descios-light);
+  color: var(--axonos-light);
   margin: 0 0 10px 0;
   font-weight: 500;
 }
 
-.descios-subtitle {
+.axonos-subtitle {
   font-size: 0.95rem;
-  color: var(--descios-secondary);
+  color: var(--axonos-secondary);
   margin: 0;
   font-style: italic;
   opacity: 0.9;
 }
 
 /* Enhanced Connect Button */
-.descios-enhanced-connect {
-  background: linear-gradient(135deg, var(--descios-primary), var(--descios-secondary)) !important;
+.axonos-enhanced-connect {
+  background: linear-gradient(135deg, var(--axonos-primary), var(--axonos-secondary)) !important;
   border: none !important;
   border-radius: 20px !important;
   padding: 25px !important;
@@ -807,7 +807,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   backdrop-filter: blur(10px);
 }
 
-.descios-enhanced-connect::before {
+.axonos-enhanced-connect::before {
   content: '';
   position: absolute;
   top: 0;
@@ -818,12 +818,12 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   transition: left 0.5s;
 }
 
-.descios-enhanced-connect:hover::before {
+.axonos-enhanced-connect:hover::before {
   left: 100%;
 }
 
-.descios-enhanced-connect:hover {
-  background: linear-gradient(135deg, var(--descios-hover), var(--descios-primary)) !important;
+.axonos-enhanced-connect:hover {
+  background: linear-gradient(135deg, var(--axonos-hover), var(--axonos-primary)) !important;
   transform: translateY(-5px) scale(1.03) !important;
   box-shadow: 
     0 20px 60px rgba(46, 139, 87, 0.5),
@@ -832,7 +832,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-.descios-connect-content {
+.axonos-connect-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -853,7 +853,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   box-shadow: none !important;
 }
 
-.descios-connect-icon {
+.axonos-connect-icon {
   font-size: 2rem;
   animation: rocket-pulse 2s infinite ease-in-out;
 }
@@ -863,23 +863,23 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   50% { transform: scale(1.1); }
 }
 
-.descios-connect-text {
+.axonos-connect-text {
   font-size: 1.4rem !important;
   font-weight: 700 !important;
-  color: var(--descios-light) !important;
+  color: var(--axonos-light) !important;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   font-family: "Orbitron", sans-serif;
   letter-spacing: 1px;
 }
 
-.descios-connect-subtext {
+.axonos-connect-subtext {
   font-size: 0.9rem;
   color: rgba(245, 245, 245, 0.8);
   font-weight: 300;
 }
 
 /* Feature Highlights */
-.descios-features {
+.axonos-features {
   display: flex;
   justify-content: space-around;
   margin: 25px 0;
@@ -888,54 +888,54 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   border-bottom: 1px solid rgba(70, 130, 180, 0.3);
 }
 
-.descios-feature {
+.axonos-feature {
   text-align: center;
   flex: 1;
   padding: 10px;
   transition: transform 0.3s ease;
 }
 
-.descios-feature:hover {
+.axonos-feature:hover {
   transform: translateY(-5px);
 }
 
-.descios-feature-icon {
+.axonos-feature-icon {
   font-size: 2rem;
   margin-bottom: 10px;
-  filter: drop-shadow(0 0 8px var(--descios-primary));
+  filter: drop-shadow(0 0 8px var(--axonos-primary));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
 }
 
-.descios-feature-text {
+.axonos-feature-text {
   font-size: 0.85rem;
-  color: var(--descios-light);
+  color: var(--axonos-light);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 /* Scientific Quote */
-.descios-quote {
+.axonos-quote {
   text-align: center;
   margin: 25px 0;
   padding: 20px;
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(70, 130, 180, 0.05));
-  border-left: 4px solid var(--descios-accent);
+  border-left: 4px solid var(--axonos-accent);
   border-radius: 8px;
   font-style: italic;
 }
 
-.descios-quote p {
-  color: var(--descios-light);
+.axonos-quote p {
+  color: var(--axonos-light);
   font-size: 1.05rem;
   margin: 0 0 10px 0;
   font-weight: 300;
   line-height: 1.4;
 }
 
-.descios-quote cite {
-  color: var(--descios-accent);
+.axonos-quote cite {
+  color: var(--axonos-accent);
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -943,7 +943,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 /* Connect Dialog Container Enhancement */
 #noVNC_connect_dlg {
   background: linear-gradient(135deg, rgba(28, 28, 28, 0.95), rgba(44, 44, 44, 0.95)) !important;
-  border: 2px solid var(--descios-primary) !important;
+  border: 2px solid var(--axonos-primary) !important;
   border-radius: 20px !important;
   padding: 40px !important;
   box-shadow: 
@@ -959,16 +959,16 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .descios-main-title {
+  .axonos-main-title {
     font-size: 2.5rem !important;
   }
   
-  .descios-features {
+  .axonos-features {
     flex-direction: column;
     gap: 15px;
   }
   
-  .descios-feature {
+  .axonos-feature {
     padding: 15px;
   }
   
@@ -988,8 +988,8 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   50% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(46, 139, 87, 0.4); }
 }
 
-/* DeSciOS Connection Loading Animation */
-.descios-connection-loader {
+/* AxonOS Connection Loading Animation */
+.axonos-connection-loader {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -1002,14 +1002,14 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   background: rgba(0, 0, 0, 0.9);
   border-radius: 20px;
   padding: 40px;
-  border: 2px solid var(--descios-primary);
+  border: 2px solid var(--axonos-primary);
   box-shadow: 
     0 0 50px rgba(46, 139, 87, 0.4),
     inset 0 0 30px rgba(46, 139, 87, 0.1);
   backdrop-filter: blur(10px);
 }
 
-.descios-connection-loader.active {
+.axonos-connection-loader.active {
   display: flex;
   animation: loader-appear 0.5s ease-out;
 }
@@ -1026,18 +1026,18 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 }
 
 /* Circular Loading Spinner */
-.descios-spinner {
+.axonos-spinner {
   width: 80px;
   height: 80px;
   border: 4px solid rgba(46, 139, 87, 0.2);
-  border-top: 4px solid var(--descios-primary);
+  border-top: 4px solid var(--axonos-primary);
   border-radius: 50%;
-  animation: descios-spin 1s linear infinite;
+  animation: axonos-spin 1s linear infinite;
   position: relative;
   margin-bottom: 20px;
 }
 
-.descios-spinner::before {
+.axonos-spinner::before {
   content: '';
   position: absolute;
   top: -4px;
@@ -1045,12 +1045,12 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   right: -4px;
   bottom: -4px;
   border: 2px solid transparent;
-  border-top: 2px solid var(--descios-accent);
+  border-top: 2px solid var(--axonos-accent);
   border-radius: 50%;
-  animation: descios-spin-reverse 0.8s linear infinite;
+  animation: axonos-spin-reverse 0.8s linear infinite;
 }
 
-.descios-spinner::after {
+.axonos-spinner::after {
   content: '🚀';
   position: absolute;
   top: 50%;
@@ -1060,12 +1060,12 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   animation: rocket-bounce 2s ease-in-out infinite;
 }
 
-@keyframes descios-spin {
+@keyframes axonos-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-@keyframes descios-spin-reverse {
+@keyframes axonos-spin-reverse {
   0% { transform: rotate(360deg); }
   100% { transform: rotate(0deg); }
 }
@@ -1076,19 +1076,19 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 }
 
 /* Loading Text */
-.descios-loading-text {
-  color: var(--descios-light);
+.axonos-loading-text {
+  color: var(--axonos-light);
   font-family: "Orbitron", monospace;
   font-size: 18px;
   font-weight: 600;
   text-align: center;
   margin-bottom: 10px;
-  text-shadow: 0 0 10px var(--descios-primary);
+  text-shadow: 0 0 10px var(--axonos-primary);
   animation: text-pulse 2s ease-in-out infinite;
 }
 
-.descios-loading-subtext {
-  color: var(--descios-accent);
+.axonos-loading-subtext {
+  color: var(--axonos-accent);
   font-family: "Orbitron", monospace;
   font-size: 12px;
   text-align: center;
@@ -1109,7 +1109,7 @@ input#noVNC_setting_path:-webkit-autofill:focus {
 }
 
 /* Progress Ring Animation */
-.descios-progress-ring {
+.axonos-progress-ring {
   position: absolute;
   top: -10px;
   left: -10px;
@@ -1117,28 +1117,28 @@ input#noVNC_setting_path:-webkit-autofill:focus {
   bottom: -10px;
   border: 3px solid transparent;
   border-radius: 50%;
-  border-top: 3px solid var(--descios-secondary);
+  border-top: 3px solid var(--axonos-secondary);
   animation: progress-ring 3s ease-in-out infinite;
 }
 
 @keyframes progress-ring {
   0% { 
     transform: rotate(0deg);
-    border-top-color: var(--descios-secondary);
+    border-top-color: var(--axonos-secondary);
   }
   25% { 
-    border-top-color: var(--descios-primary);
+    border-top-color: var(--axonos-primary);
   }
   50% { 
     transform: rotate(180deg);
-    border-top-color: var(--descios-accent);
+    border-top-color: var(--axonos-accent);
   }
   75% { 
-    border-top-color: var(--descios-primary);
+    border-top-color: var(--axonos-primary);
   }
   100% { 
     transform: rotate(360deg);
-    border-top-color: var(--descios-secondary);
+    border-top-color: var(--axonos-secondary);
   }
 }
 
@@ -1251,14 +1251,14 @@ html:not(.noVNC_connected) body::after {
 @keyframes title-glow {
   0% { 
     text-shadow: 
-      0 0 30px var(--descios-primary), 
-      0 0 60px var(--descios-primary),
+      0 0 30px var(--axonos-primary), 
+      0 0 60px var(--axonos-primary),
       2px 2px 8px rgba(0,0,0,0.8);
   }
   100% { 
     text-shadow: 
-      0 0 50px var(--descios-primary), 
-      0 0 100px var(--descios-primary),
+      0 0 50px var(--axonos-primary), 
+      0 0 100px var(--axonos-primary),
       2px 2px 8px rgba(0,0,0,0.8);
   }
 }
@@ -1267,24 +1267,24 @@ html:not(.noVNC_connected) body::after {
 @keyframes accent-pulse {
   0% { 
     text-shadow: 
-      0 0 40px var(--descios-accent),
-      0 0 80px var(--descios-accent);
+      0 0 40px var(--axonos-accent),
+      0 0 80px var(--axonos-accent);
   }
   100% { 
     text-shadow: 
-      0 0 60px var(--descios-accent),
-      0 0 120px var(--descios-accent);
+      0 0 60px var(--axonos-accent),
+      0 0 120px var(--axonos-accent);
   }
 }
 
 /* Enhanced feature hover effects */
-.descios-feature:hover .descios-feature-icon {
+.axonos-feature:hover .axonos-feature-icon {
   transform: scale(1.2) rotate(5deg);
-  filter: drop-shadow(0 0 15px var(--descios-primary)) brightness(1.2);
+  filter: drop-shadow(0 0 15px var(--axonos-primary)) brightness(1.2);
 }
 
 /* Improved connect button shimmer */
-.descios-enhanced-connect::before {
+.axonos-enhanced-connect::before {
   content: '';
   position: absolute;
   top: 0;
@@ -1295,12 +1295,12 @@ html:not(.noVNC_connected) body::after {
   transition: left 0.6s ease;
 }
 
-.descios-enhanced-connect:hover::before {
+.axonos-enhanced-connect:hover::before {
   left: 100%;
 }
 
 /* Enhanced connect button active state */
-.descios-enhanced-connect:active {
+.axonos-enhanced-connect:active {
   transform: translateY(-2px) scale(1.01) !important;
   transition: all 0.1s ease !important;
 }

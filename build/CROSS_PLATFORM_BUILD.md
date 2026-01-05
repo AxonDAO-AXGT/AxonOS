@@ -1,6 +1,6 @@
 # Cross-Platform Build Guide
 
-This guide explains how to build DeSciOS Launcher packages for Linux, macOS, and Windows.
+This guide explains how to build AxonOS Launcher packages for Linux, macOS, and Windows.
 
 ## 🎯 Quick Start
 
@@ -64,8 +64,8 @@ make deb
 ```
 
 **Output:**
-- `descios-launcher_0.1.0_amd64.deb` - Debian package
-- `dist/descios` - Binary executable
+- `axonos-launcher_0.1.0_amd64.deb` - Debian package
+- `dist/axonos` - Binary executable
 
 ### 2. macOS (.app + DMG)
 
@@ -86,8 +86,8 @@ make dmg
 ```
 
 **Output:**
-- `DeSciOS-Launcher-0.1.0-macOS.dmg` - DMG package
-- `dist/DeSciOS Launcher.app` - App bundle
+- `AxonOS-Launcher-0.1.0-macOS.dmg` - DMG package
+- `dist/AxonOS Launcher.app` - App bundle
 
 ### 3. Windows (.exe + ZIP)
 
@@ -104,31 +104,31 @@ make exe
 ```
 
 **Output:**
-- `DeSciOS-Launcher-0.1.0-Windows.zip` - ZIP package
-- `dist/DeSciOS Launcher.exe` - Executable
+- `AxonOS-Launcher-0.1.0-Windows.zip` - ZIP package
+- `dist/AxonOS Launcher.exe` - Executable
 
 ## 📦 Package Contents
 
 ### Linux (.deb)
 ```
-/usr/local/bin/descios                    # Main executable
-/usr/share/applications/descios-launcher.desktop  # Menu entry
-/usr/share/pixmaps/descios.svg            # Application icon
-/usr/share/doc/descios-launcher/          # Documentation
+/usr/local/bin/axonos                    # Main executable
+/usr/share/applications/axonos-launcher.desktop  # Menu entry
+/usr/share/pixmaps/axonos.svg            # Application icon
+/usr/share/doc/axonos-launcher/          # Documentation
 ```
 
 ### macOS (.app)
 ```
-DeSciOS Launcher.app/
+AxonOS Launcher.app/
 ├── Contents/
-│   ├── MacOS/descios                     # Main executable
+│   ├── MacOS/axonos                     # Main executable
 │   ├── Info.plist                        # App metadata
 │   └── Resources/                        # App resources
 ```
 
 ### Windows (.exe)
 ```
-DeSciOS Launcher.exe                      # Self-contained executable
+AxonOS Launcher.exe                      # Self-contained executable
 INSTALL.txt                               # Installation instructions
 ```
 
@@ -136,9 +136,9 @@ INSTALL.txt                               # Installation instructions
 
 ### Linux
 ```bash
-sudo dpkg -i descios-launcher_0.1.0_amd64.deb
+sudo dpkg -i axonos-launcher_0.1.0_amd64.deb
 sudo apt-get install -f
-descios
+axonos
 ```
 
 ### macOS
@@ -148,24 +148,24 @@ descios
 
 ### Windows
 1. Extract ZIP file
-2. Run `DeSciOS Launcher.exe`
+2. Run `AxonOS Launcher.exe`
 3. Optionally create desktop shortcut
 
 ## 🔧 Advanced Build Options
 
 ### Custom Icons
 Add icons to the build process:
-- Linux: `descios.svg` in `build/` directory
-- macOS: `descios.icns` in `build/` directory  
-- Windows: `descios.ico` in `build/` directory
+- Linux: `axonos.svg` in `build/` directory
+- macOS: `axonos.icns` in `build/` directory  
+- Windows: `axonos.ico` in `build/` directory
 
 ### Code Signing (macOS)
 ```bash
 # Sign the app bundle
-codesign --force --deep --sign "Developer ID Application: Your Name" "dist/DeSciOS Launcher.app"
+codesign --force --deep --sign "Developer ID Application: Your Name" "dist/AxonOS Launcher.app"
 
 # Notarize (requires Apple Developer account)
-xcrun altool --notarize-app --primary-bundle-id "org.descios.launcher" --username "your-email@example.com" --password "@env:APPLE_ID_PASSWORD" --file "DeSciOS-Launcher-0.1.0-macOS.dmg"
+xcrun altool --notarize-app --primary-bundle-id "org.axonos.launcher" --username "your-email@example.com" --password "@env:APPLE_ID_PASSWORD" --file "AxonOS-Launcher-0.1.0-macOS.dmg"
 ```
 
 ### Windows Installer (Advanced)
@@ -175,9 +175,9 @@ For a proper Windows installer, use NSIS or Inno Setup:
 ```nsi
 !include "MUI2.nsh"
 
-Name "DeSciOS Launcher"
-OutFile "DeSciOS-Launcher-Setup.exe"
-InstallDir "$PROGRAMFILES\DeSciOS"
+Name "AxonOS Launcher"
+OutFile "AxonOS-Launcher-Setup.exe"
+InstallDir "$PROGRAMFILES\AxonOS"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
@@ -186,10 +186,10 @@ InstallDir "$PROGRAMFILES\DeSciOS"
 
 Section "Install"
     SetOutPath "$INSTDIR"
-    File "dist\DeSciOS Launcher.exe"
-    CreateDirectory "$SMPROGRAMS\DeSciOS"
-    CreateShortCut "$SMPROGRAMS\DeSciOS\DeSciOS Launcher.lnk" "$INSTDIR\DeSciOS Launcher.exe"
-    CreateShortCut "$DESKTOP\DeSciOS Launcher.lnk" "$INSTDIR\DeSciOS Launcher.exe"
+    File "dist\AxonOS Launcher.exe"
+    CreateDirectory "$SMPROGRAMS\AxonOS"
+    CreateShortCut "$SMPROGRAMS\AxonOS\AxonOS Launcher.lnk" "$INSTDIR\AxonOS Launcher.exe"
+    CreateShortCut "$DESKTOP\AxonOS Launcher.lnk" "$INSTDIR\AxonOS Launcher.exe"
 SectionEnd
 ```
 
@@ -198,25 +198,25 @@ SectionEnd
 ### Test Installation
 ```bash
 # Linux
-descios --version
+axonos --version
 
 # macOS
-/Applications/DeSciOS\ Launcher.app/Contents/MacOS/descios --version
+/Applications/AxonOS\ Launcher.app/Contents/MacOS/axonos --version
 
 # Windows
-"DeSciOS Launcher.exe" --version
+"AxonOS Launcher.exe" --version
 ```
 
 ### Test Auto-clone Feature
 ```bash
-# Move DeSciOS directory temporarily
-mv ~/DeSciOS ~/DeSciOS_backup
+# Move AxonOS directory temporarily
+mv ~/AxonOS ~/AxonOS_backup
 
 # Run launcher - should auto-clone
-descios
+axonos
 
 # Restore directory
-mv ~/DeSciOS_backup ~/DeSciOS
+mv ~/AxonOS_backup ~/AxonOS
 ```
 
 ## 🐛 Troubleshooting
@@ -295,4 +295,4 @@ Before releasing:
 
 ---
 
-**DeSciOS Launcher** - Cross-platform scientific computing deployment made easy! 
+**AxonOS Launcher** - Cross-platform scientific computing deployment made easy! 

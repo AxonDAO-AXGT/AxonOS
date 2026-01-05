@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cross-platform build script for DeSciOS Launcher
+Cross-platform build script for AxonOS Launcher
 Builds macOS DMG and Windows EXE from Linux using Docker
 """
 
@@ -121,7 +121,7 @@ def build_macos_dmg():
     create_macos_dockerfile()
     
     # Build Docker image
-    image_name = "descios-macos-builder"
+    image_name = "axonos-macos-builder"
     try:
         subprocess.run([
             'docker', 'build', 
@@ -156,7 +156,7 @@ def build_windows_exe():
     create_windows_dockerfile()
     
     # Build Docker image
-    image_name = "descios-windows-builder"
+    image_name = "axonos-windows-builder"
     try:
         subprocess.run([
             'docker', 'build', 
@@ -185,7 +185,7 @@ def build_windows_exe():
 
 def build_all_platforms():
     """Build packages for all platforms"""
-    print("🚀 Building DeSciOS Launcher for all platforms...")
+    print("🚀 Building AxonOS Launcher for all platforms...")
     
     # Create dist directory
     os.makedirs("dist", exist_ok=True)
@@ -217,7 +217,7 @@ def cleanup():
     print("\n🧹 Cleaning up...")
     
     # Remove Docker images
-    for image in ["descios-macos-builder", "descios-windows-builder"]:
+    for image in ["axonos-macos-builder", "axonos-windows-builder"]:
         try:
             subprocess.run(['docker', 'rmi', image], capture_output=True)
         except:
@@ -230,7 +230,7 @@ def cleanup():
 
 def main():
     """Main build function"""
-    print("🌍 DeSciOS Launcher Cross-Platform Build System")
+    print("🌍 AxonOS Launcher Cross-Platform Build System")
     print("=" * 50)
     
     # Check requirements
@@ -238,9 +238,9 @@ def main():
     check_docker()
     
     # Check if we're in the right directory
-    if not os.path.exists("descios_launcher/main.py"):
-        print("✗ Error: descios_launcher/main.py not found")
-        print("Please run this script from the DeSciOS root directory")
+    if not os.path.exists("axonos_launcher/main.py"):
+        print("✗ Error: axonos_launcher/main.py not found")
+        print("Please run this script from the AxonOS root directory")
         sys.exit(1)
     
     # Build all platforms
@@ -254,14 +254,14 @@ def main():
         print("\nGenerated packages:")
         
         # List generated files
-        if os.path.exists("descios-launcher_0.1.0_amd64.deb"):
-            print("- descios-launcher_0.1.0_amd64.deb (Linux)")
+        if os.path.exists("axonos-launcher_0.1.0_amd64.deb"):
+            print("- axonos-launcher_0.1.0_amd64.deb (Linux)")
         
-        if os.path.exists("DeSciOS-Launcher-0.1.0-macOS.dmg"):
-            print("- DeSciOS-Launcher-0.1.0-macOS.dmg (macOS)")
+        if os.path.exists("AxonOS-Launcher-0.1.0-macOS.dmg"):
+            print("- AxonOS-Launcher-0.1.0-macOS.dmg (macOS)")
         
-        if os.path.exists("DeSciOS-Launcher-0.1.0-Windows.zip"):
-            print("- DeSciOS-Launcher-0.1.0-Windows.zip (Windows)")
+        if os.path.exists("AxonOS-Launcher-0.1.0-Windows.zip"):
+            print("- AxonOS-Launcher-0.1.0-Windows.zip (Windows)")
         
         print("\nNote: Cross-platform builds may have limitations.")
         print("For best results, build on the target platform.")

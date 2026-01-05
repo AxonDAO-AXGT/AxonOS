@@ -1,4 +1,4 @@
-# 🧬 DeSciOS noVNC Theme
+# 🧬 AxonOS noVNC Theme
 
 A comprehensive scientific computing theme that transforms the standard noVNC interface into an inspiring, DeSci-vision aligned experience.
 
@@ -8,7 +8,7 @@ The login UI has been completely redesigned to embody the DeSci vision of **dece
 
 ### ✨ Visual Features
 
-- **🚀 Hero Section**: Large, animated "DeSciOS" title with glowing effects
+- **🚀 Hero Section**: Large, animated "AxonOS" title with glowing effects
 - **🧬 Scientific Motifs**: Animated DNA helix, molecular patterns, and particle effects  
 - **📊 Data Visualization**: Subtle grid patterns reminiscent of scientific graphs
 - **🌟 Dynamic Backgrounds**: Multi-layered molecular drift animations
@@ -43,10 +43,10 @@ The login UI has been completely redesigned to embody the DeSci vision of **dece
 ## 📁 Theme Components
 
 ### Core Files
-- **`descios-theme.css`** (19KB) - Complete styling system
+- **`axonos-theme.css`** (19KB) - Complete styling system
 - **`vnc.html`** (20KB) - Enhanced HTML with DeSci branding
 - **`ui.js`** (57KB) - JavaScript with optimal defaults
-- **`descios-icon.svg`** (1.3KB) - Custom scientific icon
+- **`axonos-icon.svg`** (1.3KB) - Custom scientific icon
 
 ### Icon Set (15 PNG files)
 - 16x16 to 192x192 pixel variants
@@ -83,7 +83,7 @@ The login UI has been completely redesigned to embody the DeSci vision of **dece
 
 ## 🎯 DeSci Vision Alignment
 
-The theme explicitly reflects DeSciOS's mission:
+The theme explicitly reflects AxonOS's mission:
 
 1. **🧬 Open Science**: Emphasizes collaborative, barrier-free research
 2. **🤖 AI-Powered**: Highlights the integrated AI assistant capabilities  
@@ -109,16 +109,16 @@ Optimized for scientific computing workflows:
 ### Manual
 ```bash
 # Copy all theme files to noVNC directory
-cp descios-theme.css /usr/share/novnc/app/styles/
+cp axonos-theme.css /usr/share/novnc/app/styles/
 cp vnc.html /usr/share/novnc/
 cp ui.js /usr/share/novnc/app/
 cp icons/* /usr/share/novnc/app/images/icons/
 ```
 
 ### Docker Integration
-The theme is automatically installed in the DeSciOS Dockerfile:
+The theme is automatically installed in the AxonOS Dockerfile:
 ```dockerfile
-COPY novnc-theme/descios-theme.css /usr/share/novnc/app/styles/
+COPY novnc-theme/axonos-theme.css /usr/share/novnc/app/styles/
 COPY novnc-theme/vnc.html /usr/share/novnc/
 COPY novnc-theme/ui.js /usr/share/novnc/app/
 COPY novnc-theme/icons/* /usr/share/novnc/app/images/icons/
@@ -127,19 +127,19 @@ COPY novnc-theme/icons/* /usr/share/novnc/app/images/icons/
 ## 🎨 Customization
 
 ### Colors
-Modify the CSS custom properties in `descios-theme.css`:
+Modify the CSS custom properties in `axonos-theme.css`:
 ```css
 :root {
-  --descios-primary: #2E8B57;    /* Your primary color */
-  --descios-secondary: #4682B4;  /* Your secondary color */
-  --descios-accent: #FFD700;     /* Your accent color */
+  --axonos-primary: #2E8B57;    /* Your primary color */
+  --axonos-secondary: #4682B4;  /* Your secondary color */
+  --axonos-accent: #FFD700;     /* Your accent color */
 }
 ```
 
 ### Messaging
 Update the vision and mission text in `vnc.html`:
 ```html
-<p class="descios-mission-text">
+<p class="axonos-mission-text">
     🧬 <strong>Your Values</strong> • 🤖 <strong>Your Mission</strong>
 </p>
 ```
@@ -147,7 +147,7 @@ Update the vision and mission text in `vnc.html`:
 ### Animations
 Control animation timing in the CSS:
 ```css
-.descios-connect-icon {
+.axonos-connect-icon {
   animation: rocket-pulse 2s infinite ease-in-out;
 }
 ```
@@ -196,5 +196,5 @@ Planned improvements:
 
 **Theme Version**: 5.0  
 **Last Updated**: January 2025  
-**Compatibility**: DeSciOS v1.0+  
-**License**: MIT (same as DeSciOS project) 
+**Compatibility**: AxonOS v1.0+  
+**License**: MIT (same as AxonOS project) 

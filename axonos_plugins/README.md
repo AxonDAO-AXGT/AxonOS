@@ -1,6 +1,6 @@
-# DeSciOS Custom Application Plugins
+# AxonOS Custom Application Plugins
 
-This directory contains custom application definitions that extend DeSciOS with additional software packages.
+This directory contains custom application definitions that extend AxonOS with additional software packages.
 
 ## Plugin Format
 
@@ -29,7 +29,7 @@ app_id:
 
 ### Method 1: Using Templates (Recommended)
 
-1. Open DeSciOS Launcher
+1. Open AxonOS Launcher
 2. Go to the "🧩 Custom Apps" tab
 3. Choose a template from the dropdown:
    - **Python Package**: Install Python packages via pip
@@ -46,7 +46,7 @@ app_id:
 
 1. Create a new `.yaml` or `.json` file in this directory
 2. Define your applications using the format above
-3. Restart DeSciOS Launcher to load the new applications
+3. Restart AxonOS Launcher to load the new applications
 
 ## Examples
 
@@ -116,8 +116,8 @@ my_web_app:
 To share your custom applications with the community:
 
 1. Create a plugin file following the format above
-2. Test it thoroughly with different DeSciOS configurations
-3. Submit it to the DeSciOS community repository
+2. Test it thoroughly with different AxonOS configurations
+3. Submit it to the AxonOS community repository
 4. Include documentation about any special requirements
 
 ## Troubleshooting
@@ -125,7 +125,7 @@ To share your custom applications with the community:
 **Plugin not loading?**
 - Check YAML/JSON syntax is valid
 - Ensure all required fields are present
-- Restart DeSciOS Launcher after adding new files
+- Restart AxonOS Launcher after adding new files
 
 **Application not installing?**
 - Test your `dockerfile_section` commands manually

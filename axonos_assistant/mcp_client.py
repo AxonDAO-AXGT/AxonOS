@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCP Client for DeSciOS Assistant
+MCP Client for AxonOS Assistant
 
 This module provides MCP (Model Context Protocol) client capabilities
 for OS-aware context management, real-time system monitoring, and
@@ -89,8 +89,8 @@ class MCPClientManager:
         # Try multiple possible paths for the server files
         possible_paths = [
             os.path.dirname(__file__),  # Current directory
-            "/opt/descios_assistant",   # Container path
-            "/home/avi/DeSciOS/descios_assistant"  # Host path
+            "/opt/axonos_assistant",   # Container path
+            "/home/avi/AxonOS/axonos_assistant"  # Host path
         ]
         
         def find_server_file(filename):
@@ -713,7 +713,7 @@ class MCPClientManager:
             if root_disk:
                 primary_disk = f" (Root: {root_disk['used']} / {root_disk['size']} - {root_disk['use_percent']})"
         
-        summary = f"""## DeSciOS System Context (Updated: {ctx.last_updated})
+        summary = f"""## AxonOS System Context (Updated: {ctx.last_updated})
 
 ### System Resources:
 - **CPU Usage**: {ctx.cpu_usage:.1f}%

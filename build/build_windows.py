@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build script for creating DeSciOS Launcher EXE installer for Windows
+Build script for creating AxonOS Launcher EXE installer for Windows
 """
 
 # MIT License
@@ -66,11 +66,11 @@ def build_windows_exe():
 block_cipher = None
 
 a = Analysis(
-    ['descios_launcher/main.py'],
+    ['axonos_launcher/main.py'],
     pathex=[],
     binaries=[],
     datas=[
-        ('descios_launcher/README.md', '.'),
+        ('axonos_launcher/README.md', '.'),
     ],
     hiddenimports=['yaml', 'yaml.loader', 'yaml.dumper'],
     hookspath=[],
@@ -92,7 +92,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='DeSciOS Launcher',
+    name='AxonOS Launcher',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -109,11 +109,11 @@ exe = EXE(
     version_file=None,
 )'''
     
-    with open("descios_launcher.spec", "w") as f:
+    with open("axonos_launcher.spec", "w") as f:
         f.write(spec_content)
     
     # Build with PyInstaller
-    cmd = ["pyinstaller", "--clean", "--noconfirm", "descios_launcher.spec"]
+    cmd = ["pyinstaller", "--clean", "--noconfirm", "axonos_launcher.spec"]
     
     try:
         subprocess.check_call(cmd)
@@ -124,15 +124,15 @@ exe = EXE(
         return False
     finally:
         # Clean up spec file
-        if os.path.exists("descios_launcher.spec"):
-            os.remove("descios_launcher.spec")
+        if os.path.exists("axonos_launcher.spec"):
+            os.remove("axonos_launcher.spec")
 
 def create_installer():
     """Create Windows installer using NSIS or similar"""
     print("Creating Windows installer...")
     
-    exe_path = "dist/DeSciOS Launcher.exe"
-    installer_name = "DeSciOS-Launcher-0.1.0-Windows-x86_64.exe"
+    exe_path = "dist/AxonOS Launcher.exe"
+    installer_name = "AxonOS-Launcher-0.1.0-Windows-x86_64.exe"
     
     if not os.path.exists(exe_path):
         print(f"✗ EXE not found at {exe_path}")
@@ -142,18 +142,18 @@ def create_installer():
     # In a full implementation, you'd use NSIS or Inno Setup
     import zipfile
     
-    zip_name = "DeSciOS-Launcher-0.1.0-Windows-x86_64.zip"
+    zip_name = "AxonOS-Launcher-0.1.0-Windows-x86_64.zip"
     
     with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
         # Add the EXE
-        zipf.write(exe_path, "DeSciOS Launcher.exe")
+        zipf.write(exe_path, "AxonOS Launcher.exe")
         
         # Add installation instructions
-        instructions = """DeSciOS Launcher - Windows Installation
+        instructions = """AxonOS Launcher - Windows Installation
 ========================================
 
 1. Extract this ZIP file to a folder of your choice
-2. Run "DeSciOS Launcher.exe" to start the application
+2. Run "AxonOS Launcher.exe" to start the application
 3. Optionally create a desktop shortcut
 
 Requirements:
@@ -163,12 +163,12 @@ Requirements:
 - Git (for auto-clone feature)
 
 Installation:
-- Extract to C:\\Program Files\\DeSciOS\\ (recommended)
+- Extract to C:\\Program Files\\AxonOS\\ (recommended)
 - Or extract to any folder and run from there
 
 Usage:
-- Double-click "DeSciOS Launcher.exe"
-- Or run from command prompt: "DeSciOS Launcher.exe"
+- Double-click "AxonOS Launcher.exe"
+- Or run from command prompt: "AxonOS Launcher.exe"
 
 Troubleshooting:
 - If you get a security warning, click "More info" then "Run anyway"
@@ -183,13 +183,13 @@ Troubleshooting:
 
 def create_install_instructions():
     """Create installation instructions for Windows"""
-    instructions = """DeSciOS Launcher - Windows Installation
+    instructions = """AxonOS Launcher - Windows Installation
 ========================================
 
 Quick Install:
 1. Download the ZIP file
-2. Extract to a folder (e.g., C:\\Program Files\\DeSciOS\\)
-3. Run "DeSciOS Launcher.exe"
+2. Extract to a folder (e.g., C:\\Program Files\\AxonOS\\)
+3. Run "AxonOS Launcher.exe"
 
 Requirements:
 - Windows 10 or later
@@ -202,11 +202,11 @@ Installation Steps:
 2. Install Docker Desktop and restart your computer
 3. Download Git from https://git-scm.com/download/win
 4. Install Git with default settings
-5. Extract this package and run "DeSciOS Launcher.exe"
+5. Extract this package and run "AxonOS Launcher.exe"
 
 Usage:
 - Double-click the EXE file to launch
-- The launcher will automatically find or clone DeSciOS
+- The launcher will automatically find or clone AxonOS
 - Configure your scientific applications and deploy
 
 Troubleshooting:
@@ -220,16 +220,16 @@ Troubleshooting:
 
 def main():
     """Main build function"""
-    print("🪟 DeSciOS Launcher Windows Build System")
+    print("🪟 AxonOS Launcher Windows Build System")
     print("=" * 40)
     
     # Check if we're on Windows
     check_windows()
     
     # Check if we're in the right directory
-    if not os.path.exists("descios_launcher/main.py"):
-        print("✗ Error: descios_launcher/main.py not found")
-        print("Please run this script from the DeSciOS root directory")
+    if not os.path.exists("axonos_launcher/main.py"):
+        print("✗ Error: axonos_launcher/main.py not found")
+        print("Please run this script from the AxonOS root directory")
         sys.exit(1)
     
     # Install dependencies
@@ -248,8 +248,8 @@ def main():
     
     print("\n🎉 Windows build completed successfully!")
     print("Files created:")
-    print("- dist/DeSciOS Launcher.exe (Executable)")
-    print("- DeSciOS-Launcher-0.1.0-Windows.zip (Package)")
+    print("- dist/AxonOS Launcher.exe (Executable)")
+    print("- AxonOS-Launcher-0.1.0-Windows.zip (Package)")
     print("- dist/WINDOWS_INSTALL.txt (Installation instructions)")
 
 if __name__ == "__main__":

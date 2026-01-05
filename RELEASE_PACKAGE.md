@@ -1,8 +1,8 @@
-# DeSciOS Launcher - Installation Guide
+# AxonOS Launcher - Installation Guide
 
 ## 📦 Package Information
 
-**Package Name**: `descios-launcher_0.1.0_amd64.deb`  
+**Package Name**: `axonos-launcher_0.1.0_amd64.deb`  
 **Version**: 0.1.0  
 **Architecture**: amd64  
 **Size**: ~12.2 MB  
@@ -12,7 +12,7 @@
 
 This Debian package contains:
 
-- **DeSciOS Launcher Binary**: Self-contained executable (`/usr/local/bin/descios`)
+- **AxonOS Launcher Binary**: Self-contained executable (`/usr/local/bin/axonos`)
 - **Desktop Integration**: Application menu entry and icon
 - **Documentation**: Copyright and changelog files
 - **Installation Scripts**: Post-installation setup and dependency checks
@@ -21,22 +21,22 @@ This Debian package contains:
 
 ```bash
 # Install the package
-sudo dpkg -i descios-launcher_0.1.0_amd64.deb
+sudo dpkg -i axonos-launcher_0.1.0_amd64.deb
 
 # Fix any dependency issues (if needed)
 sudo apt-get install -f
 
-# Launch DeSciOS
-descios
+# Launch AxonOS
+axonos
 ```
 
 ### Verify Installation
 ```bash
 # Check if binary is available
-which descios
+which axonos
 
 # Check version
-descios --version
+axonos --version
 ```
 
 ## 📋 System Requirements
@@ -47,7 +47,7 @@ descios --version
 - **Docker**: Container runtime (docker.io or docker-ce)
 
 ### Recommended Dependencies
-- **Web Browser**: Firefox or Chromium for accessing DeSciOS web interface
+- **Web Browser**: Firefox or Chromium for accessing AxonOS web interface
 - **NVIDIA Container Toolkit**: For GPU acceleration (optional)
 
 ### Installation Commands
@@ -62,13 +62,13 @@ sudo apt install -y nvidia-container-toolkit
 
 ## 🔧 Usage
 
-### Launching DeSciOS Launcher
+### Launching AxonOS Launcher
 ```bash
 # Command line
-descios
+axonos
 
 # Or find it in your applications menu
-# Applications → Science → DeSciOS Launcher
+# Applications → Science → AxonOS Launcher
 ```
 
 ### What You Can Do
@@ -76,25 +76,25 @@ descios
 2. **Configure AI Models**: Set up Ollama models for AI assistance
 3. **Customize Settings**: Set username, password, and GPU options
 4. **Build & Deploy**: One-click Docker build and deployment
-5. **Access DeSciOS**: Automatic browser launch to the scientific desktop
+5. **Access AxonOS**: Automatic browser launch to the scientific desktop
 
 ## 🧹 Uninstallation
 
 ```bash
 # Remove the package
-sudo apt remove descios-launcher
+sudo apt remove axonos-launcher
 
 # Or completely purge (removes configuration files)
-sudo apt purge descios-launcher
+sudo apt purge axonos-launcher
 ```
 
 ## 📁 Package Contents
 
 ```
-/usr/local/bin/descios                    # Main executable
-/usr/share/applications/descios-launcher.desktop  # Menu entry
-/usr/share/pixmaps/descios.svg            # Application icon
-/usr/share/doc/descios-launcher/          # Documentation
+/usr/local/bin/axonos                    # Main executable
+/usr/share/applications/axonos-launcher.desktop  # Menu entry
+/usr/share/pixmaps/axonos.svg            # Application icon
+/usr/share/doc/axonos-launcher/          # Documentation
 ├── copyright                             # License information
 └── changelog.Debian.gz                   # Package changelog
 ```
@@ -122,16 +122,16 @@ sudo apt install python3-tk
 **3. Binary Not Found**
 ```bash
 # Check if binary exists
-ls -la /usr/local/bin/descios
+ls -la /usr/local/bin/axonos
 
 # Reinstall if needed
-sudo dpkg -i descios-launcher_0.1.0_amd64.deb
+sudo dpkg -i axonos-launcher_0.1.0_amd64.deb
 ```
 
 ### Logs and Debugging
 ```bash
 # Run with verbose output
-descios --verbose
+axonos --verbose
 
 # Check system logs
 journalctl -u docker.service
@@ -143,8 +143,8 @@ For developers who want to build their own package:
 
 ```bash
 # Clone the repository
-git clone https://github.com/GizmoQuest/DeSciOS.git
-cd DeSciOS
+git clone https://github.com/GizmoQuest/AxonOS.git
+cd AxonOS
 
 # Set up build environment
 python3 -m venv build_env
@@ -161,14 +161,14 @@ make release
 
 ## 📞 Support
 
-- **GitHub Issues**: https://github.com/GizmoQuest/DeSciOS/issues
-- **Documentation**: https://github.com/GizmoQuest/DeSciOS
+- **GitHub Issues**: https://github.com/GizmoQuest/AxonOS/issues
+- **Documentation**: https://github.com/GizmoQuest/AxonOS
 - **Community**: DeSci India and global DeSci movement
 
 ## 📄 License
 
-This package is licensed under the MIT License. See the copyright file in `/usr/share/doc/descios-launcher/copyright` for details.
+This package is licensed under the MIT License. See the copyright file in `/usr/share/doc/axonos-launcher/copyright` for details.
 
 ---
 
-**DeSciOS Launcher** - Empowering decentralized scientific computing through intuitive GUI deployment. 
+**AxonOS Launcher** - Empowering decentralized scientific computing through intuitive GUI deployment. 

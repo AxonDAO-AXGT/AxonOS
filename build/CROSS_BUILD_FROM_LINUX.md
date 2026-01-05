@@ -74,12 +74,12 @@ python3 build_simple_cross.py windows
 After successful build, you'll get:
 
 ### macOS Package
-- `DeSciOS-Launcher-0.1.0-macOS.zip`
-- Contains: `DeSciOS Launcher.app/` + installation instructions
+- `AxonOS-Launcher-0.1.0-macOS.zip`
+- Contains: `AxonOS Launcher.app/` + installation instructions
 
 ### Windows Package
-- `DeSciOS-Launcher-0.1.0-Windows.zip`
-- Contains: `DeSciOS Launcher.exe` + installation instructions
+- `AxonOS-Launcher-0.1.0-Windows.zip`
+- Contains: `AxonOS Launcher.exe` + installation instructions
 
 ## 🔍 How It Works
 
@@ -120,11 +120,11 @@ ls -la dist/
 ### Test Packages (if possible)
 ```bash
 # Extract and test macOS package
-unzip DeSciOS-Launcher-0.1.0-macOS.zip
+unzip AxonOS-Launcher-0.1.0-macOS.zip
 # Test on macOS system
 
 # Extract and test Windows package  
-unzip DeSciOS-Launcher-0.1.0-Windows.zip
+unzip AxonOS-Launcher-0.1.0-Windows.zip
 # Test on Windows system
 ```
 
@@ -181,16 +181,16 @@ Before releasing cross-platform builds:
 
 ### Successful Build Output
 ```
-🌍 DeSciOS Launcher Cross-Platform Build (Linux)
+🌍 AxonOS Launcher Cross-Platform Build (Linux)
 ==================================================
 
 Building for macos...
 ✓ macos build completed
-✓ Created DeSciOS-Launcher-0.1.0-macOS.zip
+✓ Created AxonOS-Launcher-0.1.0-macOS.zip
 
 Building for windows...
 ✓ windows build completed  
-✓ Created DeSciOS-Launcher-0.1.0-Windows.zip
+✓ Created AxonOS-Launcher-0.1.0-Windows.zip
 
 ==================================================
 Build Summary:
@@ -202,8 +202,8 @@ Build Summary:
 
 ### Generated Files
 ```
-DeSciOS-Launcher-0.1.0-macOS.zip     # macOS package
-DeSciOS-Launcher-0.1.0-Windows.zip   # Windows package
+AxonOS-Launcher-0.1.0-macOS.zip     # macOS package
+AxonOS-Launcher-0.1.0-Windows.zip   # Windows package
 dist/                                 # Build artifacts
 ```
 

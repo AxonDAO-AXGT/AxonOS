@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple cross-platform build script for DeSciOS Launcher
+Simple cross-platform build script for AxonOS Launcher
 Uses PyInstaller's cross-compilation capabilities
 """
 
@@ -58,11 +58,11 @@ def build_with_pyinstaller(target_platform):
 block_cipher = None
 
 a = Analysis(
-    ['descios_launcher/main.py'],
+    ['axonos_launcher/main.py'],
     pathex=[],
     binaries=[],
     datas=[
-        ('descios_launcher/README.md', '.'),
+        ('axonos_launcher/README.md', '.'),
     ],
     hiddenimports=['yaml', 'yaml.loader', 'yaml.dumper'],
     hookspath=[],
@@ -84,7 +84,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='descios',
+    name='axonos',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -101,14 +101,14 @@ exe = EXE(
 
 app = BUNDLE(
     exe,
-    name='DeSciOS Launcher.app',
+    name='AxonOS Launcher.app',
     icon=None,
-    bundle_identifier='org.descios.launcher',
+    bundle_identifier='org.axonos.launcher',
     info_plist={
         'NSPrincipalClass': 'NSApplication',
         'NSAppleScriptEnabled': False,
-        'CFBundleDisplayName': 'DeSciOS Launcher',
-        'CFBundleName': 'DeSciOS Launcher',
+        'CFBundleDisplayName': 'AxonOS Launcher',
+        'CFBundleName': 'AxonOS Launcher',
         'CFBundleVersion': '0.1.0',
         'CFBundleShortVersionString': '0.1.0',
     },
@@ -119,11 +119,11 @@ app = BUNDLE(
 block_cipher = None
 
 a = Analysis(
-    ['descios_launcher/main.py'],
+    ['axonos_launcher/main.py'],
     pathex=[],
     binaries=[],
     datas=[
-        ('descios_launcher/README.md', '.'),
+        ('axonos_launcher/README.md', '.'),
     ],
     hiddenimports=['yaml', 'yaml.loader', 'yaml.dumper'],
     hookspath=[],
@@ -145,7 +145,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='DeSciOS Launcher',
+    name='AxonOS Launcher',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -163,7 +163,7 @@ exe = EXE(
 )'''
     
     # Write spec file
-    spec_file = f"descios_launcher_{target_platform}.spec"
+    spec_file = f"axonos_launcher_{target_platform}.spec"
     with open(spec_file, "w") as f:
         f.write(spec_content)
     
@@ -195,7 +195,7 @@ CMD ["pyinstaller", "--clean", "--noconfirm", "{spec_file}"]
         f.write(dockerfile_content)
     
     # Build Docker image and run
-    image_name = f"descios-{target_platform}-builder"
+    image_name = f"axonos-{target_platform}-builder"
     
     try:
         # Build image
@@ -229,7 +229,7 @@ CMD ["pyinstaller", "--clean", "--noconfirm", "{spec_file}"]
 def create_package(target_platform):
     """Create package for target platform"""
     # Use the Linux binary for all platforms (cross-compilation limitations)
-    binary_path = "dist/descios"
+    binary_path = "dist/axonos"
     
     if not os.path.exists(binary_path):
         print(f"✗ Binary not found at {binary_path}")
@@ -237,19 +237,19 @@ def create_package(target_platform):
     
     if target_platform == "macos":
         import zipfile
-        zip_name = "DeSciOS-Launcher-0.1.0-macOS-x86_64.zip"
+        zip_name = "AxonOS-Launcher-0.1.0-macOS-x86_64.zip"
         with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Add the binary with macOS-style naming
-            zipf.write(binary_path, "DeSciOS Launcher")
+            zipf.write(binary_path, "AxonOS Launcher")
             
             # Add installation instructions
-            instructions = """DeSciOS Launcher - macOS Installation
+            instructions = """AxonOS Launcher - macOS Installation
 =====================================
 
 1. Extract this ZIP file
 2. Open Terminal and navigate to the extracted folder
-3. Run: chmod +x "DeSciOS Launcher"
-4. Run: ./"DeSciOS Launcher"
+3. Run: chmod +x "AxonOS Launcher"
+4. Run: ./"AxonOS Launcher"
 
 Requirements:
 - macOS 10.14 or later
@@ -264,20 +264,20 @@ For best results, build natively on macOS.
     
     elif target_platform == "windows":
         import zipfile
-        zip_name = "DeSciOS-Launcher-0.1.0-Windows-x86_64.zip"
+        zip_name = "AxonOS-Launcher-0.1.0-Windows-x86_64.zip"
         with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Add the binary with Windows-style naming
-            zipf.write(binary_path, "DeSciOS Launcher.exe")
+            zipf.write(binary_path, "AxonOS Launcher.exe")
             
             # Add installation instructions
-            instructions = """DeSciOS Launcher - Windows Installation
+            instructions = """AxonOS Launcher - Windows Installation
 ========================================
 
 1. Extract this ZIP file
 2. Install WSL (Windows Subsystem for Linux) if not already installed
 3. Open WSL terminal and navigate to the extracted folder
-4. Run: chmod +x "DeSciOS Launcher.exe"
-5. Run: ./"DeSciOS Launcher.exe"
+4. Run: chmod +x "AxonOS Launcher.exe"
+5. Run: ./"AxonOS Launcher.exe"
 
 Requirements:
 - Windows 10 or later with WSL
@@ -294,20 +294,20 @@ For best results, build natively on Windows.
 
 def main():
     """Main build function"""
-    print("🌍 DeSciOS Launcher Cross-Platform Build (Linux)")
+    print("🌍 AxonOS Launcher Cross-Platform Build (Linux)")
     print("=" * 50)
     
     # Check requirements
     check_requirements()
     
     # Check if we're in the right directory
-    if not os.path.exists("descios_launcher/main.py"):
+    if not os.path.exists("axonos_launcher/main.py"):
         # Try parent directory
-        if os.path.exists("../descios_launcher/main.py"):
+        if os.path.exists("../axonos_launcher/main.py"):
             os.chdir("..")
         else:
-            print("✗ Error: descios_launcher/main.py not found")
-            print("Please run this script from the DeSciOS root directory")
+            print("✗ Error: axonos_launcher/main.py not found")
+            print("Please run this script from the AxonOS root directory")
             sys.exit(1)
     
     # Create dist directory

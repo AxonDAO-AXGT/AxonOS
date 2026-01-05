@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeSciOS Launcher - GUI for customizing DeSciOS Docker builds
+AxonOS Launcher - GUI for customizing AxonOS Docker builds
 Allows users to select which applications to install and customize settings
 """
 
@@ -78,10 +78,10 @@ RUN echo '[Desktop Entry]\\nName={name}\\nExec=firefox {url}\\nIcon=applications
     }
 }
 
-class DeSciOSLauncher:
+class AxonOSLauncher:
     def __init__(self, root):
         self.root = root
-        self.root.title("DeSciOS Launcher")
+        self.root.title("AxonOS Launcher")
         
         # Get screen dimensions and calculate adaptive window size
         screen_width = root.winfo_screenwidth()
@@ -126,7 +126,7 @@ class DeSciOSLauncher:
         
         # Initialize custom applications
         self.custom_applications = {}
-        self.plugins_dir = Path("descios_plugins")
+        self.plugins_dir = Path("axonos_plugins")
         
         # Create plugins directory if it doesn't exist
         self.plugins_dir.mkdir(exist_ok=True)
@@ -924,9 +924,9 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         
         # Mandatory items with checkmark emoji and success color
         mandatory_items = [
-            "✅ DeSciOS Assistant",
+            "✅ AxonOS Assistant",
             "✅ Talk to K (Krishnamurti dialogue)",
-            "✅ DeSciOS Assistant Font", 
+            "✅ AxonOS Assistant Font", 
             "✅ Python3-pip (System Python package manager)",
             "✅ IPFS CLI & Desktop (Decentralized file system)"
         ]
@@ -1013,7 +1013,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
             
     def setup_settings_tab(self, parent):
         # Title
-        title_label = ttk.Label(parent, text="🔧 DeSciOS Configuration", 
+        title_label = ttk.Label(parent, text="🔧 AxonOS Configuration", 
                                style='Title.TLabel')
         title_label.pack(pady=(20, 30))
         
@@ -1099,7 +1099,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         
     def setup_build_tab(self, parent):
         # Title
-        title_label = ttk.Label(parent, text="🚀 Build & Deploy DeSciOS", 
+        title_label = ttk.Label(parent, text="🚀 Build & Deploy AxonOS", 
                                style='Title.TLabel')
         title_label.pack(pady=(20, 30))
         
@@ -1124,7 +1124,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         tag_grid.grid_columnconfigure(1, weight=1)
         
         ttk.Label(tag_grid, text="Docker Image Tag:", font=('TkDefaultFont', 13)).grid(row=0, column=0, sticky='w', pady=12)  # 11 * 1.2 = 13
-        self.image_tag_var = tk.StringVar(value="descios:custom")
+        self.image_tag_var = tk.StringVar(value="axonos:custom")
         tag_entry = ttk.Entry(tag_grid, textvariable=self.image_tag_var, width=35)
         tag_entry.grid(row=0, column=1, sticky='ew', padx=(20, 0), pady=12)
         
@@ -1201,8 +1201,8 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         gpu_flag = "--gpus all " if self.gpu_enabled_var.get() else ""
         
         basic_cmd = f"docker run -p 6080:6080 {gpu_flag}{image_tag}"
-        advanced_cmd = f"docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name descios {image_tag}"
-        ipfs_cmd = f"docker run -d -p 6080:6080 -p 5901:5901 -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 {gpu_flag}--name descios {image_tag}"
+        advanced_cmd = f"docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name axonos {image_tag}"
+        ipfs_cmd = f"docker run -d -p 6080:6080 -p 5901:5901 -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 {gpu_flag}--name axonos {image_tag}"
         
         command_text = f"""# MAIN COMMAND (used by Deploy! button):
 {ipfs_cmd}
@@ -1211,7 +1211,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
 docker run -p 6080:6080 {image_tag}
 
 # Advanced command (background mode with VNC):
-docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name descios {image_tag}
+docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name axonos {image_tag}
 
 # IPFS Access URLs:
 # - IPFS Gateway: http://localhost:8080
@@ -1219,10 +1219,10 @@ docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name descios {image_tag}
 # - IPFS Web UI: http://localhost:5001/webui
 
 # To stop the container:
-docker stop descios
+docker stop axonos
 
 # To restart the container:
-docker start descios
+docker start axonos
 """
         
         self.docker_cmd_text.delete('1.0', tk.END)
@@ -1326,7 +1326,7 @@ docker start descios
             for i, line in enumerate(lines):
                 if 'Install pip for system Python' in line:
                     optional_section_start = i + 2  # Start after the RUN command
-                elif 'Install DeSciOS Assistant' in line:
+                elif 'Install AxonOS Assistant' in line:
                     mandatory_section_start = i
                     in_optional = False
                     in_mandatory = True
@@ -1385,16 +1385,16 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
                     else:
                         new_content.append(app_info['dockerfile_section'])
             
-            # Add mandatory DeSciOS Assistant section
+            # Add mandatory AxonOS Assistant section
             new_content.append('''
-# Install DeSciOS Assistant
+# Install AxonOS Assistant
 WORKDIR /opt
-COPY descios_assistant /opt/descios_assistant
-RUN cd /opt/descios_assistant && \\
+COPY axonos_assistant /opt/axonos_assistant
+RUN cd /opt/axonos_assistant && \\
     /usr/bin/python3 -m pip install --break-system-packages -r requirements.txt && \\
     chmod +x main.py && \\
-    cp descios-assistant.desktop /usr/share/applications/ && \\
-    chown -R $USER:$USER /opt/descios_assistant
+    cp axonos-assistant.desktop /usr/share/applications/ && \\
+    chown -R $USER:$USER /opt/axonos_assistant
 
 # Install Talk to K Assistant
 COPY talk_to_k /opt/talk_to_k
@@ -1404,7 +1404,7 @@ RUN cd /opt/talk_to_k && \\
     cp talk-to-k.desktop /usr/share/applications/ && \\
     chown -R $USER:$USER /opt/talk_to_k
 
-# Install DeSci Assistant font
+# Install AxonOS Assistant font
 RUN apt-get update && apt-get install -y wget fontconfig && \\
     mkdir -p /usr/share/fonts/truetype/orbitron && \\
     wget -O /usr/share/fonts/truetype/orbitron/Orbitron.ttf https://github.com/google/fonts/raw/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf && \\
@@ -1584,10 +1584,10 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                 return
             
             # Stop any existing container with the same name
-            stop_cmd = ['docker', 'stop', 'descios']
+            stop_cmd = ['docker', 'stop', 'axonos']
             subprocess.run(stop_cmd, capture_output=True)
             
-            remove_cmd = ['docker', 'rm', 'descios']
+            remove_cmd = ['docker', 'rm', 'axonos']
             subprocess.run(remove_cmd, capture_output=True)
             
             # Build the docker run command with IPFS ports
@@ -1597,7 +1597,7 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                     '-p', '6080:6080', '-p', '5901:5901',
                     '-p', '4001:4001', '-p', '4001:4001/udp',
                     '-p', '5001:5001', '-p', '8080:8080', '-p', '9090:9090',
-                    '--name', 'descios', image_tag
+                    '--name', 'axonos', image_tag
                 ]
                 self.log_message("🚀 Deploying with GPU support and IPFS ports...")
             else:
@@ -1606,7 +1606,7 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                     '-p', '6080:6080', '-p', '5901:5901',
                     '-p', '4001:4001', '-p', '4001:4001/udp',
                     '-p', '5001:5001', '-p', '8080:8080', '-p', '9090:9090',
-                    '--name', 'descios', image_tag
+                    '--name', 'axonos', image_tag
                 ]
                 self.log_message("🚀 Deploying with IPFS ports...")
             
@@ -1643,11 +1643,11 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                 # Run browser opening in a separate thread
                 threading.Thread(target=open_browser, daemon=True).start()
                 
-                self.log_message(f"🎉 DeSciOS is now running at: http://localhost:6080/vnc.html")
+                self.log_message(f"🎉 AxonOS is now running at: http://localhost:6080/vnc.html")
                 self.log_message("🌐 IPFS Gateway: http://localhost:8080")
                 self.log_message("🔧 IPFS API: http://localhost:5001")
                 self.log_message("📁 IPFS Web UI: http://localhost:5001/webui")
-                self.log_message("💡 To stop: docker stop descios")
+                self.log_message("💡 To stop: docker stop axonos")
                 
                 # Show info about custom apps if any
                 custom_count = sum(var.get() for app_id, var in self.app_vars.items() if app_id.startswith('custom_'))
@@ -1666,62 +1666,87 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="DeSciOS Launcher - GUI for customizing and deploying DeSciOS",
+        description="AxonOS Launcher - CLI for headless servers, GUI available with --gui",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  descios                    # Launch GUI
-  descios --version          # Show version
-  descios --help             # Show this help
+  axonos list               # List applications (CLI mode, default)
+  axonos build --password mypass  # Build image
+  axonos deploy --gpu       # Deploy with GPU
+  axonos --gui              # Launch GUI mode (requires display)
+  axonos --version          # Show version
   
-DeSciOS is a containerized scientific computing environment.
-Visit: https://github.com/GizmoQuest/DeSciOS
+AxonOS is a containerized scientific computing environment.
+Visit: https://github.com/[org]/axonos
         """
     )
     
     parser.add_argument(
         '--version', '-v',
         action='version',
-        version='DeSciOS Launcher 0.1.0'
+        version='AxonOS Launcher 0.1.0'
     )
     
     parser.add_argument(
-        '--no-gui',
+        '--gui',
         action='store_true',
-        help='Run in command-line mode (not implemented yet)'
+        help='Run in GUI mode (requires X11/display)'
     )
     
-    args = parser.parse_args()
+    # Parse known args first to check for --gui
+    args, remaining = parser.parse_known_args()
     
-    if args.no_gui:
-        print("Command-line mode not implemented yet. Use GUI mode.")
-        return 1
+    # Default to CLI mode for headless servers
+    if not args.gui:
+        # Import and run CLI, passing through all arguments
+        try:
+            from cli import main as cli_main
+            # Reconstruct sys.argv for CLI
+            import sys
+            original_argv = sys.argv[:]
+            sys.argv = ['axonos'] + remaining if remaining else ['axonos']
+            try:
+                return cli_main()
+            finally:
+                sys.argv = original_argv
+        except ImportError as e:
+            print("❌ CLI module not found. Falling back to GUI mode.")
+            print(f"   Error: {e}")
+            print("   If you're on a headless server, ensure cli.py is available.")
+        except SystemExit:
+            raise  # Re-raise SystemExit from CLI
+        except Exception as e:
+            print(f"❌ Error running CLI: {e}")
+            import traceback
+            traceback.print_exc()
+            print("   Falling back to GUI mode.")
     
-    # Check if we're in the right directory or find DeSciOS
-    descios_dir = None
+    # Check if we're in the right directory or find AxonOS
+    axonos_dir = None
     current_dir = os.getcwd()
     
     # First check current directory
     if os.path.exists('Dockerfile'):
-        descios_dir = current_dir
+        axonos_dir = current_dir
     else:
-        # Look for DeSciOS in common locations
+        # Look for AxonOS in common locations
         search_paths = [
-            os.path.expanduser('~/DeSciOS'),
-            os.path.expanduser('~/Desktop/DeSciOS'),
-            os.path.expanduser('~/Downloads/DeSciOS'),
-            '/opt/DeSciOS',
-            '/usr/local/share/DeSciOS'
+            os.path.expanduser('~/axonos'),
+            os.path.expanduser('~/AxonOS'),
+            os.path.expanduser('~/Desktop/axonos'),
+            os.path.expanduser('~/Downloads/axonos'),
+            '/opt/axonos',
+            '/usr/local/share/axonos'
         ]
         
         for path in search_paths:
             if os.path.exists(os.path.join(path, 'Dockerfile')):
-                descios_dir = path
+                axonos_dir = path
                 break
     
-    if not descios_dir:
-        print("DeSciOS directory not found. Cloning from GitHub...")
-        clone_dir = os.path.expanduser('~/DeSciOS')
+    if not axonos_dir:
+        print("AxonOS directory not found. Cloning from GitHub...")
+        clone_dir = os.path.expanduser('~/axonos')
         
         # Check if git is available
         if shutil.which('git') is None:
@@ -1730,26 +1755,26 @@ Visit: https://github.com/GizmoQuest/DeSciOS
             return 1
         
         # Clone the repository
-        clone_cmd = ['git', 'clone', 'https://github.com/GizmoQuest/DeSciOS.git', clone_dir]
+        clone_cmd = ['git', 'clone', 'https://github.com/[org]/axonos.git', clone_dir]
         result = subprocess.run(clone_cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
-            print(f"✅ Successfully cloned DeSciOS to: {clone_dir}")
-            descios_dir = clone_dir
+            print(f"✅ Successfully cloned AxonOS to: {clone_dir}")
+            axonos_dir = clone_dir
         else:
-            print(f"❌ Failed to clone DeSciOS: {result.stderr}")
+            print(f"❌ Failed to clone AxonOS: {result.stderr}")
             print("Please clone manually:")
-            print("  git clone https://github.com/GizmoQuest/DeSciOS.git ~/DeSciOS")
+            print("  git clone https://github.com/[org]/axonos.git ~/axonos")
             return 1
     
-    # Change to DeSciOS directory
-    if descios_dir != current_dir:
-        print(f"Found DeSciOS at: {descios_dir}")
-        print("Changing to DeSciOS directory...")
-        os.chdir(descios_dir)
+    # Change to AxonOS directory
+    if axonos_dir != current_dir:
+        print(f"Found AxonOS at: {axonos_dir}")
+        print("Changing to AxonOS directory...")
+        os.chdir(axonos_dir)
         
     root = tk.Tk()
-    app = DeSciOSLauncher(root)
+    app = AxonOSLauncher(root)
     
     try:
         # Try to use the system theme

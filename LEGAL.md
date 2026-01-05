@@ -2,7 +2,7 @@
 
 This repository is **mixed-licensed**:
 
-- **MIT**: applies to original DeSciOS-authored files (see individual file headers).
+- **MIT**: applies to original AxonOS-authored files (see individual file headers).
 - **MPL 2.0**: applies to files derived from MPL 2.0 code (file-level copyleft; see individual file headers).
 
 This document is a practical guide for commercial users and forkers. It is **not legal advice**.
@@ -43,9 +43,9 @@ These files are derived from the upstream noVNC project and are licensed under *
 - `novnc-theme/ui.js`
 - `novnc-theme/vnc.html`
 
-### MIT (Category B: original DeSciOS-authored)
+### MIT (Category B: original AxonOS-authored)
 
-Unless a file header states otherwise, DeSciOS-authored files in this repository are intended to be under **MIT** (see file headers).
+Unless a file header states otherwise, AxonOS-authored files in this repository are intended to be under **MIT** (see file headers).
 
 ## Redistribution checklist (do this when you ship)
 

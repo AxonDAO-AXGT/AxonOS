@@ -30,6 +30,7 @@ build/*.pkg
 build/*.txt
 build/*.html
 build/build_env/
+# Old build artifacts (kept to ignore legacy build outputs)
 build/descios_launcher/
 build/descios_launcher_*/
 dist/
@@ -91,5 +92,9 @@ data/
 *.db
 
 # Distribution binaries (should be released separately, not committed)
+# Old build artifacts (kept to ignore legacy packages)
 DeSciOS-Launcher-*.0-Windows/
-DeSciOS-Launcher-*.0-macOS/ 
+DeSciOS-Launcher-*.0-macOS/
+# New build artifacts
+AxonOS-Launcher-*.0-Windows/
+AxonOS-Launcher-*.0-macOS/ 

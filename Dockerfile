@@ -49,18 +49,17 @@ RUN apt update && apt install -y \
     && apt clean
 
 # Set up OS identification
-RUN echo 'NAME="DeSciOS"\n\
+RUN echo 'NAME="AxonOS"\n\
 VERSION="0.1"\n\
-ID=descios\n\
+ID=axonos\n\
 ID_LIKE=debian\n\
-PRETTY_NAME="DeSciOS"\n\
+PRETTY_NAME="AxonOS"\n\
 VERSION_ID="0.1"\n\
-HOME_URL="https://descios.desciindia.org"\n\
-SUPPORT_URL="https://github.com/GizmoQuest/DeSciOS/issues"\n\
-BUG_REPORT_URL="https://github.com/GizmoQuest/DeSciOS/issues"' > /etc/os-release && \
-    echo 'DeSciOS' > /etc/hostname && \
+SUPPORT_URL="https://github.com/[org]/axonos/issues"\n\
+BUG_REPORT_URL="https://github.com/[org]/axonos/issues"' > /etc/os-release && \
+    echo 'AxonOS' > /etc/hostname && \
     mv /bin/uname /bin/uname.real && \
-    echo '#!/bin/sh\nif [ "$1" = "-a" ]; then\n  echo -n "DeSciOS " && /bin/uname.real -a\nelse\n  /bin/uname.real "$@"\nfi' > /bin/uname && \
+    echo '#!/bin/sh\nif [ "$1" = "-a" ]; then\n  echo -n "AxonOS " && /bin/uname.real -a\nelse\n  /bin/uname.real "$@"\nfi' > /bin/uname && \
     chmod +x /bin/uname
 
 # Install Ollama
@@ -73,10 +72,10 @@ RUN ollama serve & sleep 5 && ollama pull granite3-guardian && ollama pull comma
 RUN useradd -ms /bin/bash $USER && echo "$USER:$PASSWORD" | chpasswd && adduser $USER sudo
 
 # Configure bash prompt and hostname for the user
-RUN echo 'export PS1="\[\033[01;32m\]$USER@DeSciOS\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "\n\
+RUN echo 'export PS1="\[\033[01;32m\]$USER@AxonOS\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "\n\
 # Set hostname in current shell\n\
 if [ -z "$HOSTNAME" ] || [[ "$HOSTNAME" =~ ^[0-9a-f]{12}$ ]]; then\n\
-    export HOSTNAME=DeSciOS\n\
+    export HOSTNAME=AxonOS\n\
 fi' >> /home/$USER/.bashrc && \
     chown $USER:$USER /home/$USER/.bashrc
 
@@ -205,14 +204,14 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \
     update-desktop-database /usr/share/applications
 
 
-# Install DeSciOS Assistant
+# Install AxonOS Assistant
 WORKDIR /opt
-COPY descios_assistant /opt/descios_assistant
-RUN cd /opt/descios_assistant && \
+COPY axonos_assistant /opt/axonos_assistant
+RUN cd /opt/axonos_assistant && \
     /usr/bin/python3 -m pip install --break-system-packages -r requirements.txt && \
     chmod +x main.py && \
-    cp descios-assistant.desktop /usr/share/applications/ && \
-    chown -R $USER:$USER /opt/descios_assistant
+    cp axonos-assistant.desktop /usr/share/applications/ && \
+    chown -R $USER:$USER /opt/axonos_assistant
 
 # Install Talk to K Assistant
 COPY talk_to_k /opt/talk_to_k
@@ -222,7 +221,7 @@ RUN cd /opt/talk_to_k && \
     cp talk-to-k.desktop /usr/share/applications/ && \
     chown -R $USER:$USER /opt/talk_to_k
 
-# Install DeSci Assistant font
+# Install AxonOS Assistant font
 RUN apt-get update && apt-get install -y wget fontconfig && \
     mkdir -p /usr/share/fonts/truetype/orbitron && \
     wget -O /usr/share/fonts/truetype/orbitron/Orbitron.ttf https://github.com/google/fonts/raw/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf && \
@@ -279,8 +278,8 @@ EXPOSE 8080/tcp
 # Expose IPFS Web UI port
 EXPOSE 9090/tcp
 
-# Apply DeSciOS noVNC Theme
-COPY novnc-theme/descios-theme.css /usr/share/novnc/app/styles/
+# Apply AxonOS noVNC Theme
+COPY novnc-theme/axonos-theme.css /usr/share/novnc/app/styles/
 COPY novnc-theme/vnc.html /usr/share/novnc/
 COPY novnc-theme/ui.js /usr/share/novnc/app/
 COPY novnc-theme/icons/* /usr/share/novnc/app/images/icons/

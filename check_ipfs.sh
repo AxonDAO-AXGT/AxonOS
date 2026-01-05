@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-echo "🔍 DeSciOS IPFS Status Checker"
+echo "🔍 AxonOS IPFS Status Checker"
 echo "================================"
 
 # Check if IPFS is installed

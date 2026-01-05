@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build script for creating DeSciOS Launcher binaries
+Build script for creating AxonOS Launcher binaries
 Supports Linux, macOS, and Windows platforms
 """
 
@@ -40,21 +40,21 @@ def get_platform_info():
     if system == "linux":
         return {
             "name": "linux",
-            "binary_name": "descios",
+            "binary_name": "axonos",
             "extension": "",
             "icon": None  # Could add .png icon later
         }
     elif system == "darwin":
         return {
             "name": "macos", 
-            "binary_name": "descios",
+            "binary_name": "axonos",
             "extension": ".app",
             "icon": None  # Could add .icns icon later
         }
     elif system == "windows":
         return {
             "name": "windows",
-            "binary_name": "descios",
+            "binary_name": "axonos",
             "extension": ".exe", 
             "icon": None  # Could add .ico icon later
         }
@@ -78,11 +78,11 @@ def create_spec_file(platform_info):
 block_cipher = None
 
 a = Analysis(
-    ['descios_launcher/main.py'],
+    ['axonos_launcher/main.py'],
     pathex=[],
     binaries=[],
     datas=[
-        ('descios_launcher/README.md', '.'),
+        ('axonos_launcher/README.md', '.'),
     ],
     hiddenimports=['yaml', 'yaml.loader', 'yaml.dumper'],
     hookspath=[],
@@ -126,15 +126,15 @@ app = BUNDLE(
     exe,
     name='{platform_info["binary_name"]}.app',
     icon=None,
-    bundle_identifier='org.descios.launcher',
+    bundle_identifier='org.axonos.launcher',
     info_plist={{
         'NSPrincipalClass': 'NSApplication',
         'NSAppleScriptEnabled': False,
         'CFBundleDocumentTypes': [
             {{
-                'CFBundleTypeName': 'DeSciOS Configuration',
+                'CFBundleTypeName': 'AxonOS Configuration',
                 'CFBundleTypeIconFile': 'MyDocument.icns',
-                'LSItemContentTypes': ['org.descios.config'],
+                'LSItemContentTypes': ['org.axonos.config'],
                 'LSHandlerRank': 'Owner'
             }}
         ]
@@ -149,7 +149,7 @@ def build_binary(platform_info):
     
     # Create spec file
     spec_content = create_spec_file(platform_info)
-    spec_file = "descios_launcher.spec"
+    spec_file = "axonos_launcher.spec"
     
     with open(spec_file, "w") as f:
         f.write(spec_content)
@@ -176,7 +176,7 @@ def build_binary(platform_info):
 
 def create_build_info():
     """Create build information file"""
-    build_info = f"""DeSciOS Launcher Build Information
+    build_info = f"""AxonOS Launcher Build Information
 =====================================
 
 Platform: {platform.system()} {platform.release()}
@@ -190,8 +190,8 @@ To install:
 - Windows: Copy .exe to desired location and optionally add to PATH
 
 Usage:
-    descios          # Launch the GUI
-    descios --help   # Show help information
+    axonos          # Launch the GUI
+    axonos --help   # Show help information
 """
     
     os.makedirs("dist", exist_ok=True)
@@ -200,13 +200,13 @@ Usage:
 
 def main():
     """Main build function"""
-    print("🚀 DeSciOS Launcher Build System")
+    print("🚀 AxonOS Launcher Build System")
     print("=" * 40)
     
     # Check if we're in the right directory
-    if not os.path.exists("descios_launcher/main.py"):
-        print("✗ Error: descios_launcher/main.py not found")
-        print("Please run this script from the DeSciOS root directory")
+    if not os.path.exists("axonos_launcher/main.py"):
+        print("✗ Error: axonos_launcher/main.py not found")
+        print("Please run this script from the AxonOS root directory")
         sys.exit(1)
     
     # Get platform info

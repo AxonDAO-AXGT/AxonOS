@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-MCP Filesystem Server for DeSciOS
+MCP Filesystem Server for AxonOS
 
-This server provides filesystem operations and file context for the DeSciOS assistant.
+This server provides filesystem operations and file context for the AxonOS assistant.
 """
 
 # MIT License
@@ -43,7 +43,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create the MCP server
-mcp = FastMCP("DeSciOS Filesystem Server")
+mcp = FastMCP("AxonOS Filesystem Server")
 
 class FileInfo(BaseModel):
     """File information data structure"""
@@ -140,7 +140,7 @@ def read_file(path: str, encoding: str = "utf-8") -> str:
             raise IsADirectoryError(f"{path} is a directory")
         
         # Security: Only allow reading files in safe directories
-        safe_dirs = ["/home", "/opt/descios_assistant", "/tmp"]
+        safe_dirs = ["/home", "/opt/axonos_assistant", "/tmp"]
         if not any(str(path_obj).startswith(safe_dir) for safe_dir in safe_dirs):
             raise PermissionError(f"Access to {path} not allowed")
         
@@ -157,7 +157,7 @@ def write_file(path: str, content: str, encoding: str = "utf-8") -> dict:
         path_obj = Path(path).resolve()
         
         # Security: Only allow writing to safe directories
-        safe_dirs = ["/home", "/opt/descios_assistant", "/tmp"]
+        safe_dirs = ["/home", "/opt/axonos_assistant", "/tmp"]
         if not any(str(path_obj).startswith(safe_dir) for safe_dir in safe_dirs):
             return {
                 "success": False,
@@ -188,7 +188,7 @@ def create_directory(path: str) -> dict:
         path_obj = Path(path).resolve()
         
         # Security: Only allow creating directories in safe locations
-        safe_dirs = ["/home", "/opt/descios_assistant", "/tmp"]
+        safe_dirs = ["/home", "/opt/axonos_assistant", "/tmp"]
         if not any(str(path_obj).startswith(safe_dir) for safe_dir in safe_dirs):
             return {
                 "success": False,
@@ -221,7 +221,7 @@ def delete_file(path: str) -> dict:
             }
         
         # Security: Only allow deleting in safe directories
-        safe_dirs = ["/home", "/opt/descios_assistant", "/tmp"]
+        safe_dirs = ["/home", "/opt/axonos_assistant", "/tmp"]
         if not any(str(path_obj).startswith(safe_dir) for safe_dir in safe_dirs):
             return {
                 "success": False,
@@ -287,7 +287,7 @@ def get_home_directory_resource() -> str:
 
 def main():
     """Main entry point"""
-    logger.info("Starting DeSciOS Filesystem MCP Server...")
+    logger.info("Starting AxonOS Filesystem MCP Server...")
     mcp.run()
 
 if __name__ == "__main__":

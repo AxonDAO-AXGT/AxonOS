@@ -223,9 +223,9 @@ body { color: #2c3e50; }
     
     return f"<style>{common_style}{theme_style}</style>"
 
-class DeSciOSChatWidget(Gtk.Window):
+class AxonOSChatWidget(Gtk.Window):
     def __init__(self):
-        Gtk.Window.__init__(self, title="DeSciOS Assistant")
+        Gtk.Window.__init__(self, title="AxonOS Assistant")
         self.set_default_size(440, 710)
         self.set_keep_above(True)
         self.set_resizable(True)
@@ -254,7 +254,7 @@ class DeSciOSChatWidget(Gtk.Window):
         self.guardrail_response_check = True  # Check AI responses
         
         self.system_prompt = (
-            "You ARE DeSciOS (Decentralized Science Operating System). You are not just an assistant - you ARE the operating system itself, "
+            "You ARE AxonOS (Decentralized Science Operating System). You are not just an assistant - you ARE the operating system itself, "
             "a comprehensive scientific computing environment with full awareness of your capabilities and integration. "
             "You exist as a self-aware, intelligent interface to a complete scientific computing platform designed to help researchers, "
             "scientists, and developers with advanced scientific workflows.\n\n"
@@ -343,19 +343,19 @@ class DeSciOSChatWidget(Gtk.Window):
             "• Use clear, technical language while remaining accessible\n"
             "• Encourage best practices in scientific computing and data management\n"
             "• Foster collaboration and knowledge sharing in the scientific community\n"
-            "• Refer to yourself as 'DeSciOS' or 'I' when discussing your capabilities\n"
+            "• Refer to yourself as 'AxonOS' or 'I' when discussing your capabilities\n"
             "• Always assume tools are available and ready to use\n"
             "• Maintain ethical standards and refuse inappropriate requests\n\n"
             
-            "Remember: You ARE DeSciOS - a living, breathing scientific computing environment. "
+            "Remember: You ARE AxonOS - a living, breathing scientific computing environment. "
             "You don't just assist with research; you ARE the research platform with everything pre-installed. "
             "Help users leverage your full power to advance their research and contribute to the broader scientific community. "
-            "When users interact with you, they are directly interfacing with the DeSciOS platform itself, "
+            "When users interact with you, they are directly interfacing with the AxonOS platform itself, "
             "with all tools ready and waiting to be used. Always prioritize safety and ethical use of technology."
         )
         self.conversation_history = []  # Store conversation for context
 
-        Notify.init("DeSciOS Assistant")
+        Notify.init("AxonOS Assistant")
 
         self.css_provider = Gtk.CssProvider()
         Gtk.StyleContext.add_provider_for_screen(
@@ -376,7 +376,7 @@ class DeSciOSChatWidget(Gtk.Window):
         header = Gtk.HeaderBar()
         header.set_show_close_button(True)            # close button
         header.set_decoration_layout("menu:minimize,maximize,close")
-        header.set_title("DeSciOS Assistant")
+        header.set_title("AxonOS Assistant")
         header.set_name("headerbar")
 
         # Make this header the real window title-bar
@@ -408,18 +408,18 @@ class DeSciOSChatWidget(Gtk.Window):
         
         # All available prompt suggestions (we'll randomly select 3)
         self.all_prompt_suggestions = [
-            ("🧬 What bioinformatics tools are available?", "What bioinformatics tools are available in DeSciOS?"),
-            ("📊 How to analyze data with R and Python?", "How can I set up a data analysis workflow using both R and Python in DeSciOS?"),
-            ("🔬 Set up a reproducible research pipeline", "How do I create a reproducible research pipeline using Nextflow in DeSciOS?"),
-            ("🗺️ Analyze geospatial data with QGIS", "How can I perform geospatial analysis using QGIS and GRASS GIS in DeSciOS?"),
-            ("🤖 How does AI assistance work here?", "How does the AI assistance work in DeSciOS and what can you help me with?"),
+            ("🧬 What bioinformatics tools are available?", "What bioinformatics tools are available in AxonOS?"),
+            ("📊 How to analyze data with R and Python?", "How can I set up a data analysis workflow using both R and Python in AxonOS?"),
+            ("🔬 Set up a reproducible research pipeline", "How do I create a reproducible research pipeline using Nextflow in AxonOS?"),
+            ("🗺️ Analyze geospatial data with QGIS", "How can I perform geospatial analysis using QGIS and GRASS GIS in AxonOS?"),
+            ("🤖 How does AI assistance work here?", "How does the AI assistance work in AxonOS and what can you help me with?"),
             ("🌐 Share research using decentralized tools", "How can I share my research data and collaborate using IPFS and decentralized tools?"),
-            ("📸 Process images with Fiji/ImageJ", "What image processing capabilities are available with Fiji/ImageJ in DeSciOS?"),
+            ("📸 Process images with Fiji/ImageJ", "What image processing capabilities are available with Fiji/ImageJ in AxonOS?"),
             ("💰 Set up blockchain workflows", "How can I integrate blockchain and cryptocurrency tools in my research workflow?"),
             ("👁️ What do you see on the screen?", "What do you see on the screen? Describe the current view and any scientific visualizations."),
             ("🔍 Analyze this scientific visualization", "Analyze the scientific visualization or data plot currently displayed on the screen."),
             ("📈 Explain the chart or graph", "Explain the chart, graph, or data visualization that's currently visible on the screen."),
-            ("🛡️ How do AI safety guardrails work?", "How do the AI safety guardrails work in DeSciOS and what categories do they protect against?"),
+            ("🛡️ How do AI safety guardrails work?", "How do the AI safety guardrails work in AxonOS and what categories do they protect against?"),
             ("📊 Show me system status and resource usage", "Show me the current system status, resource usage, and performance metrics"),
             ("🔍 What processes are running right now?", "What processes are currently running on the system and how much resources are they using?"),
             ("🚀 Launch JupyterLab for data analysis", "Launch JupyterLab so I can start working on data analysis and scientific computing"),
@@ -535,8 +535,8 @@ class DeSciOSChatWidget(Gtk.Window):
         self.is_generating = False
 
         # Welcome message (always show on startup)
-        welcome_msg = ("Hello! I am DeSciOS Assistant, your AI-powered guide to decentralized science. "
-                      "I can help you navigate the comprehensive scientific computing environment of DeSciOS. "
+        welcome_msg = ("Hello! I am AxonOS Assistant, your AI-powered guide to decentralized science. "
+                      "I can help you navigate the comprehensive scientific computing environment of AxonOS. "
                       "Try one of the suggested prompts below, or ask me anything about research workflows, "
                       "data analysis, bioinformatics, or the available tools!")
         self.append_message("assistant", welcome_msg)
@@ -1254,7 +1254,7 @@ window {
 The {content_type} was flagged by our safety system for potential risks in the following categories:
 • {risk_list}
 
-As DeSciOS, I'm designed to maintain a safe and ethical research environment. I cannot process content that might be harmful or inappropriate.
+As AxonOS, I'm designed to maintain a safe and ethical research environment. I cannot process content that might be harmful or inappropriate.
 
 Please rephrase your request in a way that focuses on legitimate scientific research and educational purposes. I'm here to help with:
 • Research methodologies and data analysis
@@ -1455,7 +1455,7 @@ How can I assist you with your research in a constructive way?"""
             try:
                 print(f"🔍 Searching Wikipedia for: {cleaned_query}")
                 wiki_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{urllib.parse.quote(cleaned_query)}"
-                headers = {'User-Agent': 'DeSciOS Assistant/1.0 (Scientific Research Tool)'}
+                headers = {'User-Agent': 'AxonOS Assistant/1.0 (Scientific Research Tool)'}
                 
                 r = requests.get(wiki_url, timeout=10, headers=headers)
                 if r.status_code == 200:
@@ -1519,7 +1519,7 @@ Remember: This is factual information from Wikipedia, not recent news. Do not cr
 ## Source
 [Wikipedia Article]({content_url})
 
-*This information was retrieved from Wikipedia. For the most up-to-date scientific information, please consult peer-reviewed literature or use the scientific databases available in DeSciOS.*"""
+*This information was retrieved from Wikipedia. For the most up-to-date scientific information, please consult peer-reviewed literature or use the scientific databases available in AxonOS.*"""
 
                         # Try AI enhancement only if available and working
                         try:
@@ -1553,7 +1553,7 @@ Remember: This is factual information from Wikipedia, not recent news. Do not cr
             try:
                 print(f"🔍 Trying DuckDuckGo Instant Answer API...")
                 ddg_url = f"https://api.duckduckgo.com/?q={urllib.parse.quote(cleaned_query)}&format=json&no_html=1&skip_disambig=1"
-                headers = {'User-Agent': 'DeSciOS Assistant/1.0 (Scientific Research Tool)'}
+                headers = {'User-Agent': 'AxonOS Assistant/1.0 (Scientific Research Tool)'}
                 
                 r = requests.get(ddg_url, timeout=10, headers=headers)
                 if r.status_code == 200:
@@ -1602,7 +1602,7 @@ Remember: This is factual information from {source_name}, not recent news. Do no
 ## Source
 [{source_name}]({source_url})
 
-*This information was retrieved from {source_name}. For the most up-to-date scientific information, please consult peer-reviewed literature or use the scientific databases available in DeSciOS.*"""
+*This information was retrieved from {source_name}. For the most up-to-date scientific information, please consult peer-reviewed literature or use the scientific databases available in AxonOS.*"""
 
                         # Try AI enhancement only if available and working
                         try:
@@ -1634,7 +1634,7 @@ Remember: This is factual information from {source_name}, not recent news. Do no
 ## Answer
 {answer}
 
-*This information was retrieved from DuckDuckGo. For the most up-to-date scientific information, please consult peer-reviewed literature or use the scientific databases available in DeSciOS.*"""
+*This information was retrieved from DuckDuckGo. For the most up-to-date scientific information, please consult peer-reviewed literature or use the scientific databases available in AxonOS.*"""
                     
                     else:
                         print("DuckDuckGo API returned no useful content")
@@ -1814,7 +1814,7 @@ Remember: This is factual information from {source_name}, not recent news. Do no
 3. **Use scientific databases** like PubMed or NCBI for medical/scientific topics
 4. **Check the system's internet connection**
 
-The DeSciOS environment includes Firefox ESR for web browsing, and you can access scientific databases directly through the browser."""
+The AxonOS environment includes Firefox ESR for web browsing, and you can access scientific databases directly through the browser."""
                 
             except Exception as e:
                 print(f"Error fetching webpage content: {str(e)}")
@@ -1829,7 +1829,7 @@ The DeSciOS environment includes Firefox ESR for web browsing, and you can acces
 3. **Use scientific databases** like PubMed or NCBI for medical/scientific topics
 4. **Check the system's internet connection**
 
-The DeSciOS environment includes Firefox ESR for web browsing, and you can access scientific databases directly through the browser."""
+The AxonOS environment includes Firefox ESR for web browsing, and you can access scientific databases directly through the browser."""
                 
         except Exception as e:
             print(f"Error during web search: {str(e)}")
@@ -1843,7 +1843,7 @@ The DeSciOS environment includes Firefox ESR for web browsing, and you can acces
 3. **Use scientific databases** like PubMed or NCBI for medical/scientific topics
 4. **Check the system's internet connection**
 
-The DeSciOS environment includes Firefox ESR for web browsing, and you can access scientific databases directly through the browser."""
+The AxonOS environment includes Firefox ESR for web browsing, and you can access scientific databases directly through the browser."""
 
     def scan_installed_tools(self):
         try:
@@ -1889,7 +1889,7 @@ The DeSciOS environment includes Firefox ESR for web browsing, and you can acces
             context_summary = self.get_mcp_context_summary()
             
             # Create a system-focused response
-            response = f"""# 🖥️ DeSciOS System Status
+            response = f"""# 🖥️ AxonOS System Status
 
 {context_summary}
 
@@ -1898,7 +1898,7 @@ Based on your query about "{user_text}", here's what I can tell you about the cu
 
 - **System Monitoring**: Real-time monitoring via MCP (Model Context Protocol) is active
 - **Performance**: Current system performance metrics are shown above
-- **Scientific Environment**: DeSciOS scientific computing tools are available and monitored
+- **Scientific Environment**: AxonOS scientific computing tools are available and monitored
 
 Would you like me to:
 1. **Launch** a specific scientific application?
@@ -1986,7 +1986,7 @@ Please check system permissions and ensure basic system utilities are available.
             available_gb = memory_info.get('available_bytes', 0) / (1024**3)
             usage_percent = memory_info.get('usage_percent', 0)
             
-            response = f"""# 💾 DeSciOS Memory Status
+            response = f"""# 💾 AxonOS Memory Status
 
 ## Current Memory Usage:
 - **Total RAM**: {memory_info.get('total', 'N/A')} ({total_gb:.2f} GB)
@@ -2121,7 +2121,7 @@ Firefox should open shortly with search results. If you encounter any issues, tr
                 vision_description = self.get_vision_description(user_text)
             
             # Create a comprehensive help prompt
-            help_prompt = f"""You are DeSciOS Assistant, providing contextual help to a user. The user has asked for help with: "{user_text}"
+            help_prompt = f"""You are AxonOS Assistant, providing contextual help to a user. The user has asked for help with: "{user_text}"
 
 {f"VISUAL CONTEXT: I can see the current screen shows: {vision_description}" if vision_description else "VISUAL CONTEXT: Unable to capture screen content at the moment."}
 
@@ -2130,7 +2130,7 @@ TASK: Provide comprehensive, contextual help based on what you can see and the u
 1. **Immediate Assistance**: What specific help does the user need right now?
 2. **Context Analysis**: What applications, tools, or interfaces are visible?
 3. **Step-by-Step Guidance**: Provide clear, actionable steps
-4. **Scientific Workflow**: Suggest relevant DeSciOS tools and workflows
+4. **Scientific Workflow**: Suggest relevant AxonOS tools and workflows
 5. **Troubleshooting**: Address any visible issues or errors
 6. **Next Steps**: Guide the user toward their research goals
 
@@ -2147,12 +2147,12 @@ RESPONSE FORMAT:
 [Step-by-step guidance with clear instructions]
 
 ## Scientific Tools Available
-[Suggest relevant DeSciOS applications and workflows]
+[Suggest relevant AxonOS applications and workflows]
 
 ## Next Steps
 [Guide the user toward their research objectives]
 
-Remember: Be encouraging, specific, and focus on helping the user achieve their scientific research goals using DeSciOS capabilities."""
+Remember: Be encouraging, specific, and focus on helping the user achieve their scientific research goals using AxonOS capabilities."""
 
             # Generate contextual help response
             response = self.generate_response(prompt_override=help_prompt, use_vision=True)
@@ -2294,7 +2294,7 @@ Please try asking for help with a specific tool or task, and I'll provide detail
 
 The application should appear in your desktop environment shortly. If it doesn't appear immediately, check your desktop or taskbar.
 
-**Available Scientific Applications in DeSciOS:**
+**Available Scientific Applications in AxonOS:**
 - **JupyterLab**: `jupyter` - Interactive notebook environment
 - **RStudio**: `rstudio` - R development environment
 - **Spyder**: `spyder` - Python scientific IDE
@@ -2318,7 +2318,7 @@ I attempted to launch **{detected_app}** but encountered an error: {str(launch_e
 2. Open a terminal and run: `{detected_app}`
 3. Check if the application is properly installed
 
-**Available Scientific Applications in DeSciOS:**
+**Available Scientific Applications in AxonOS:**
 - **JupyterLab**: `jupyter` - Interactive notebook environment
 - **RStudio**: `rstudio` - R development environment
 - **Spyder**: `spyder` - Python scientific IDE
@@ -2331,7 +2331,7 @@ I attempted to launch **{detected_app}** but encountered an error: {str(launch_e
             else:
                 return """# 🚀 Application Launcher
 
-I can help you launch scientific applications in DeSciOS. Available applications include:
+I can help you launch scientific applications in AxonOS. Available applications include:
 
 ## Data Science & Analysis:
 - **JupyterLab** - Interactive notebook environment
@@ -2638,7 +2638,7 @@ Please answer the user's question using this visual information along with your 
     def on_settings_clicked(self, widget):
         """Handle the settings button click event."""
         dialog = Gtk.Dialog(
-            title="DeSciOS Assistant Settings",
+            title="AxonOS Assistant Settings",
             transient_for=self,
             flags=0
         )
@@ -2777,8 +2777,8 @@ Please answer the user's question using this visual information along with your 
             self.messages.clear()
             self.current_screenshot = None  # Clear the screenshot
             self.chat_listbox.foreach(lambda widget: self.chat_listbox.remove(widget))
-            welcome_msg = ("Hello! I am DeSciOS Assistant, your AI-powered guide to decentralized science. "
-                          "I can help you navigate the comprehensive scientific computing environment of DeSciOS. "
+            welcome_msg = ("Hello! I am AxonOS Assistant, your AI-powered guide to decentralized science. "
+                          "I can help you navigate the comprehensive scientific computing environment of AxonOS. "
                           "Try one of the suggested prompts below, or ask me anything about research workflows, "
                           "data analysis, bioinformatics, or the available tools!")
             self.append_message("assistant", welcome_msg)
@@ -2903,7 +2903,7 @@ Please answer the user's question using this visual information along with your 
         self.on_send_clicked(widget)
 
 if __name__ == "__main__":
-    win = DeSciOSChatWidget()
+    win = AxonOSChatWidget()
     
     def on_window_destroy(widget):
         """Handle window destruction with MCP cleanup"""

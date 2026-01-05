@@ -24,9 +24,9 @@
 # Create DMG for macOS
 # This script should be run on macOS
 
-APP_NAME="DeSciOS Launcher"
-DMG_NAME="descios-launcher-0.1.0-macos.dmg"
-APP_PATH="dist/descios.app"
+APP_NAME="AxonOS Launcher"
+DMG_NAME="axonos-launcher-0.1.0-macos.dmg"
+APP_PATH="dist/axonos.app"
 DMG_PATH="dist/$DMG_NAME"
 
 # Check if we're on macOS

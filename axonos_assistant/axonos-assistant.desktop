@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=DeSciOS Assistant
+Name=AxonOS Assistant
 Comment=AI-powered scientific computing assistant
-Exec=/usr/bin/python3 /opt/descios_assistant/main.py
+Exec=/usr/bin/python3 /opt/axonos_assistant/main.py
 Icon=applications-science
 Terminal=false
 Type=Application

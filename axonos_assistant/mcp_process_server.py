@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-MCP Process Manager Server for DeSciOS
+MCP Process Manager Server for AxonOS
 
-This server provides process management and monitoring tools for the DeSciOS assistant.
+This server provides process management and monitoring tools for the AxonOS assistant.
 """
 
 # MIT License
@@ -45,7 +45,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create the MCP server
-mcp = FastMCP("DeSciOS Process Manager Server")
+mcp = FastMCP("AxonOS Process Manager Server")
 
 class ProcessInfo(BaseModel):
     """Process information data structure"""
@@ -398,7 +398,7 @@ def get_system_resources_resource() -> str:
 
 def main():
     """Main entry point"""
-    logger.info("Starting DeSciOS Process Manager MCP Server...")
+    logger.info("Starting AxonOS Process Manager MCP Server...")
     mcp.run()
 
 if __name__ == "__main__":

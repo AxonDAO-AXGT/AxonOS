@@ -23,9 +23,9 @@
 # SOFTWARE.
 
 # Set hostname at runtime
-hostname DeSciOS
-if ! grep -q "DeSciOS" /etc/hosts; then
-    echo "127.0.0.1 DeSciOS" >> /etc/hosts
+hostname AxonOS
+if ! grep -q "AxonOS" /etc/hosts; then
+    echo "127.0.0.1 AxonOS" >> /etc/hosts
 fi
 
 # Initialize IPFS for deScier user

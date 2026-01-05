@@ -1,6 +1,6 @@
-# DeSciOS Launcher Build Guide
+# AxonOS Launcher Build Guide
 
-This guide explains how to build platform-specific binaries and packages for the DeSciOS Launcher.
+This guide explains how to build platform-specific binaries and packages for the AxonOS Launcher.
 
 ## 🎯 Quick Start
 
@@ -71,9 +71,9 @@ pip install pyinstaller
 
 Creates platform-specific binaries using PyInstaller:
 
-**Linux**: `dist/descios`  
-**macOS**: `dist/descios.app`  
-**Windows**: `dist/descios.exe`
+**Linux**: `dist/axonos`  
+**macOS**: `dist/axonos.app`  
+**Windows**: `dist/axonos.exe`
 
 Features:
 - Single executable with all dependencies
@@ -86,10 +86,10 @@ Features:
 
 Creates `.deb` package for Ubuntu/Debian systems:
 
-**Output**: `descios-launcher_0.1.0_amd64.deb`
+**Output**: `axonos-launcher_0.1.0_amd64.deb`
 
 Package includes:
-- Binary installation to `/usr/local/bin/descios`
+- Binary installation to `/usr/local/bin/axonos`
 - Desktop entry for applications menu
 - Icon and documentation
 - Dependency management (python3, python3-tk, docker.io)
@@ -109,18 +109,18 @@ Orchestrates the entire build process:
 
 ### .deb Package Structure
 ```
-descios-launcher_1.0.0_amd64.deb
+axonos-launcher_1.0.0_amd64.deb
 ├── DEBIAN/
 │   ├── control           # Package metadata
 │   ├── postinst         # Post-installation script
 │   └── prerm            # Pre-removal script
 ├── usr/local/bin/
-│   └── descios          # Main binary
+│   └── axonos          # Main binary
 ├── usr/share/applications/
-│   └── descios-launcher.desktop  # GUI menu entry
+│   └── axonos-launcher.desktop  # GUI menu entry
 ├── usr/share/pixmaps/
-│   └── descios.svg      # Application icon
-└── usr/share/doc/descios-launcher/
+│   └── axonos.svg      # Application icon
+└── usr/share/doc/axonos-launcher/
     ├── copyright        # License information
     └── changelog.Debian.gz  # Package changelog
 ```
@@ -135,39 +135,39 @@ descios-launcher_1.0.0_amd64.deb
 ### Ubuntu/Debian (.deb package)
 ```bash
 # Install package
-sudo dpkg -i descios-launcher_0.1.0_amd64.deb
+sudo dpkg -i axonos-launcher_0.1.0_amd64.deb
 sudo apt-get install -f  # Fix dependencies if needed
 
 # Verify installation
-descios --version
+axonos --version
 ```
 
 ### Linux (Manual)
 ```bash
 # Copy binary
-sudo cp dist/descios /usr/local/bin/
-sudo chmod +x /usr/local/bin/descios
+sudo cp dist/axonos /usr/local/bin/
+sudo chmod +x /usr/local/bin/axonos
 
 # Verify
-descios --version
+axonos --version
 ```
 
 ### macOS
 ```bash
 # GUI application
-cp -r dist/descios.app /Applications/
+cp -r dist/axonos.app /Applications/
 
 # Command line (optional)
-sudo cp dist/descios.app/Contents/MacOS/descios /usr/local/bin/descios
+sudo cp dist/axonos.app/Contents/MacOS/axonos /usr/local/bin/axonos
 ```
 
 ### Windows
 ```cmd
 # Copy to Program Files
-copy dist\descios.exe "C:\Program Files\DeSciOS\"
+copy dist\axonos.exe "C:\Program Files\AxonOS\"
 
 # Add to PATH (optional)
-# Add C:\Program Files\DeSciOS to your PATH environment variable
+# Add C:\Program Files\AxonOS to your PATH environment variable
 ```
 
 ## 🧹 Maintenance
@@ -182,7 +182,7 @@ rm -rf dist/ build/ *.spec *.deb RELEASE_INFO.txt
 ### Update Version
 Update version numbers in:
 - `build_deb.py` → `PACKAGE_VERSION`
-- `descios_launcher/main.py` → `version=` in argparse
+- `axonos_launcher/main.py` → `version=` in argparse
 
 ### Rebuild After Changes
 ```bash
@@ -264,8 +264,8 @@ After successful build, you should see:
 
 Test the binary:
 ```bash
-./dist/descios --version
-# Should show: DeSciOS Launcher 1.0.0
+./dist/axonos --version
+# Should show: AxonOS Launcher 1.0.0
 ```
 
 ## 📞 Support
@@ -274,5 +274,5 @@ If you encounter issues:
 1. Check this documentation
 2. Clean build artifacts: `make clean`
 3. Verify prerequisites are installed
-4. Check GitHub issues: https://github.com/GizmoQuest/DeSciOS/issues
+4. Check GitHub issues: https://github.com/GizmoQuest/AxonOS/issues
 5. Create new issue with build logs 

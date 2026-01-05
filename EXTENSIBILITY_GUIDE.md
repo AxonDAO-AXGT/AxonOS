@@ -1,8 +1,8 @@
-# DeSciOS Extensibility Guide
+# AxonOS Extensibility Guide
 
 ## 🧩 Custom Applications & Plugin System
 
-DeSciOS now supports a comprehensive extensibility system that allows researchers to easily add their own applications and tools. This guide covers everything you need to know about extending DeSciOS.
+AxonOS now supports a comprehensive extensibility system that allows researchers to easily add their own applications and tools. This guide covers everything you need to know about extending AxonOS.
 
 ## ✨ What's New
 
@@ -14,7 +14,7 @@ DeSciOS now supports a comprehensive extensibility system that allows researcher
 
 ### 2. Plugin System
 - **YAML/JSON Support**: Define applications in standard formats
-- **Hot Loading**: Plugins are loaded automatically from the `descios_plugins/` directory
+- **Hot Loading**: Plugins are loaded automatically from the `axonos_plugins/` directory
 - **Community Sharing**: Easy sharing and distribution of application definitions
 
 ### 3. Installation Templates
@@ -29,19 +29,19 @@ DeSciOS now supports a comprehensive extensibility system that allows researcher
 ### Prerequisites
 ```bash
 # Install YAML support for plugins
-pip install -r descios_launcher/requirements.txt
+pip install -r axonos_launcher/requirements.txt
 ```
 
 ### Launch the Extended Launcher
 ```bash
-python3 descios_launcher/main.py
+python3 axonos_launcher/main.py
 ```
 
 ## 📝 Creating Custom Applications
 
 ### Method 1: GUI Template Builder (Recommended for Beginners)
 
-1. **Open DeSciOS Launcher**
+1. **Open AxonOS Launcher**
 2. **Go to "🧩 Custom Apps" tab**
 3. **Choose a template from the dropdown**
 4. **Fill in the form fields**
@@ -58,7 +58,7 @@ python3 descios_launcher/main.py
 
 ### Method 2: Manual Plugin Files (Advanced Users)
 
-Create a YAML file in `descios_plugins/`:
+Create a YAML file in `axonos_plugins/`:
 
 ```yaml
 # my_tools.yaml
@@ -158,7 +158,7 @@ app_id:
 ## 📁 Plugin Directory Structure
 
 ```
-descios_plugins/
+axonos_plugins/
 ├── README.md                    # Plugin documentation
 ├── example_python_packages.yaml # Python library examples
 ├── example_bioinformatics.yaml  # Bioinformatics tools
@@ -194,7 +194,7 @@ descios_plugins/
 ### Sharing Your Plugins
 1. **Create well-documented plugin files**
 2. **Test thoroughly with different configurations**
-3. **Submit to the DeSciOS community repository**
+3. **Submit to the AxonOS community repository**
 4. **Include usage examples and documentation**
 
 ### Plugin Repositories
@@ -238,8 +238,8 @@ for app_id, app in data.items():
 ```bash
 # Enable debug output
 PYTHONPATH=. python3 -c "
-import descios_launcher.main as launcher
-app = launcher.DeSciOSLauncher()
+import axonos_launcher.main as launcher
+app = launcher.AxonOSLauncher()
 app.load_custom_applications()
 print('Custom apps loaded:', len(app.custom_applications))
 for app_id, app_info in app.custom_applications.items():
@@ -365,4 +365,4 @@ rdkit:
 
 ---
 
-**Ready to extend DeSciOS?** Start with the GUI template builder and gradually explore more advanced plugin creation techniques. The extensibility system grows with your needs and expertise level! 
+**Ready to extend AxonOS?** Start with the GUI template builder and gradually explore more advanced plugin creation techniques. The extensibility system grows with your needs and expertise level! 

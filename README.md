@@ -1,18 +1,18 @@
-# 🧬 DeSciOS
+# 🧬 AxonOS
 
 > *An open, browser-accessible scientific operating system — the foundation for decentralized, AI-powered research and collaboration.*
 
-![DeSciOS](./os.svg)
+![AxonOS](./os.svg)
 
 ---
 
 ## 🚀 Overview
 
-**DeSciOS** is a containerized, headless Linux desktop environment purpose-built for decentralized science. Accessible entirely through a browser, it combines lightweight desktop streaming with research productivity tools and AI-readiness.
+**AxonOS** is a containerized, headless Linux desktop environment purpose-built for decentralized science. Accessible entirely through a browser, it combines lightweight desktop streaming with research productivity tools and AI-readiness.
 
 ***Key goal**: Decentralize open source scientific software that remains trapped in centralized silos.*
 
-Originally inspired by the idea of a Stadia-like environment, **DeSciOS** evolves that vision toward enabling:
+Originally inspired by the idea of a Stadia-like environment, **AxonOS** evolves that vision toward enabling:
 
 - Local-first scientific computing
 - AI-assistance (with Ollama and command-r7b model)
@@ -25,7 +25,7 @@ Originally inspired by the idea of a Stadia-like environment, **DeSciOS** evolve
 
 ✅ **Feature Complete — Active Development**
 
-DeSciOS provides a comprehensive scientific computing environment with extensive tooling and AI integration. While feature-complete and well-tested, it remains under active development with regular enhancements and improvements.
+AxonOS provides a comprehensive scientific computing environment with extensive tooling and AI integration. While feature-complete and well-tested, it remains under active development with regular enhancements and improvements.
 
 **Current Status:**
 - ✅ Full scientific software suite operational
@@ -35,7 +35,7 @@ DeSciOS provides a comprehensive scientific computing environment with extensive
 -  Active development with ongoing enhancements
 -  Community feedback integration
 
-**Note:** DeSciOS is ready for research and educational use, with active community support and regular updates.
+**Note:** AxonOS is ready for research and educational use, with active support and regular updates from AxonDAO.
 
 ---
 
@@ -47,7 +47,7 @@ DeSciOS provides a comprehensive scientific computing environment with extensive
 | **OpenCL**        | Critical for accelerated computing in diverse scientific tools   |
 | **TigerVNC**      | VNC server to expose the XFCE desktop                            |
 | **noVNC + Websockify** | Enables browser-based access via WebSocket                     |
-| **DeSciOS Assistant** | Native GTK chat interface with Ollama integration for AI assistance |
+| **AxonOS Assistant** | Native GTK chat interface with Ollama integration for AI assistance |
 | **JupyterLab**    | Development notebook environment with BeakerX multi-language support |
 | **RStudio**       | Full-featured R development environment                          |
 | **Spyder**        | Scientific Python IDE                                            |
@@ -96,25 +96,25 @@ DeSciOS provides a comprehensive scientific computing environment with extensive
 | `startup.sh` | Entrypoint script for initializing the desktop environment |
 | `supervisord.conf` | Orchestrates services like `vncserver`, `noVNC`, and `jupyterlab` |
 | `xfce4-panel.xml` | Pre-configured XFCE panel layout |
-| `os.svg` | DeSciOS branding/logo image |
-| `descios_assistant/` | DeSciOS Assistant application directory |
-| `descios_assistant/main.py` | GTK-based chat interface with Ollama integration |
-| `descios_assistant/requirements.txt` | Python dependencies for the assistant |
-| `descios_assistant/descios-assistant.desktop` | Desktop entry for the assistant |
-| `descios_launcher/` | DeSciOS Launcher application directory |
-| `descios_launcher/main.py` | GUI for customizing DeSciOS Docker builds |
-| `descios_launcher/README.md` | Detailed launcher documentation |
-| `descios_launcher/requirements.txt` | Launcher dependencies (uses Python standard library) |
+| `os.svg` | AxonOS branding/logo image |
+| `axonos_assistant/` | AxonOS Assistant application directory |
+| `axonos_assistant/main.py` | GTK-based chat interface with Ollama integration |
+| `axonos_assistant/requirements.txt` | Python dependencies for the assistant |
+| `axonos_assistant/axonos-assistant.desktop` | Desktop entry for the assistant |
+| `axonos_launcher/` | AxonOS Launcher application directory |
+| `axonos_launcher/main.py` | GUI for customizing AxonOS Docker builds |
+| `axonos_launcher/README.md` | Detailed launcher documentation |
+| `axonos_launcher/requirements.txt` | Launcher dependencies (uses Python standard library) |
 
 ---
 
-## 🧑‍🔬 DeSciOS Assistant
+## 🧑‍🔬 AxonOS Assistant
 
-**DeSciOS Assistant** is a native GTK application that provides AI-powered assistance within the DeSciOS environment. It features:
+**AxonOS Assistant** is a native GTK application that provides AI-powered assistance within the AxonOS environment. It features:
 
 - **Dual-Model Ollama Integration**: Connects to local Ollama instance with command-r7b for text responses and granite3.2-vision for vision analysis
 - **Vision Capabilities**: Desktop screenshot analysis with intelligent image resizing (1920x1080 → 1344x1344) for visual context understanding
-- **Scientific Context**: Aware of DeSciOS environment and available tools
+- **Scientific Context**: Aware of AxonOS environment and available tools
 - **Web Search**: Can search and summarize web content for research queries using Brave search
 - **Tool Discovery**: Scans and reports installed scientific software from system directories
 - **Modern UI**: Clean, responsive interface with Orbitron font and dark theme support
@@ -123,7 +123,7 @@ DeSciOS provides a comprehensive scientific computing environment with extensive
 
 ### Assistant Capabilities
 
-- Answer questions about DeSciOS and its components
+- Answer questions about AxonOS and its components
 - Help with scientific computing workflows
 - Search the web for research information
 - List available tools and software
@@ -135,9 +135,9 @@ DeSciOS provides a comprehensive scientific computing environment with extensive
 
 ---
 
-## 🚀 DeSciOS Launcher
+## 🚀 AxonOS Launcher
 
-**DeSciOS Launcher** is a comprehensive GUI application that allows users to customize their DeSciOS builds with an intuitive interface. Instead of manually editing Dockerfiles, users can now select applications, configure settings, and deploy customized DeSciOS instances with just a few clicks.
+**AxonOS Launcher** is a command-line tool (with optional GUI) for building and deploying AxonOS. The CLI mode is designed for headless GPU servers, while GUI mode is available for systems with display support.
 
 ### Launcher Features
 
@@ -146,28 +146,36 @@ DeSciOS provides a comprehensive scientific computing environment with extensive
 - **Ollama Model Configuration**: Customize which AI models to install and configure
 - **User Settings**: Set custom username and VNC password for your instance
 - **GPU Support**: Enable/disable GPU acceleration with automatic Docker command generation
-- **One-Click Deployment**: Build and deploy DeSciOS with automatic web interface launch
+- **One-Click Deployment**: Build and deploy AxonOS with automatic web interface launch
 - **Configuration Management**: Save and load your build configurations
 - **Real-time Build Logging**: Monitor Docker build progress with live output
 
-### Quick Start with Launcher
+### Quick Start with Launcher (CLI - Recommended for GPU Servers)
 
 ```bash
 # Clone the repo
-git clone https://github.com/GizmoQuest/DeSciOS.git
-cd DeSciOS
+# TODO: Update [org] for developmental purposes
+git clone https://github.com/[org]/AxonOS.git
+cd axonos
 
-# Install launcher dependencies (for custom app support)
-pip install -r descios_launcher/requirements.txt
+# List available applications
+axonos list
 
-# Launch the GUI customizer
-python3 descios_launcher/main.py
+# Build image with custom password
+axonos build --password your_secure_password
+
+# Deploy with GPU support
+axonos deploy --gpu
 ```
 
-1. **Applications Tab**: Select which scientific tools to include (all enabled by default)
-2. **Custom Apps Tab**: Create and manage your own custom applications using templates or plugins
-3. **Settings Tab**: Configure AI models, username, password, and GPU support  
-4. **Build & Deploy Tab**: Generate custom builds and deploy with one click
+### GUI Mode (Optional)
+
+For systems with display support:
+
+```bash
+# Launch the GUI customizer
+axonos --gui
+```
 
 The launcher automatically detects default configurations and uses the optimized build path for faster deployment.
 
@@ -175,7 +183,7 @@ The launcher automatically detects default configurations and uses the optimized
 
 The launcher allows you to customize which applications are included:
 
-- **Core Components** (always included): DeSciOS Assistant, Python3, system fonts
+- **Core Components** (always included): AxonOS Assistant, Python3, system fonts
 - **Development**: JupyterLab, Spyder, BeakerX multi-language kernels
 - **Data Science**: R & RStudio, GNU Octave
 - **Bioinformatics**: UGENE, CellModeller bacterial simulation
@@ -201,13 +209,13 @@ The launcher allows you to customize which applications are included:
 
 **Example Plugin Structure:**
 ```
-descios_plugins/
+axonos_plugins/
 ├── my_research_tools.yaml
 ├── bioinformatics_extras.yaml
 └── python_data_science.yaml
 ```
 
-The launcher includes example plugins and comprehensive documentation in the `descios_plugins/` directory.
+The launcher includes example plugins and comprehensive documentation in the `axonos_plugins/` directory.
 
 ---
 
@@ -222,13 +230,13 @@ The launcher includes example plugins and comprehensive documentation in the `de
 
 ### Required Software
 
-#### For DeSciOS Launcher
+#### For AxonOS Launcher
 - **Python**: 3.6 or later
 - **tkinter**: GUI toolkit (usually included with Python)
 - **Docker**: 20.10 or later for container management
 - **xdg-open** (Linux/macOS): For automatic browser launching
 
-#### For DeSciOS Container
+#### For AxonOS Container
 - **Docker**: 20.10 or later with BuildKit support
 - **Docker Buildx**: For multi-platform builds (included in recent Docker versions)
 - **Modern Web Browser**: Chrome, Firefox, Safari, or Edge for accessing the desktop interface
@@ -292,7 +300,7 @@ docker --version
 
 ### Browser Requirements
 
-DeSciOS is accessed through a web browser using noVNC. Supported browsers:
+AxonOS is accessed through a web browser using noVNC. Supported browsers:
 - **Chrome/Chromium**: 88+ (recommended for best performance)
 - **Firefox**: 85+ 
 - **Safari**: 14+
@@ -308,15 +316,28 @@ DeSciOS is accessed through a web browser using noVNC. Supported browsers:
 
 ## 🧪 Quick Start
 
-### Option 1: GUI Launcher (Recommended)
+### Option 1: CLI Launcher (Recommended for Headless Servers)
 
 ```bash
 # Clone the repo
-git clone https://github.com/GizmoQuest/DeSciOS.git
-cd DeSciOS
+git clone https://github.com/[org]/axonos.git
+cd axonos
 
+# List applications
+axonos list
+
+# Build image
+axonos build --password your_secure_password
+
+# Deploy with GPU
+axonos deploy --gpu
+```
+
+### Option 1b: GUI Launcher (For Systems with Display)
+
+```bash
 # Launch the GUI customizer
-python3 descios_launcher/main.py
+axonos --gui
 ```
 
 Use the intuitive GUI to:
@@ -329,25 +350,35 @@ Use the intuitive GUI to:
 
 ```bash
 # Clone the repo
-git clone https://github.com/GizmoQuest/DeSciOS.git
-cd DeSciOS
+git clone https://github.com/[org]/axonos.git
+cd axonos
 
-# Build the Docker image (with custom password)
-docker buildx build --build-arg PASSWORD=your_secure_password -t descios .
+# Build the Docker image (with custom password - recommended)
+docker build --build-arg PASSWORD=your_secure_password -t axonos .
+
+# Or use the build script
+./scripts/build_axonos.sh your_secure_password
 
 # Or build with default password (not recommended for production)
-docker build -t descios .
+docker build -t axonos .
 
-# Run the container
-docker run -d -p 6080:6080 --name desci-lab descios
+# Run the container (recommended: with GPU support and IPFS ports)
+docker run -d --gpus all -p 6080:6080 -p 5901:5901 \
+  -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 \
+  --name axonos-lab axonos
 
-# If you have NVIDIA GPU(s) (Optional)
-docker run -d --gpus all -p 6080:6080 --name desci-lab descios
+# Without GPU (if no NVIDIA GPU available)
+docker run -d -p 6080:6080 -p 5901:5901 \
+  -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 \
+  --name axonos-lab axonos
 ```
 
-### Access DeSciOS
+### Access AxonOS
 
 * 🌐 `http://localhost:6080/vnc.html` → Full Linux desktop in browser (use the password you set during build)
+* 📡 `http://localhost:8080` → IPFS Gateway
+* 🔧 `http://localhost:5001` → IPFS API
+* 📁 `http://localhost:5001/webui` → IPFS Web UI
 
 > **Security Note**: For production use, always set a custom password during build using `--build-arg PASSWORD=your_secure_password`. The default password `vncpassword` is for development purposes only.
 
@@ -355,7 +386,7 @@ docker run -d --gpus all -p 6080:6080 --name desci-lab descios
 
 ## 💡 Vision: A Decentralized Research Desktop
 
-DeSciOS is designed for:
+AxonOS is designed for:
 
 * Students needing a portable research environment
 * Scientists working offline or from remote labs
@@ -370,4 +401,4 @@ DeSciOS is designed for:
 
 This project is licensed under the **MIT License**.
 
-> DeSciOS is free and open — built for the community, by the community.
+> AxonOS is free and open — built for the community, by the community.

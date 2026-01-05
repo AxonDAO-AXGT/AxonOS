@@ -1,4 +1,4 @@
-# DeSciOS Launcher Build System
+# AxonOS Launcher Build System
 # =============================
 
 .PHONY: all binary package deb dmg exe cross clean install uninstall help
@@ -8,17 +8,17 @@ all: binary package
 
 # Build binary only
 binary:
-	@echo "🔨 Building DeSciOS Launcher binary..."
+	@echo "🔨 Building AxonOS Launcher binary..."
 	python3 build_launcher.py
 
 # Build binary and package
 package: binary
-	@echo "📦 Building DeSciOS Launcher package..."
+	@echo "📦 Building AxonOS Launcher package..."
 	python3 build_deb.py
 
 # Complete build (binary + package + release info)
 release:
-	@echo "🚀 Building complete DeSciOS Launcher release..."
+	@echo "🚀 Building complete AxonOS Launcher release..."
 	python3 build_all.py
 
 # Build .deb package only (requires existing binary)
@@ -43,20 +43,20 @@ cross:
 
 # Install the binary system-wide (Linux/macOS)
 install:
-	@echo "📥 Installing DeSciOS Launcher..."
-	@if [ -f "descios-launcher_*.deb" ]; then \
+	@echo "📥 Installing AxonOS Launcher..."
+	@if [ -f "axonos-launcher_*.deb" ]; then \
 		echo "Installing via .deb package..."; \
-		sudo dpkg -i descios-launcher_*.deb; \
+		sudo dpkg -i axonos-launcher_*.deb; \
 		sudo apt-get install -f; \
-	elif [ -f "dist/descios" ]; then \
+	elif [ -f "dist/axonos" ]; then \
 		echo "Installing binary manually..."; \
-		sudo cp dist/descios /usr/local/bin/; \
-		sudo chmod +x /usr/local/bin/descios; \
-		echo "✓ DeSciOS Launcher installed to /usr/local/bin/descios"; \
-	elif [ -d "dist/descios.app" ]; then \
+		sudo cp dist/axonos /usr/local/bin/; \
+		sudo chmod +x /usr/local/bin/axonos; \
+		echo "✓ AxonOS Launcher installed to /usr/local/bin/axonos"; \
+	elif [ -d "dist/axonos.app" ]; then \
 		echo "Installing macOS app..."; \
-		cp -r dist/descios.app /Applications/; \
-		echo "✓ DeSciOS Launcher installed to /Applications/descios.app"; \
+		cp -r dist/axonos.app /Applications/; \
+		echo "✓ AxonOS Launcher installed to /Applications/axonos.app"; \
 	else \
 		echo "❌ No binary or package found. Run 'make binary' first."; \
 		exit 1; \
@@ -64,20 +64,20 @@ install:
 
 # Uninstall the launcher
 uninstall:
-	@echo "📤 Uninstalling DeSciOS Launcher..."
-	@if dpkg -l | grep -q descios-launcher; then \
+	@echo "📤 Uninstalling AxonOS Launcher..."
+	@if dpkg -l | grep -q axonos-launcher; then \
 		echo "Removing via package manager..."; \
-		sudo apt remove descios-launcher; \
-	elif [ -f "/usr/local/bin/descios" ]; then \
+		sudo apt remove axonos-launcher; \
+	elif [ -f "/usr/local/bin/axonos" ]; then \
 		echo "Removing manual installation..."; \
-		sudo rm -f /usr/local/bin/descios; \
-		echo "✓ DeSciOS Launcher removed from /usr/local/bin/"; \
-	elif [ -d "/Applications/descios.app" ]; then \
+		sudo rm -f /usr/local/bin/axonos; \
+		echo "✓ AxonOS Launcher removed from /usr/local/bin/"; \
+	elif [ -d "/Applications/axonos.app" ]; then \
 		echo "Removing macOS app..."; \
-		rm -rf /Applications/descios.app; \
-		echo "✓ DeSciOS Launcher removed from /Applications/"; \
+		rm -rf /Applications/axonos.app; \
+		echo "✓ AxonOS Launcher removed from /Applications/"; \
 	else \
-		echo "⚠️  DeSciOS Launcher not found in standard locations"; \
+		echo "⚠️  AxonOS Launcher not found in standard locations"; \
 	fi
 
 # Clean build artifacts
@@ -103,21 +103,21 @@ deps:
 
 # Run the launcher (for testing)
 run:
-	@echo "🚀 Running DeSciOS Launcher..."
-	@if [ -f "dist/descios" ]; then \
-		./dist/descios; \
-	elif [ -d "dist/descios.app" ]; then \
-		open dist/descios.app; \
-	elif [ -f "dist/descios.exe" ]; then \
-		./dist/descios.exe; \
+	@echo "🚀 Running AxonOS Launcher..."
+	@if [ -f "dist/axonos" ]; then \
+		./dist/axonos; \
+	elif [ -d "dist/axonos.app" ]; then \
+		open dist/axonos.app; \
+	elif [ -f "dist/axonos.exe" ]; then \
+		./dist/axonos.exe; \
 	else \
 		echo "No binary found. Running from source..."; \
-		python3 descios_launcher/main.py; \
+		python3 axonos_launcher/main.py; \
 	fi
 
 # Show help
 help:
-	@echo "DeSciOS Launcher Build System"
+	@echo "AxonOS Launcher Build System"
 	@echo "============================"
 	@echo ""
 	@echo "Available targets:"
@@ -142,11 +142,11 @@ help:
 	@echo "  make install  # Install system-wide"
 	@echo ""
 	@echo "Cross-platform build (make cross):"
-	@echo "  Linux:   DeSciOS-Launcher-0.1.0-Linux-amd64.deb"
-	@echo "  macOS:   DeSciOS-Launcher-0.1.0-macOS-x86_64.zip (Linux binary)"
-	@echo "  Windows: DeSciOS-Launcher-0.1.0-Windows-x86_64.zip (Linux binary)"
+	@echo "  Linux:   AxonOS-Launcher-0.1.0-Linux-amd64.deb"
+	@echo "  macOS:   AxonOS-Launcher-0.1.0-macOS-x86_64.zip (Linux binary)"
+	@echo "  Windows: AxonOS-Launcher-0.1.0-Windows-x86_64.zip (Linux binary)"
 	@echo ""
 	@echo "Native builds (on respective platforms):"
-	@echo "  Linux:   DeSciOS-Launcher-0.1.0-Linux-amd64.deb"
-	@echo "  macOS:   DeSciOS-Launcher-0.1.0-macOS-x86_64.dmg (native .app)"
-	@echo "  Windows: DeSciOS-Launcher-0.1.0-Windows-x86_64.exe (native installer)" 
+	@echo "  Linux:   AxonOS-Launcher-0.1.0-Linux-amd64.deb"
+	@echo "  macOS:   AxonOS-Launcher-0.1.0-macOS-x86_64.dmg (native .app)"
+	@echo "  Windows: AxonOS-Launcher-0.1.0-Windows-x86_64.exe (native installer)" 

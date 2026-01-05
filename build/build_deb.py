@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build .deb package for DeSciOS Launcher on Ubuntu/Debian systems
+Build .deb package for AxonOS Launcher on Ubuntu/Debian systems
 """
 
 # MIT License
@@ -34,11 +34,11 @@ from pathlib import Path
 from datetime import datetime
 
 # Package information
-PACKAGE_NAME = "descios-launcher"
+PACKAGE_NAME = "axonos-launcher"
 PACKAGE_VERSION = "0.1.0"
 PACKAGE_ARCH = "amd64"
 MAINTAINER = "Avimanyu Bandyopadhyay <avimanyu786@gmail.com>"
-DESCRIPTION = "GUI launcher for customizing and deploying DeSciOS scientific computing environments"
+DESCRIPTION = "GUI launcher for customizing and deploying AxonOS scientific computing environments"
 
 def create_package_structure(temp_dir):
     """Create the Debian package directory structure"""
@@ -50,7 +50,7 @@ def create_package_structure(temp_dir):
         "usr/local/bin",
         "usr/share/applications",
         "usr/share/pixmaps",
-        "usr/share/doc/descios-launcher"
+        "usr/share/doc/axonos-launcher"
     ]
     
     for dir_path in dirs:
@@ -70,9 +70,9 @@ Recommends: firefox | chromium-browser
 Suggests: nvidia-container-toolkit
 Maintainer: {MAINTAINER}
 Description: {DESCRIPTION}
- DeSciOS Launcher provides an intuitive GUI for customizing DeSciOS builds.
+ AxonOS Launcher provides an intuitive GUI for customizing AxonOS builds.
  Users can select scientific applications, configure AI models, set user
- preferences, enable GPU support, and deploy customized DeSciOS instances
+ preferences, enable GPU support, and deploy customized AxonOS instances
  with just a few clicks.
  .
  Features:
@@ -81,7 +81,7 @@ Description: {DESCRIPTION}
   - One-click deployment with automatic browser launch
   - GPU acceleration support for NVIDIA hardware
   - Configuration management and real-time build logging
-Homepage: https://github.com/GizmoQuest/DeSciOS
+Homepage: https://github.com/GizmoQuest/AxonOS
 """
     
     control_file = pkg_dir / "DEBIAN" / "control"
@@ -94,10 +94,10 @@ Homepage: https://github.com/GizmoQuest/DeSciOS
 def create_desktop_file(pkg_dir):
     """Create the .desktop file for GUI integration"""
     desktop_content = """[Desktop Entry]
-Name=DeSciOS Launcher
-Comment=Customize and deploy DeSciOS scientific computing environments
-Exec=descios
-Icon=descios
+Name=AxonOS Launcher
+Comment=Customize and deploy AxonOS scientific computing environments
+Exec=axonos
+Icon=axonos
 Terminal=false
 Type=Application
 Categories=Science;Education;Development;
@@ -105,7 +105,7 @@ Keywords=docker;science;research;ai;launcher;
 StartupNotify=true
 """
     
-    desktop_file = pkg_dir / "usr/share/applications/descios-launcher.desktop"
+    desktop_file = pkg_dir / "usr/share/applications/axonos-launcher.desktop"
     with open(desktop_file, "w") as f:
         f.write(desktop_content)
     
@@ -125,7 +125,7 @@ def create_icon(pkg_dir):
   <circle cx="36" cy="36" r="3" fill="#ef4444"/>
 </svg>"""
     
-    icon_file = pkg_dir / "usr/share/pixmaps/descios.svg"
+    icon_file = pkg_dir / "usr/share/pixmaps/axonos.svg"
     with open(icon_file, "w") as f:
         f.write(icon_content)
     
@@ -150,12 +150,12 @@ if command -v docker >/dev/null 2>&1; then
         echo "  3. Log out and back in for group changes to take effect"
     fi
 else
-    echo "Warning: Docker not found. DeSciOS Launcher requires Docker to function."
+    echo "Warning: Docker not found. AxonOS Launcher requires Docker to function."
     echo "Install Docker using: sudo apt install docker.io"
 fi
 
-echo "DeSciOS Launcher installed successfully!"
-echo "Run 'descios' to launch the GUI, or find it in your applications menu."
+echo "AxonOS Launcher installed successfully!"
+echo "Run 'axonos' to launch the GUI, or find it in your applications menu."
 
 exit 0
 """
@@ -185,12 +185,12 @@ def create_documentation(pkg_dir):
     """Create documentation files"""
     # Copyright file
     copyright_content = f"""Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: DeSciOS Launcher
-Upstream-Contact: DeSciOS Team
-Source: https://github.com/GizmoQuest/DeSciOS
+Upstream-Name: AxonOS Launcher
+Upstream-Contact: AxonOS Team
+Source: https://github.com/GizmoQuest/AxonOS
 
 Files: *
-Copyright: {datetime.now().year} DeSciOS Team
+Copyright: {datetime.now().year} AxonOS Team
 License: MIT
 
 License: MIT
@@ -213,17 +213,17 @@ License: MIT
  DEALINGS IN THE SOFTWARE.
 """
     
-    copyright_file = pkg_dir / "usr/share/doc/descios-launcher/copyright"
+    copyright_file = pkg_dir / "usr/share/doc/axonos-launcher/copyright"
     with open(copyright_file, "w") as f:
         f.write(copyright_content)
     
     copyright_file.chmod(0o644)
     
     # Changelog
-    changelog_content = f"""descios-launcher ({PACKAGE_VERSION}) stable; urgency=medium
+    changelog_content = f"""axonos-launcher ({PACKAGE_VERSION}) stable; urgency=medium
 
-  * Initial release of DeSciOS Launcher
-  * GUI application for customizing DeSciOS builds
+  * Initial release of AxonOS Launcher
+  * GUI application for customizing AxonOS builds
   * Application selection and configuration management
   * One-click deployment with Docker integration
   * GPU acceleration support
@@ -231,7 +231,7 @@ License: MIT
  -- {MAINTAINER}  {datetime.now().strftime('%a, %d %b %Y %H:%M:%S %z')}
 """
     
-    changelog_file = pkg_dir / "usr/share/doc/descios-launcher/changelog.Debian"
+    changelog_file = pkg_dir / "usr/share/doc/axonos-launcher/changelog.Debian"
     with open(changelog_file, "w") as f:
         f.write(changelog_content)
     
@@ -240,13 +240,13 @@ License: MIT
     changelog_file.with_suffix(changelog_file.suffix + ".gz").chmod(0o644)
 
 def copy_binary(pkg_dir):
-    """Copy the DeSciOS binary to the package"""
-    binary_src = Path("dist/descios")
-    binary_dst = pkg_dir / "usr/local/bin/descios"
+    """Copy the AxonOS binary to the package"""
+    binary_src = Path("dist/axonos")
+    binary_dst = pkg_dir / "usr/local/bin/axonos"
     
     if not binary_src.exists():
         raise FileNotFoundError(
-            "Binary not found at dist/descios. "
+            "Binary not found at dist/axonos. "
             "Please run 'python3 build_launcher.py' first to build the binary."
         )
     
@@ -256,7 +256,7 @@ def copy_binary(pkg_dir):
 def build_package(pkg_dir):
     """Build the .deb package"""
     # Use the new naming convention
-    pkg_name = f"DeSciOS-Launcher-{PACKAGE_VERSION}-Linux-{PACKAGE_ARCH}.deb"
+    pkg_name = f"AxonOS-Launcher-{PACKAGE_VERSION}-Linux-{PACKAGE_ARCH}.deb"
     
     # Build the package with temporary name
     temp_pkg_name = f"{PACKAGE_NAME}_{PACKAGE_VERSION}_{PACKAGE_ARCH}.deb"
@@ -277,12 +277,12 @@ def build_package(pkg_dir):
 
 def main():
     """Main package build function"""
-    print("📦 DeSciOS Launcher .deb Package Builder")
+    print("📦 AxonOS Launcher .deb Package Builder")
     print("=" * 45)
     
     # Check if we have the binary
-    if not Path("dist/descios").exists():
-        print("✗ Error: Binary not found at dist/descios")
+    if not Path("dist/axonos").exists():
+        print("✗ Error: Binary not found at dist/axonos")
         print("Please run 'python3 build_launcher.py' first to build the binary.")
         sys.exit(1)
     

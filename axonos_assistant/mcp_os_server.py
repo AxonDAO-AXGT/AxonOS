@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-MCP OS Context Server for DeSciOS
+MCP OS Context Server for AxonOS
 
-This server provides OS-aware tools, resources, and prompts for the DeSciOS assistant.
+This server provides OS-aware tools, resources, and prompts for the AxonOS assistant.
 It exposes system monitoring, process management, and desktop environment integration
 through the Model Context Protocol (MCP).
 """
@@ -49,7 +49,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create the MCP server
-mcp = FastMCP("DeSciOS OS Context Server")
+mcp = FastMCP("AxonOS OS Context Server")
 
 class SystemInfo(BaseModel):
     """System information data structure"""
@@ -385,7 +385,7 @@ def get_system_resource() -> str:
     """Get system information as a resource"""
     try:
         sys_info = get_system_info()
-        return f"""# DeSciOS System Information
+        return f"""# AxonOS System Information
 
 ## Hardware
 - **Hostname**: {sys_info.hostname}
@@ -490,7 +490,7 @@ Use the `launch_application` tool to start any of these applications.
 @mcp.prompt()
 def system_analysis_prompt(focus_area: str = "general") -> str:
     """Generate a system analysis prompt"""
-    return f"""Please analyze the current DeSciOS system focusing on {focus_area}. 
+    return f"""Please analyze the current AxonOS system focusing on {focus_area}. 
 
 Consider the following aspects:
 1. System resource usage (CPU, memory, disk, network)
@@ -511,7 +511,7 @@ Focus particularly on the {focus_area} aspect of the system."""
 @mcp.prompt()
 def process_troubleshooting_prompt(issue_description: str) -> str:
     """Generate a process troubleshooting prompt"""
-    return f"""Help troubleshoot the following process/application issue in DeSciOS:
+    return f"""Help troubleshoot the following process/application issue in AxonOS:
 
 **Issue**: {issue_description}
 
@@ -521,7 +521,7 @@ Please provide:
 3. Potential solutions and workarounds
 4. Prevention strategies for similar issues
 
-Consider the scientific computing context of DeSciOS and focus on:
+Consider the scientific computing context of AxonOS and focus on:
 - Impact on running scientific applications
 - Data integrity and safety
 - Minimal disruption to ongoing research workflows
@@ -531,8 +531,8 @@ Consider the scientific computing context of DeSciOS and focus on:
 def application_launcher_prompt(app_category: str = "scientific") -> List[base.Message]:
     """Generate an application launcher prompt"""
     return [
-        base.UserMessage(f"I need to launch a {app_category} application in DeSciOS. What are my options?"),
-        base.AssistantMessage("""I can help you launch applications in DeSciOS. Here are the available scientific applications:
+        base.UserMessage(f"I need to launch a {app_category} application in AxonOS. What are my options?"),
+        base.AssistantMessage("""I can help you launch applications in AxonOS. Here are the available scientific applications:
 
 **Data Science & Analysis:**
 - `jupyter` / `jupyterlab` - Interactive notebook environment
@@ -561,7 +561,7 @@ Which application would you like to launch? I can start it for you using the lau
 def main():
     """Main entry point for the MCP server"""
     try:
-        logger.info("Starting DeSciOS OS Context MCP Server...")
+        logger.info("Starting AxonOS OS Context MCP Server...")
         mcp.run()
     except KeyboardInterrupt:
         logger.info("Server stopped by user")

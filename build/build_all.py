@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Master build script for DeSciOS Launcher
+Master build script for AxonOS Launcher
 Builds binaries and packages for different platforms
 """
 
@@ -55,9 +55,9 @@ def check_prerequisites():
     print("🔍 Checking prerequisites...")
     
     # Check if we're in the right directory
-    if not Path("descios_launcher/main.py").exists():
-        print("✗ Error: descios_launcher/main.py not found")
-        print("Please run this script from the DeSciOS root directory")
+    if not Path("axonos_launcher/main.py").exists():
+        print("✗ Error: axonos_launcher/main.py not found")
+        print("Please run this script from the AxonOS root directory")
         return False
     
     # Check Python version
@@ -76,11 +76,11 @@ def build_binary():
     # Verify binary was created
     platform_system = platform.system().lower()
     if platform_system == "linux":
-        binary_path = Path("dist/descios")
+        binary_path = Path("dist/axonos")
     elif platform_system == "darwin":
-        binary_path = Path("dist/descios.app")
+        binary_path = Path("dist/axonos.app")
     elif platform_system == "windows":
-        binary_path = Path("dist/descios.exe")
+        binary_path = Path("dist/axonos.exe")
     else:
         print(f"✗ Unsupported platform: {platform_system}")
         return False
@@ -113,7 +113,7 @@ def create_release_info():
     system = platform.system()
     arch = platform.machine()
     
-    release_info = f"""DeSciOS Launcher Build Release
+    release_info = f"""AxonOS Launcher Build Release
 ===============================
 
 Build Date: {subprocess.check_output(['date'], text=True).strip()}
@@ -147,37 +147,37 @@ Installation Instructions:
 
 Linux (Ubuntu/Debian):
   # Using .deb package (recommended)
-  sudo dpkg -i descios-launcher_*.deb
+  sudo dpkg -i axonos-launcher_*.deb
   sudo apt-get install -f  # Fix dependencies if needed
   
   # Or manual installation
-  sudo cp dist/descios /usr/local/bin/
-  sudo chmod +x /usr/local/bin/descios
+  sudo cp dist/axonos /usr/local/bin/
+  sudo chmod +x /usr/local/bin/axonos
 
 macOS:
   # Copy to Applications (GUI apps)
-  cp -r dist/descios.app /Applications/
+  cp -r dist/axonos.app /Applications/
   
   # Or copy to PATH for command line
-  sudo cp dist/descios.app/Contents/MacOS/descios /usr/local/bin/descios
+  sudo cp dist/axonos.app/Contents/MacOS/axonos /usr/local/bin/axonos
 
 Windows:
   # Copy to desired location and add to PATH
-  copy dist\\descios.exe C:\\Program Files\\DeSciOS\\
-  # Add C:\\Program Files\\DeSciOS to your PATH environment variable
+  copy dist\\axonos.exe C:\\Program Files\\AxonOS\\
+  # Add C:\\Program Files\\AxonOS to your PATH environment variable
 
 Usage:
 ======
-  descios                    # Launch GUI
-  descios --help            # Show help (if implemented)
+  axonos                    # Launch GUI
+  axonos --help            # Show help (if implemented)
 
 Web Interface after deployment:
   http://localhost:6080/vnc.html
 
 Support:
 ========
-  GitHub: https://github.com/GizmoQuest/DeSciOS
-  Issues: https://github.com/GizmoQuest/DeSciOS/issues
+  GitHub: https://github.com/GizmoQuest/AxonOS
+  Issues: https://github.com/GizmoQuest/AxonOS/issues
 """
     
     with open("RELEASE_INFO.txt", "w") as f:
@@ -187,7 +187,7 @@ Support:
 
 def main():
     """Main build orchestration function"""
-    print("🚀 DeSciOS Launcher Master Build System")
+    print("🚀 AxonOS Launcher Master Build System")
     print("=" * 50)
     
     # Check prerequisites
