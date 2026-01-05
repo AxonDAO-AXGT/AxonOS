@@ -255,6 +255,31 @@ RUN mkdir -p /home/$USER/.vnc && \
 # Switch back to root for final setup
 USER root
 
+# Install WhiteSur GTK Theme (macOS-like theme)
+RUN apt update && apt install -y \
+    sassc optipng inkscape libcanberra-gtk-module libcanberra-gtk3-module \
+    gtk2-engines-murrine gtk2-engines-pixbuf libxml2-utils git && \
+    git clone https://github.com/vinceliuice/WhiteSur-gtk-theme.git --depth=1 /tmp/WhiteSur-gtk-theme && \
+    cd /tmp/WhiteSur-gtk-theme && \
+    chmod +x install.sh && \
+    DEBIAN_FRONTEND=noninteractive ./install.sh --silent-mode -d /usr/share/themes -n WhiteSur -c Dark -o normal -a normal && \
+    ls -la /usr/share/themes/ | grep -i white && \
+    cd / && \
+    rm -rf /tmp/WhiteSur-gtk-theme && \
+    apt remove -y sassc optipng inkscape libxml2-utils && \
+    apt autoremove -y && \
+    apt clean
+
+# Set WhiteSur theme as default for XFCE (without changing wallpaper)
+RUN mkdir -p /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml && \
+    echo -e '<?xml version="1.0" encoding="UTF-8"?>\n<channel name="xfce4-desktop" version="1.0">\n  <property name="backdrop" type="empty">\n    <property name="screen0" type="empty">\n      <property name="monitor0" type="empty">\n        <property name="workspace0" type="empty">\n          <property name="color-style" type="int" value="0"/>\n          <property name="image-style" type="int" value="5"/>\n          <property name="last-image" type="string" value="/usr/share/desktop-base/active-theme/wallpaper/contents/images/1920x1080.svg"/>\n        </property>\n      </property>\n    </property>\n  </property>\n</channel>' \
+    > /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml && \
+    echo -e '<?xml version="1.0" encoding="UTF-8"?>\n<channel name="xfwm4" version="1.0">\n  <property name="general" type="empty">\n    <property name="theme" type="string" value="WhiteSur-Dark"/>\n  </property>\n</channel>' \
+    > /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml && \
+    echo -e '<?xml version="1.0" encoding="UTF-8"?>\n<channel name="xsettings" version="1.0">\n  <property name="Net" type="empty">\n    <property name="ThemeName" type="string" value="WhiteSur-Dark"/>\n    <property name="IconThemeName" type="string" value="Adwaita"/>\n  </property>\n</channel>' \
+    > /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml && \
+    chown -R $USER:$USER /home/$USER/.config
+
 # Startup and Supervisor
 COPY startup.sh /startup.sh
 RUN chmod +x /startup.sh
@@ -284,6 +309,10 @@ COPY novnc-theme/vnc.html /usr/share/novnc/
 COPY novnc-theme/ui.js /usr/share/novnc/app/
 COPY novnc-theme/icons/* /usr/share/novnc/app/images/icons/
 COPY novnc-theme/icon.png /usr/share/novnc/icon.png
+
+# Copy theme application script for manual testing
+COPY apply_theme.sh /usr/local/bin/apply_theme.sh
+RUN chmod +x /usr/local/bin/apply_theme.sh
 
 # Start services
 CMD ["/startup.sh"]

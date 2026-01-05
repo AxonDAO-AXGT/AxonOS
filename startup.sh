@@ -79,7 +79,64 @@ done
 xhost +local:
 
 # Wait a bit more for XFCE to initialize
-sleep 5
+sleep 10
+
+# Apply WhiteSur theme (using the working script)
+if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
+    # Wait for xfconfd to be ready, then apply theme
+    for i in {1..20}; do
+        if DISPLAY=:1 xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null > /dev/null; then
+            echo "xfconfd is ready, applying WhiteSur theme..."
+            DISPLAY=:1 xfconf-query -c xsettings -p /Net/ThemeName -s "WhiteSur-Dark" 2>/dev/null
+            DISPLAY=:1 xfconf-query -c xfwm4 -p /general/theme -s "WhiteSur-Dark" 2>/dev/null
+            DISPLAY=:1 xfconf-query -c xsettings -p /Net/IconThemeName -s "Adwaita" 2>/dev/null
+            echo "WhiteSur theme applied"
+
+            # Panel: transparent by default + ~2x height + use AxonOS icon for menu
+            # NOTE: do this after xfconfd is ready so xfce4-panel channel is writable.
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/size -n -t uint -s 56 2>/dev/null || true
+            # Panel length: with length-adjust=true this is stored as a percentage.
+            # 50% of a 1920px-wide screen = 960px.
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/length -n -t double -s 50 2>/dev/null || true
+            # Keep auto-length enabled so items never disappear
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/length-adjust -n -t bool -s true 2>/dev/null || true
+            # Position for 56px panel on 1080px screen: y=1024
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/position -n -t string -s "p=10;x=480;y=1024" 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/background-style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/background-alpha -n -t uint -s 0 2>/dev/null || true
+
+            # Separator plugins: force "Transparent" style (0) instead of visible line
+            # plugin-3,6,8,10 are separators per /etc/xdg/xfce4/panel/default.xml
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-3/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-6/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-8/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-10/style -n -t int -s 0 2>/dev/null || true
+
+            if [ -f "/usr/share/novnc/icon.png" ]; then
+                # applicationsmenu plugin is plugin-1 per /etc/xdg/xfce4/panel/default.xml
+                DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-1/button-icon -n -t string -s "/usr/share/novnc/icon.png" 2>/dev/null || true
+            fi
+
+            # Clock defaults (plugin-5) as per your screenshot
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/timezone -n -t string -s "UTC" 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/mode -n -t int -s 2 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-layout -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-date-font -n -t string -s "Sans 23" 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-time-font -n -t string -s "Sans 23" 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-time-format -n -t string -s "%T" 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/show-seconds -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/show-meridiem -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/flash-separators -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/tooltip-format -n -t string -s "%A %d %B %Y" 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/command -n -t string -s "" 2>/dev/null || true
+
+            # Restart panel to ensure new settings apply
+            DISPLAY=:1 xfce4-panel -r 2>/dev/null || true
+            break
+        fi
+        sleep 1
+    done
+fi
 
 # Try to get root window geometry using xwininfo
 if DISPLAY=:1 xwininfo -root > ~/.vnc/geometry.log 2>&1; then
@@ -118,6 +175,7 @@ chmod +x /tmp/setup_x.sh
 
 # Switch to deScier user and run the script
 su - deScier -c '/tmp/setup_x.sh'
+
 
 # Keep the container running
 tail -f /dev/null

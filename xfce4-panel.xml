@@ -5,9 +5,15 @@
     <value type="int" value="1"/>
   </property>
   <property name="panels/panel-1" type="empty">
-    <property name="position" type="string" value="p=10;x=640;y=1060"/>
-    <property name="size" type="uint" value="28"/>
-    <property name="length" type="uint" value="100"/>
+    <!-- Center a 960px panel on a 1920px-wide screen: x=(1920-960)/2=480
+         With 56px height on a 1080px screen: y=1080-56=1024 -->
+    <property name="position" type="string" value="p=10;x=480;y=1024"/>
+    <property name="size" type="uint" value="56"/>
+    <!-- Panel length is stored as a percentage when length-adjust is true.
+         50% of a 1920px-wide screen = 960px. -->
+    <property name="length" type="double" value="50"/>
+    <!-- "Automatically increase the length" (Panel Preferences) -->
+    <property name="length-adjust" type="bool" value="true"/>
     <property name="plugin-ids" type="array">
       <value type="int" value="1"/> <!-- Applications Menu -->
       <value type="int" value="2"/> <!-- Task List -->
@@ -24,18 +30,35 @@
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="applicationsmenu">
       <property name="custom-menu-file" type="empty"/>
-      <property name="button-icon" type="empty"/>
+      <property name="button-icon" type="string" value="/usr/share/novnc/icon.png"/>
       <property name="button-title" type="string" value="Let's DeSci!"/>
       <property name="show-button-title" type="bool" value="true"/>
     </property>
     <property name="plugin-2" type="string" value="tasklist"/>
     <property name="plugin-3" type="string" value="separator">
       <property name="expand" type="bool" value="true"/>
+      <!-- 0=Transparent, 1=Separator, 2=Handle, 3=Dots -->
+      <property name="style" type="int" value="0"/>
     </property>
     <property name="plugin-4" type="string" value="notificationarea"/>
-    <property name="plugin-5" type="string" value="clock"/>
+    <property name="plugin-5" type="string" value="clock">
+      <!-- Clock defaults (matches your screenshot) -->
+      <property name="timezone" type="string" value="UTC"/>
+      <property name="mode" type="int" value="2"/>
+      <property name="digital-layout" type="int" value="0"/>
+      <property name="digital-date-font" type="string" value="Sans 23"/>
+      <property name="digital-time-font" type="string" value="Sans 23"/>
+      <property name="digital-time-format" type="string" value="%T"/>
+      <property name="show-seconds" type="bool" value="true"/>
+      <property name="show-meridiem" type="bool" value="false"/>
+      <property name="flash-separators" type="bool" value="true"/>
+      <property name="tooltip-format" type="string" value="%A %d %B %Y"/>
+      <property name="command" type="string" value=""/>
+    </property>
     <property name="plugin-6" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>
+      <!-- 0=Transparent, 1=Separator, 2=Handle, 3=Dots -->
+      <property name="style" type="int" value="0"/>
     </property>
     <property name="plugin-7" type="string" value="launcher">
       <property name="items" type="array">
@@ -47,6 +70,8 @@
     </property>
     <property name="plugin-8" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>
+      <!-- 0=Transparent, 1=Separator, 2=Handle, 3=Dots -->
+      <property name="style" type="int" value="0"/>
     </property>
     <property name="plugin-9" type="string" value="launcher">
       <property name="items" type="array">
@@ -58,6 +83,8 @@
     </property>
     <property name="plugin-10" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>
+      <!-- 0=Transparent, 1=Separator, 2=Handle, 3=Dots -->
+      <property name="style" type="int" value="0"/>
     </property>
   </property>
 </channel>
