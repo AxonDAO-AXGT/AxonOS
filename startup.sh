@@ -130,6 +130,13 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/tooltip-format -n -t string -s "%A %d %B %Y" 2>/dev/null || true
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/command -n -t string -s "" 2>/dev/null || true
 
+            # Launcher plugins: hide labels to show only icons (images)
+            # plugin-7: AxonOS Assistant, plugin-9: Talk to K
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-label -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/names-visible -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-label -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/names-visible -n -t bool -s false 2>/dev/null || true
+
             # Restart panel to ensure new settings apply
             DISPLAY=:1 xfce4-panel -r 2>/dev/null || true
             break

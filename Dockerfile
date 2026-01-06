@@ -221,6 +221,13 @@ RUN cd /opt/talk_to_k && \
     cp talk-to-k.desktop /usr/share/applications/ && \
     chown -R $USER:$USER /opt/talk_to_k
 
+# Copy launcher icons for panel
+RUN mkdir -p /usr/share/pixmaps && \
+    chmod 755 /usr/share/pixmaps
+COPY novnc-theme/axonos_assistant.png /usr/share/pixmaps/axonos_assistant.png
+COPY novnc-theme/talk_to_k.png /usr/share/pixmaps/talk_to_k.png
+RUN chmod 644 /usr/share/pixmaps/axonos_assistant.png /usr/share/pixmaps/talk_to_k.png
+
 # Install AxonOS Assistant font
 RUN apt-get update && apt-get install -y wget fontconfig && \
     mkdir -p /usr/share/fonts/truetype/orbitron && \

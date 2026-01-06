@@ -31,7 +31,7 @@
     <property name="plugin-1" type="string" value="applicationsmenu">
       <property name="custom-menu-file" type="empty"/>
       <property name="button-icon" type="string" value="/usr/share/novnc/icon.png"/>
-      <property name="button-title" type="string" value="Let's DeSci!"/>
+      <property name="button-title" type="string" value=""/>
       <property name="show-button-title" type="bool" value="true"/>
     </property>
     <property name="plugin-2" type="string" value="tasklist"/>
@@ -64,9 +64,8 @@
       <property name="items" type="array">
         <value type="string" value="axonos-assistant.desktop"/>
       </property>
-      <property name="show-label" type="bool" value="true"/>
-      <property name="names-visible" type="bool" value="true"/>
-      <property name="button-title" type="string" value="AxonOS Assistant"/>
+      <property name="show-label" type="bool" value="false"/>
+      <property name="names-visible" type="bool" value="false"/>
     </property>
     <property name="plugin-8" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>
@@ -77,9 +76,8 @@
       <property name="items" type="array">
         <value type="string" value="talk-to-k.desktop"/>
       </property>
-      <property name="show-label" type="bool" value="true"/>
-      <property name="names-visible" type="bool" value="true"/>
-      <property name="button-title" type="string" value="Talk to K"/>
+      <property name="show-label" type="bool" value="false"/>
+      <property name="names-visible" type="bool" value="false"/>
     </property>
     <property name="plugin-10" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>
