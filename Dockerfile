@@ -296,6 +296,11 @@ COPY os.svg /usr/share/desktop-base/active-theme/wallpaper/contents/images/1920x
 # Set clean default XFCE panel layout (no power manager plugin)
 COPY xfce4-panel.xml /etc/xdg/xfce4/panel/default.xml
 
+# Copy GTK CSS for tooltip positioning (ensures tooltips appear above panel)
+RUN mkdir -p /home/$USER/.config/gtk-3.0
+COPY gtk-tooltip.css /home/$USER/.config/gtk-3.0/gtk.css
+RUN chown -R $USER:$USER /home/$USER/.config/gtk-3.0
+
 # Expose ports for noVNC and IPFS
 EXPOSE 6080
 

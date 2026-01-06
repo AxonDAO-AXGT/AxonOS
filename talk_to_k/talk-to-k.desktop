@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Talk to K
-Comment=Dialogue with Krishnamurti on consciousness and freedom
+Comment=
 Exec=/usr/bin/python3 /opt/talk_to_k/main.py
 Icon=/usr/share/pixmaps/talk_to_k.png
 Terminal=false

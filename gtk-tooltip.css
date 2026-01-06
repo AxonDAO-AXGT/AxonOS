@@ -1,0 +1,20 @@
+/* Disable all tooltips (hide the bubble entirely) */
+
+tooltip,
+XfcePanelWindow tooltip,
+XfcePanelWindow XfcePanelPlugin tooltip,
+XfcePanelWindow XfcePanelPlugin button tooltip,
+XfcePanelWindow XfcePanelPlugin * tooltip,
+XfcePanelWindow XfcePanelPlugin launcher tooltip,
+XfcePanelWindow * tooltip,
+tooltip.background {
+    opacity: 0 !important;
+    color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}

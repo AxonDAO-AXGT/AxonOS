@@ -100,10 +100,14 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/length -n -t double -s 50 2>/dev/null || true
             # Keep auto-length enabled so items never disappear
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/length-adjust -n -t bool -s true 2>/dev/null || true
-            # Position for 56px panel on 1080px screen: y=1024
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/position -n -t string -s "p=10;x=480;y=1024" 2>/dev/null || true
+            # Move panel further up (y=940) to give tooltips vertical space above the panel
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/position -n -t string -s "p=10;x=480;y=940" 2>/dev/null || true
+            # Disable tooltips globally on the panel
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/show-tooltips -n -t bool -s false 2>/dev/null || true
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/background-style -n -t int -s 0 2>/dev/null || true
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/background-alpha -n -t uint -s 0 2>/dev/null || true
+            # Don't reserve space on borders - allows tooltips to appear above panel
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/don-t-reserve-space-on-borders -n -t bool -s true 2>/dev/null || true
 
             # Separator plugins: force "Transparent" style (0) instead of visible line
             # plugin-3,6,8,10 are separators per /etc/xdg/xfce4/panel/default.xml
@@ -116,6 +120,8 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
                 # applicationsmenu plugin is plugin-1 per /etc/xdg/xfce4/panel/default.xml
                 DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-1/button-icon -n -t string -s "/usr/share/novnc/icon.png" 2>/dev/null || true
             fi
+            # Disable tooltips for applications menu
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-1/show-tooltips -n -t bool -s false 2>/dev/null || true
 
             # Clock defaults (plugin-5) as per your screenshot
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/timezone -n -t string -s "UTC" 2>/dev/null || true
@@ -134,8 +140,17 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             # plugin-7: AxonOS Assistant, plugin-9: Talk to K
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-label -n -t bool -s false 2>/dev/null || true
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/names-visible -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-tooltips -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/disable-tooltips -n -t bool -s true 2>/dev/null || true
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-label -n -t bool -s false 2>/dev/null || true
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/names-visible -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-tooltips -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/disable-tooltips -n -t bool -s true 2>/dev/null || true
+
+            # Disable GTK tooltips globally (GTK3)
+            mkdir -p /home/$USER/.config/gtk-3.0
+            echo "gtk-enable-tooltips=0" > /home/$USER/.config/gtk-3.0/settings.ini
+            chown -R $USER:$USER /home/$USER/.config/gtk-3.0
 
             # Restart panel to ensure new settings apply
             DISPLAY=:1 xfce4-panel -r 2>/dev/null || true

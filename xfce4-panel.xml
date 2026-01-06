@@ -6,14 +6,18 @@
   </property>
   <property name="panels/panel-1" type="empty">
     <!-- Center a 960px panel on a 1920px-wide screen: x=(1920-960)/2=480
-         With 56px height on a 1080px screen: y=1080-56=1024 -->
-    <property name="position" type="string" value="p=10;x=480;y=1024"/>
+         Move panel further up (y=940) to give tooltips vertical space -->
+    <property name="position" type="string" value="p=10;x=480;y=940"/>
+    <!-- Disable tooltips for the panel and its plugins -->
+    <property name="show-tooltips" type="bool" value="false"/>
     <property name="size" type="uint" value="56"/>
     <!-- Panel length is stored as a percentage when length-adjust is true.
          50% of a 1920px-wide screen = 960px. -->
     <property name="length" type="double" value="50"/>
     <!-- "Automatically increase the length" (Panel Preferences) -->
     <property name="length-adjust" type="bool" value="true"/>
+    <!-- Don't reserve space on borders - allows tooltips to appear above panel -->
+    <property name="don-t-reserve-space-on-borders" type="bool" value="true"/>
     <property name="plugin-ids" type="array">
       <value type="int" value="1"/> <!-- Applications Menu -->
       <value type="int" value="2"/> <!-- Task List -->
@@ -33,6 +37,7 @@
       <property name="button-icon" type="string" value="/usr/share/novnc/icon.png"/>
       <property name="button-title" type="string" value=""/>
       <property name="show-button-title" type="bool" value="true"/>
+      <property name="show-tooltips" type="bool" value="false"/>
     </property>
     <property name="plugin-2" type="string" value="tasklist"/>
     <property name="plugin-3" type="string" value="separator">
@@ -66,6 +71,8 @@
       </property>
       <property name="show-label" type="bool" value="false"/>
       <property name="names-visible" type="bool" value="false"/>
+      <property name="show-tooltips" type="bool" value="false"/>
+      <property name="disable-tooltips" type="bool" value="true"/>
     </property>
     <property name="plugin-8" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>
@@ -78,6 +85,8 @@
       </property>
       <property name="show-label" type="bool" value="false"/>
       <property name="names-visible" type="bool" value="false"/>
+      <property name="show-tooltips" type="bool" value="false"/>
+      <property name="disable-tooltips" type="bool" value="true"/>
     </property>
     <property name="plugin-10" type="string" value="separator">
       <property name="expand" type="bool" value="false"/>

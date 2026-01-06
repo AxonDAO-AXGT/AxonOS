@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=AxonOS Assistant
-Comment=AI-powered scientific computing assistant
+Comment=
 Exec=/usr/bin/python3 /opt/axonos_assistant/main.py
 Icon=/usr/share/pixmaps/axonos_assistant.png
 Terminal=false
