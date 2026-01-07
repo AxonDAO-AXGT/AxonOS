@@ -301,8 +301,9 @@ RUN mkdir -p /home/$USER/.config/gtk-3.0
 COPY gtk-tooltip.css /home/$USER/.config/gtk-3.0/gtk.css
 RUN chown -R $USER:$USER /home/$USER/.config/gtk-3.0
 
-# Expose ports for noVNC and IPFS
+# Expose ports for noVNC, AXGT API, and IPFS
 EXPOSE 6080
+EXPOSE 8889
 
 # Expose IPFS swarm port
 EXPOSE 4001/tcp
@@ -321,6 +322,16 @@ COPY novnc-theme/vnc.html /usr/share/novnc/
 COPY novnc-theme/ui.js /usr/share/novnc/app/
 COPY novnc-theme/icons/* /usr/share/novnc/app/images/icons/
 COPY novnc-theme/icon.png /usr/share/novnc/icon.png
+
+# Install AXGT Gate
+COPY axonos_gate/ /axonos_gate/
+RUN pip3 install -r /axonos_gate/requirements.txt
+RUN chmod +x /axonos_gate/*.py
+
+# Set AXGT environment variables
+ENV AXGT_CONTRACT_ADDRESS=0x6112C3509A8a787df576028450FebB3786A2274d
+ENV AXGT_CHAIN_ID=1
+ENV AXGT_RPC_URL=https://ethereum-rpc.publicnode.com
 
 # Copy theme application script for manual testing
 COPY apply_theme.sh /usr/local/bin/apply_theme.sh

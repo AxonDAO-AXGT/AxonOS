@@ -991,6 +991,14 @@ const UI = {
         if (typeof UI.rfb !== 'undefined') {
             return;
         }
+        
+        // Check if wallet is verified before connecting
+        if (!window.verifiedWalletAddress) {
+            Log.Warn("Wallet not verified - showing credentials dialog");
+            // Trigger credentials dialog which will show wallet verification
+            UI.credentials({ detail: { types: ['password'] } });
+            return;
+        }
 
         const host = UI.getSetting('host');
         const port = UI.getSetting('port');
@@ -1026,6 +1034,13 @@ const UI = {
             url += ':' + port;
         }
         url += '/' + path;
+        
+        // Add wallet address to query string if verified
+        const verifiedWallet = window.verifiedWalletAddress || null;
+        if (verifiedWallet) {
+            const separator = url.includes('?') ? '&' : '?';
+            url += separator + 'wallet=' + encodeURIComponent(verifiedWallet);
+        }
 
         UI.rfb = new RFB(document.getElementById('noVNC_container'), url,
                          { shared: UI.getSetting('shared'),
@@ -1159,48 +1174,87 @@ const UI = {
  * ------v------*/
 
     credentials(e) {
-        // FIXME: handle more types
-
-        document.getElementById("noVNC_username_block").classList.remove("noVNC_hidden");
-        document.getElementById("noVNC_password_block").classList.remove("noVNC_hidden");
-
-        let inputFocus = "none";
-        if (e.detail.types.indexOf("username") === -1) {
-            document.getElementById("noVNC_username_block").classList.add("noVNC_hidden");
-        } else {
-            inputFocus = inputFocus === "none" ? "noVNC_username_input" : inputFocus;
+        // If wallet already verified, auto-send the default VNC password and continue.
+        // This avoids getting stuck in a loop where the server asks for credentials after
+        // the websocket connection is established.
+        const verifiedWallet = window.verifiedWalletAddress || null;
+        if (verifiedWallet) {
+            const password = WebUtil.getConfigVar('password') || 'axonpassword';
+            UI.reconnectPassword = password;
+            try {
+                if (UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
+                    UI.rfb.sendCredentials({ username: '', password: password });
+                    Log.Info("Credentials sent to VNC server (wallet already verified)");
+                    UI.showStatus(_("Connecting..."), "normal");
+                    return;
+                }
+            } catch (err) {
+                Log.Warn("Failed to send credentials automatically: " + err);
+                // Fall through to show UI if needed
+            }
         }
-        if (e.detail.types.indexOf("password") === -1) {
-            document.getElementById("noVNC_password_block").classList.add("noVNC_hidden");
-        } else {
-            inputFocus = inputFocus === "none" ? "noVNC_password_input" : inputFocus;
-        }
+
+        // Wallet not verified yet: show wallet verification dialog instead of password
+        // Hide username/password blocks, show wallet block
+        const usernameBlock = document.getElementById("noVNC_username_block");
+        const passwordBlock = document.getElementById("noVNC_password_block");
+        const walletBlock = document.getElementById("noVNC_wallet_block");
+        
+        if (usernameBlock) usernameBlock.classList.add("noVNC_hidden");
+        if (passwordBlock) passwordBlock.classList.add("noVNC_hidden");
+        if (walletBlock) walletBlock.classList.remove("noVNC_hidden");
+        
         document.getElementById('noVNC_credentials_dlg')
             .classList.add('noVNC_open');
 
-        setTimeout(() => document
-            .getElementById(inputFocus).focus(), 100);
+        // Focus on wallet input
+        const walletInput = document.getElementById('noVNC_wallet_input');
+        if (walletInput) {
+            setTimeout(() => walletInput.focus(), 100);
+        }
 
-        Log.Warn("Server asked for credentials");
-        UI.showStatus(_("Credentials are required"), "warning");
+        Log.Warn("Wallet verification required");
+        UI.showStatus(_("AXGT wallet verification required"), "warning");
     },
 
     setCredentials(e) {
         // Prevent actually submitting the form
         e.preventDefault();
 
-        let inputElemUsername = document.getElementById('noVNC_username_input');
-        const username = inputElemUsername.value;
+        // Check if wallet is verified
+        const verifiedWallet = window.verifiedWalletAddress;
+        if (!verifiedWallet) {
+            Log.Warn("Wallet not verified yet");
+            // The wallet verification will be handled by the form submit handler in vnc.html
+            return;
+        }
 
-        let inputElemPassword = document.getElementById('noVNC_password_input');
-        const password = inputElemPassword.value;
-        // Clear the input after reading the password
-        inputElemPassword.value = "";
-
-        UI.rfb.sendCredentials({ username: username, password: password });
+        // Wallet is verified, proceed with connection using default password
+        // The password is typically "axonpassword" or from config
+        const password = WebUtil.getConfigVar('password') || 'axonpassword';
         UI.reconnectPassword = password;
-        document.getElementById('noVNC_credentials_dlg')
-            .classList.remove('noVNC_open');
+        
+        // Close the credentials dialog
+        const credentialsDialog = document.getElementById('noVNC_credentials_dlg');
+        if (credentialsDialog) {
+            credentialsDialog.classList.remove('noVNC_open');
+        }
+        
+        // If RFB connection already exists and is waiting for credentials, send them
+        if (UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
+            try {
+                UI.rfb.sendCredentials({ username: '', password: password });
+                Log.Info("Credentials sent to VNC server");
+            } catch (e) {
+                Log.Warn("RFB not ready for credentials, initiating new connection: " + e);
+                // If RFB not ready, initiate connection
+                UI.connect(null, password);
+            }
+        } else {
+            // RFB not initialized yet - initiate connection now that wallet is verified
+            Log.Info("Initiating VNC connection with verified wallet");
+            UI.connect(null, password);
+        }
     },
 
 /* ------^-------

@@ -250,6 +250,182 @@ input[type="password"]::placeholder {
   color: rgba(245, 245, 245, 0.5) !important;
 }
 
+/* AXGT Wallet Gate Styles */
+/* Wallet dialog styling (in credentials dialog) */
+.axonos-wallet-dialog-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.axonos-wallet-dialog-header h2 {
+    color: var(--axonos-accent);
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.axonos-wallet-dialog-header .axonos-wallet-description {
+    color: var(--axonos-light);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.axonos-wallet-dialog-header .axonos-wallet-contract {
+    color: var(--axonos-light);
+    font-size: 0.8em;
+    margin-top: 10px;
+}
+
+.axonos-wallet-dialog-header .axonos-wallet-contract code {
+    background: rgba(46, 139, 87, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: var(--axonos-accent);
+}
+
+#noVNC_wallet_block {
+    margin: 20px 0;
+}
+
+#noVNC_wallet_block label {
+    display: block;
+    color: var(--axonos-light);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+#noVNC_wallet_input {
+    width: 100%;
+    padding: 12px;
+    background: var(--axonos-dark);
+    color: var(--axonos-light);
+    border: 2px solid var(--axonos-secondary);
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+
+#noVNC_wallet_input:focus {
+    outline: none;
+    border-color: var(--axonos-primary);
+    box-shadow: 0 0 10px var(--axonos-shadow);
+}
+
+.axonos-wallet-gate {
+    background: rgba(28, 28, 28, 0.95);
+    border: 2px solid var(--axonos-primary);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 8px 25px var(--axonos-shadow);
+}
+
+.axonos-wallet-header h2 {
+    color: var(--axonos-accent);
+    margin: 0 0 10px 0;
+    font-size: 24px;
+}
+
+.axonos-wallet-description {
+    color: var(--axonos-light);
+    margin: 10px 0;
+}
+
+.axonos-wallet-contract {
+    color: var(--axonos-light);
+    font-size: 12px;
+    margin: 10px 0;
+}
+
+.axonos-wallet-contract code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    color: var(--axonos-accent);
+}
+
+.axonos-wallet-input-section {
+    margin: 20px 0;
+}
+
+.axonos-wallet-input-section label {
+    display: block;
+    color: var(--axonos-light);
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.axonos-wallet-input {
+    width: 100%;
+    max-width: 500px;
+    background-color: var(--axonos-dark);
+    border: 2px solid var(--axonos-secondary);
+    color: var(--axonos-light);
+    border-radius: 5px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.axonos-wallet-input:focus {
+    border-color: var(--axonos-accent);
+    box-shadow: 0 0 10px var(--axonos-shadow);
+    outline: none;
+}
+
+.axonos-verify-btn {
+    background: linear-gradient(135deg, var(--axonos-primary), var(--axonos-secondary));
+    border: 2px solid var(--axonos-accent);
+    color: var(--axonos-light);
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.axonos-verify-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--axonos-hover), var(--axonos-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--axonos-shadow);
+}
+
+.axonos-verify-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.axonos-wallet-status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.axonos-wallet-status.verified {
+    background: rgba(46, 139, 87, 0.2);
+    border: 2px solid #2e8b57;
+    color: #90ee90;
+}
+
+.axonos-wallet-status.not-verified,
+.axonos-wallet-status.error {
+    background: rgba(220, 20, 60, 0.2);
+    border: 2px solid #dc143c;
+    color: #ff6b6b;
+}
+
+.axonos-wallet-status.verifying {
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid #ffd700;
+    color: #ffd700;
+}
+
 /* Fix all credential form inputs */
 #noVNC_credentials_dlg input {
   background-color: var(--axonos-dark) !important;

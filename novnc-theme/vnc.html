@@ -329,20 +329,28 @@ Copyright (C) 2019 The noVNC Authors
         </div>
     </div>
 
-    <!-- Password Dialog -->
+    <!-- AXGT Wallet Verification Dialog (replaces password dialog) -->
     <div class="noVNC_center noVNC_connect_layer">
     <div id="noVNC_credentials_dlg" class="noVNC_panel"><form>
         <ul>
-            <li id="noVNC_username_block">
-                <label>Username:</label>
-                <input id="noVNC_username_input">
+            <li class="axonos-wallet-dialog-header">
+                <h2>AXGT Wallet Required</h2>
+                <p class="axonos-wallet-description">
+                    To access AxonOS, you must hold AXGT in your wallet or use your 7-day free trial.
+                </p>
+                <p class="axonos-wallet-contract">
+                    AXGT Contract: <code>0x6112C3509A8a787df576028450FebB3786A2274d</code>
+                </p>
             </li>
-            <li id="noVNC_password_block">
-                <label>Password:</label>
-                <input id="noVNC_password_input" type="password">
+            <li id="noVNC_wallet_block">
+                <label>Wallet Address:</label>
+                <input id="noVNC_wallet_input" type="text" placeholder="0x...">
+            </li>
+            <li id="axonos-wallet-status" class="axonos-wallet-status" style="display: none;">
+                <div id="axonos-wallet-status-content"></div>
             </li>
             <li>
-                <input id="noVNC_credentials_button" type="submit" value="Send Credentials" class="noVNC_submit">
+                <input id="noVNC_credentials_button" type="submit" value="Verify Wallet" class="noVNC_submit">
             </li>
         </ul>
     </form></div>
@@ -645,11 +653,167 @@ document.addEventListener("DOMContentLoaded", function() {
     // Also try to set up listeners immediately in case elements are already there
     setTimeout(setupCredentialListeners, 1000);
 
-    // Make sure we don't show loader on initial connect button click
+    // AXGT Wallet Verification (in credentials dialog)
+    let verifiedWalletAddress = null;
+    window.verifiedWalletAddress = null; // Make it globally accessible for ui.js
+    
+    const walletInput = document.getElementById('noVNC_wallet_input');
+    const verifyBtn = document.getElementById('noVNC_credentials_button');
+    const walletStatus = document.getElementById('axonos-wallet-status');
+    const walletStatusContent = document.getElementById('axonos-wallet-status-content');
     const connectButton = document.getElementById('noVNC_connect_button');
-    if (connectButton) {
-        connectButton.addEventListener('click', function(e) {
-            console.log('Connect button clicked - NOT showing loader yet');
+    
+    function setWalletStatus(state, message) {
+        if (!walletStatus || !walletStatusContent) return;
+        walletStatus.style.display = 'block';
+        walletStatusContent.textContent = message;
+        walletStatus.className = 'axonos-wallet-status ' + state;
+        
+        if (state === 'verified') {
+            walletStatusContent.innerHTML = '✓ ' + message;
+            // Close credentials dialog and allow connection
+            const credentialsDialog = document.getElementById('noVNC_credentials_dlg');
+            if (credentialsDialog && credentialsDialog.offsetParent !== null) {
+                // Hide the dialog after a short delay to show success message
+                setTimeout(() => {
+                    credentialsDialog.style.display = 'none';
+                }, 1500);
+            }
+        } else if (state === 'error' || state === 'not-verified') {
+            walletStatusContent.innerHTML = '✗ ' + message;
+        } else if (state === 'verifying') {
+            walletStatusContent.innerHTML = '⏳ ' + message;
+        }
+    }
+    
+    function verifyWallet() {
+        if (!walletInput) return;
+        let walletAddress = walletInput.value.trim();
+        
+        // Remove any whitespace within the address
+        walletAddress = walletAddress.replace(/\s+/g, '');
+        
+        if (!walletAddress) {
+            setWalletStatus('error', 'Please enter a wallet address');
+            return;
+        }
+        
+        // Basic format validation - must be 0x followed by exactly 40 hex characters
+        if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+            const length = walletAddress.length;
+            if (length < 42) {
+                setWalletStatus('error', `Address too short (${length}/42 characters). Ethereum addresses must be exactly 42 characters.`);
+            } else if (length > 42) {
+                setWalletStatus('error', `Address too long (${length}/42 characters). Ethereum addresses must be exactly 42 characters.`);
+            } else if (!/^0x/.test(walletAddress)) {
+                setWalletStatus('error', 'Address must start with 0x');
+            } else {
+                setWalletStatus('error', 'Invalid wallet address format. Must be 0x followed by 40 hexadecimal characters.');
+            }
+            return;
+        }
+        
+        setWalletStatus('verifying', 'Verifying wallet...');
+        if (verifyBtn) verifyBtn.disabled = true;
+        
+        // Use same-origin API so this works behind tunnels (e.g. gradio-tun) and reverse proxies
+        const apiUrl = new URL('/api/auth/verify-wallet', window.location.origin).toString();
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ wallet_address: walletAddress })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.verified) {
+                verifiedWalletAddress = walletAddress;
+                window.verifiedWalletAddress = walletAddress; // Make globally accessible
+                
+                // Show appropriate message based on access type
+                let statusMessage = 'Wallet verified - Connecting...';
+                if (data.access_type === 'trial' && data.trial_days_remaining !== undefined) {
+                    statusMessage = `7-day trial active (${data.trial_days_remaining.toFixed(1)} days remaining) - Connecting...`;
+                } else if (data.access_type === 'balance') {
+                    statusMessage = 'AXGT holder - Connecting...';
+                } else if (data.message) {
+                    statusMessage = data.message + ' - Connecting...';
+                }
+                
+                setWalletStatus('verified', statusMessage);
+                // Set wallet address immediately (before setTimeout)
+                window.verifiedWalletAddress = walletAddress;
+                verifiedWalletAddress = walletAddress;
+                
+                // Close dialog and proceed with connection
+                setTimeout(() => {
+                    // Close the credentials dialog
+                    const credentialsDialog = document.getElementById('noVNC_credentials_dlg');
+                    if (credentialsDialog) {
+                        credentialsDialog.classList.remove('noVNC_open');
+                    }
+                    
+                    // If RFB connection already exists and is waiting for credentials, send them
+                    if (typeof UI !== 'undefined' && UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
+                        const password = WebUtil.getConfigVar('password') || 'axonpassword';
+                        UI.reconnectPassword = password;
+                        try {
+                            UI.rfb.sendCredentials({ username: '', password: password });
+                            console.log('Credentials sent to existing RFB connection');
+                        } catch (e) {
+                            console.log('RFB not ready for credentials yet:', e);
+                            // If RFB not ready, initiate connection
+                            if (typeof UI.connect === 'function') {
+                                UI.connect(null, password);
+                            }
+                        }
+                    } else {
+                        // RFB not initialized yet - initiate connection now that wallet is verified
+                        console.log('Initiating VNC connection with verified wallet');
+                        if (typeof UI !== 'undefined' && typeof UI.connect === 'function') {
+                            const password = WebUtil.getConfigVar('password') || 'axonpassword';
+                            UI.reconnectPassword = password;
+                            UI.connect(null, password);
+                        }
+                    }
+                }, 1500);
+            } else {
+                verifiedWalletAddress = null;
+                window.verifiedWalletAddress = null;
+                setWalletStatus('not-verified', data.error || 'No access available for this wallet');
+            }
+        })
+        .catch(error => {
+            verifiedWalletAddress = null;
+            window.verifiedWalletAddress = null;
+            setWalletStatus('error', 'Error verifying wallet: ' + error.message);
+        })
+        .finally(() => {
+            if (verifyBtn) verifyBtn.disabled = false;
+        });
+    }
+    
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', verifyWallet);
+    }
+    
+    // Handle credentials form submission (wallet verification)
+    const credentialsForm = document.querySelector('#noVNC_credentials_dlg form');
+    if (credentialsForm) {
+        credentialsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            verifyWallet();
+        });
+    }
+    
+    // Handle wallet input Enter key
+    if (walletInput) {
+        walletInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyWallet();
+            }
         });
     }
 
