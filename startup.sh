@@ -28,23 +28,23 @@ if ! grep -q "AxonOS" /etc/hosts; then
     echo "127.0.0.1 AxonOS" >> /etc/hosts
 fi
 
-# Initialize IPFS for deScier user
+# Initialize IPFS for aXonian user
 echo "Initializing IPFS..."
-su - deScier -c 'ipfs init --profile=server' || echo "IPFS already initialized or failed to initialize"
+su - aXonian -c 'ipfs init --profile=server' || echo "IPFS already initialized or failed to initialize"
 
 # Configure IPFS to bind to all interfaces for external access
 echo "Configuring IPFS for external access..."
-su - deScier -c 'ipfs config Addresses.API "/ip4/0.0.0.0/tcp/5001"'
-su - deScier -c 'ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080"'
+su - aXonian -c 'ipfs config Addresses.API "/ip4/0.0.0.0/tcp/5001"'
+su - aXonian -c 'ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080"'
 
 # Start IPFS daemon in background
 echo "Starting IPFS daemon..."
-su - deScier -c 'ipfs daemon --enable-gc --routing=dht' &
+su - aXonian -c 'ipfs daemon --enable-gc --routing=dht' &
 
 # Wait a moment for IPFS to start and check status
 sleep 3
 echo "Checking IPFS status..."
-su - deScier -c 'ipfs id' || echo "IPFS still starting up..."
+su - aXonian -c 'ipfs id' || echo "IPFS still starting up..."
 
 # Start supervisord
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
@@ -52,7 +52,7 @@ su - deScier -c 'ipfs id' || echo "IPFS still starting up..."
 # Wait for VNC server to start
 sleep 5
 
-# Create a script to run as deScier
+# Create a script to run as aXonian
 cat > /tmp/setup_x.sh << 'EOF'
 #!/bin/bash
 
@@ -195,8 +195,8 @@ EOF
 # Make the script executable
 chmod +x /tmp/setup_x.sh
 
-# Switch to deScier user and run the script
-su - deScier -c '/tmp/setup_x.sh'
+# Switch to aXonian user and run the script
+su - aXonian -c '/tmp/setup_x.sh'
 
 
 # Keep the container running

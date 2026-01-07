@@ -100,7 +100,7 @@ axonos config load --file my-config.json
     "command-r7b",
     "granite3.2-vision"
   ],
-  "username": "deScier",
+  "username": "aXonian",
   "password": "your_secure_password",
   "image_tag": "axonos:latest",
   "gpu_enabled": true

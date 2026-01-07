@@ -234,7 +234,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         self.app_selections = {app_id: app_info.get('enabled', False) 
                               for app_id, app_info in self.get_all_applications().items()}
         self.ollama_models = ['command-r7b', 'granite3.2-vision']
-        self.username = 'deScier'
+        self.username = 'aXonian'
         self.password = 'vncpassword'
         self.gpu_enabled = False
         self.image_tag = 'axonos:custom'
@@ -317,7 +317,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         )
         
         default_models = self.ollama_models == ['command-r7b', 'granite3.2-vision']
-        default_user = self.username == 'deScier'
+        default_user = self.username == 'aXonian'
         default_password = self.password == 'vncpassword'
         
         return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password
@@ -429,8 +429,8 @@ RUN wget https://github.com/ipfs/ipfs-desktop/releases/download/v0.30.2/ipfs-des
 # Configure IPFS for automatic startup
 RUN mkdir -p /home/$USER/.ipfs && \\
     chown -R $USER:$USER /home/$USER/.ipfs && \\
-    echo 'export IPFS_PATH=/home/deScier/.ipfs' >> /home/$USER/.bashrc && \\
-    echo 'export IPFS_PATH=/home/deScier/.ipfs' >> /root/.bashrc
+    echo 'export IPFS_PATH=/home/aXonian/.ipfs' >> /home/$USER/.bashrc && \\
+    echo 'export IPFS_PATH=/home/aXonian/.ipfs' >> /root/.bashrc
 
 # Copy IPFS status checker script
 COPY check_ipfs.sh /usr/local/bin/check_ipfs.sh

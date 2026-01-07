@@ -111,7 +111,7 @@ git remote set-url origin https://github.com/[new-org]/axonos.git
 
 The following are maintained for compatibility:
 
-1. **Username**: The default username `deScier` is kept for backward compatibility
+1. **Username**: The default username `aXonian` (renamed from `deScier` as part of rebrand)
 2. **Config files**: Old config file names are still read (with deprecation warning)
 3. **Docker paths**: During transition, both old and new paths may work
 

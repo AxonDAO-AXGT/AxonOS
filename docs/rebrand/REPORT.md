@@ -30,6 +30,7 @@ Successfully completed rebranding of DeSciOS fork to AxonOS across the entire re
 - ✅ Bash prompt: Updated to show AxonOS
 - ✅ Image tags: `descios:custom` → `axonos:custom`
 - ✅ Container names: `descios` → `axonos`
+- ✅ Username: `deScier` → `aXonian`
 - ✅ COPY paths: Updated to new directory names
 
 ### 4. Build System
@@ -57,9 +58,9 @@ Successfully completed rebranding of DeSciOS fork to AxonOS across the entire re
 ## What Was Intentionally Left Unchanged
 
 ### 1. Username
-- **`deScier`**: Kept for backward compatibility
-- Rationale: Changing username would break existing user data and configurations
-- Migration path documented in MIGRATION.md if needed in future
+- **`aXonian`**: Renamed from `deScier` as part of rebrand
+- Rationale: Updated to align with AxonOS branding while maintaining functionality
+- No backward compatibility needed as this is a new rename
 
 ### 2. GitHub URLs
 - **Placeholder format**: `[org]/axonos` used where exact repository URL unknown
@@ -79,7 +80,7 @@ Successfully completed rebranding of DeSciOS fork to AxonOS across the entire re
 ## Compatibility Notes
 
 ### Backward Compatibility
-1. **Username `deScier`**: Maintained for compatibility with existing containers
+1. **Username `aXonian`**: Renamed from `deScier` (no backward compatibility needed)
 2. **Config files**: Launcher code updated to use new paths, but old configs may still work
 3. **Docker images**: Old images with `descios` tag will need rebuilding with new tag
 
@@ -99,7 +100,7 @@ Successfully completed rebranding of DeSciOS fork to AxonOS across the entire re
 ### Medium Priority
 1. **Logo update**: Replace `os.svg` content with AxonOS logo if available
 2. **Domain setup**: Add AxonOS domain if applicable
-3. **User migration**: Consider migration path for `deScier` username if desired
+3. **Username**: `aXonian` rename from `deScier` completed ✅
 
 ### Low Priority
 1. **Asset updates**: Update any remaining asset references

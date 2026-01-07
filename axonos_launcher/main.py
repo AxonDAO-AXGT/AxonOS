@@ -1064,7 +1064,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         user_grid.grid_columnconfigure(1, weight=1)
         
         ttk.Label(user_grid, text="Username:", font=('TkDefaultFont', 13)).grid(row=0, column=0, sticky='w', pady=12)  # 11 * 1.2 = 13
-        self.username_var = tk.StringVar(value="deScier")
+        self.username_var = tk.StringVar(value="aXonian")
         self.username_var.trace('w', lambda *args: self.update_config_status())
         username_entry = ttk.Entry(user_grid, textvariable=self.username_var, width=25)
         username_entry.grid(row=0, column=1, sticky='ew', padx=(20, 0), pady=12)
@@ -1245,7 +1245,7 @@ docker start axonos
         
         # Check if default models and user settings
         default_models = self.ollama_models.get('1.0', tk.END).strip() == 'command-r7b\ngranite3.2-vision'
-        default_user = self.username_var.get() == 'deScier'
+        default_user = self.username_var.get() == 'aXonian'
         default_password = self.password_var.get() == 'vncpassword'
         
         return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password
@@ -1330,7 +1330,7 @@ docker start axonos
                     mandatory_section_start = i
                     in_optional = False
                     in_mandatory = True
-                elif mandatory_section_start and 'Switch to deScier user' in line:
+                elif mandatory_section_start and 'Switch to aXonian user' in line:
                     in_mandatory = False
                     
                 if optional_section_start and not in_mandatory and not mandatory_section_start:
@@ -1426,8 +1426,8 @@ RUN wget https://github.com/ipfs/ipfs-desktop/releases/download/v0.30.2/ipfs-des
 # Configure IPFS for automatic startup
 RUN mkdir -p /home/$USER/.ipfs && \\
     chown -R $USER:$USER /home/$USER/.ipfs && \\
-    echo 'export IPFS_PATH=/home/deScier/.ipfs' >> /home/$USER/.bashrc && \\
-    echo 'export IPFS_PATH=/home/deScier/.ipfs' >> /root/.bashrc
+    echo 'export IPFS_PATH=/home/aXonian/.ipfs' >> /home/$USER/.bashrc && \\
+    echo 'export IPFS_PATH=/home/aXonian/.ipfs' >> /root/.bashrc
 
 # Copy IPFS status checker script
 COPY check_ipfs.sh /usr/local/bin/check_ipfs.sh

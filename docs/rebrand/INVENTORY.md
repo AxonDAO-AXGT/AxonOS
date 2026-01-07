@@ -39,7 +39,7 @@ This document catalogs all occurrences of DeSciOS branding that need to be chang
 
 | Location | Type | Change Needed | Risk |
 |----------|------|---------------|------|
-| `Dockerfile` | ENV USER=deScier | Yes (consider keeping for compatibility) | Medium |
+| `Dockerfile` | ENV USER=aXonian | ✅ Updated (renamed from deScier) | Low |
 | `Dockerfile` | ID=descios in /etc/os-release | Yes | Low |
 | `descios_launcher/main.py` | Default image tag: "descios:custom" | Yes | Low |
 | `descios_launcher/main.py` | Container name: "descios" | Yes | Low |
@@ -125,7 +125,7 @@ This document catalogs all occurrences of DeSciOS branding that need to be chang
 
 ## Special Considerations
 
-1. **User name `deScier`**: Consider keeping for backward compatibility, or provide migration path
+1. **User name `aXonian`**: ✅ Renamed from `deScier` throughout codebase
 2. **Directory names**: `descios_launcher/`, `descios_assistant/`, `descios_plugins/` - These are code paths, need careful renaming
 3. **GitHub URLs**: All references to `GizmoQuest/DeSciOS` should be updated to new repository
 4. **Domain references**: `descios.desciindia.org` - Remove or update if not applicable
@@ -141,7 +141,7 @@ This document catalogs all occurrences of DeSciOS branding that need to be chang
 
 ## Compatibility Notes
 
-- Keep `deScier` username for backward compatibility (or add migration)
+- Username `aXonian`: ✅ Renamed from `deScier` (no backward compatibility needed)
 - Consider supporting both old and new config file names during transition
 - Docker COPY commands will need path updates
 - Build scripts need to handle renamed directories

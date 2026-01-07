@@ -37,6 +37,7 @@
 | DeSciOS.io | AxonOS.io | Only if domain exists; otherwise remove |
 | DeSciOS Launcher | AxonOS Launcher | Application name |
 | DeSciOS Assistant | AxonOS Assistant | Application name |
+| deScier | aXonian | Default username |
 | GizmoQuest/DeSciOS | [New repo URL] | GitHub repository |
 | descios.desciindia.org | Remove or update | Domain references |
 
@@ -85,7 +86,7 @@
 ## Backward Compatibility
 
 - Support reading old config file names (`descios.yaml`) with deprecation warning
-- Consider keeping `deScier` username for compatibility (or document migration)
+- Username `aXonian`: Renamed from `deScier` as part of rebrand (no backward compatibility needed)
 - Docker image tags: support both old and new during transition period
 
 ## Examples

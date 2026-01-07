@@ -1,7 +1,7 @@
 FROM python:3.10-slim-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV USER=deScier
+ENV USER=aXonian
 ARG PASSWORD=vncpassword
 
 # Basic system setup
@@ -159,8 +159,8 @@ RUN wget https://github.com/ipfs/ipfs-desktop/releases/download/v0.30.2/ipfs-des
 # Configure IPFS for automatic startup
 RUN mkdir -p /home/$USER/.ipfs && \
     chown -R $USER:$USER /home/$USER/.ipfs && \
-    echo 'export IPFS_PATH=/home/deScier/.ipfs' >> /home/$USER/.bashrc && \
-    echo 'export IPFS_PATH=/home/deScier/.ipfs' >> /root/.bashrc
+    echo 'export IPFS_PATH=/home/aXonian/.ipfs' >> /home/$USER/.bashrc && \
+    echo 'export IPFS_PATH=/home/aXonian/.ipfs' >> /root/.bashrc
 
 # Copy IPFS status checker script
 COPY check_ipfs.sh /usr/local/bin/check_ipfs.sh
@@ -241,7 +241,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
 
-# Switch to deScier user
+# Switch to aXonian user
 USER $USER
 WORKDIR /home/$USER
 
