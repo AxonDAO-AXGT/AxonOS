@@ -189,8 +189,8 @@ def run_websocket_server(host='0.0.0.0', port=6080):
 def run_server(host='0.0.0.0', port=6080):
     """Run the Flask server with WebSocket gate."""
     logger.info(f"Starting AxonOS AXGT Gate Server on {host}:{port}")
-    logger.info(f"AXGT Contract: {os.getenv('AXGT_CONTRACT_ADDRESS', '0x6112C3509A8a787df576028450FebB3786A2274d')}")
-    logger.info(f"RPC URL: {os.getenv('AXGT_RPC_URL', 'https://ethereum-rpc.publicnode.com')}")
+    logger.info(f"AXGT Contract: {(os.getenv('AXGT_CONTRACT_ADDRESS') or '<unset>').strip()}")
+    logger.info(f"RPC URL: {(os.getenv('AXGT_RPC_URL') or '<unset>').strip()}")
     
     # Start WebSocket gate server in a separate thread
     ws_thread = threading.Thread(target=run_websocket_server, args=(host, port), daemon=True)

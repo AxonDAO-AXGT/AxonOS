@@ -32,6 +32,7 @@ EXEMPT_FILES=(
     "docs/rebrand/MIGRATION.md"
     "docs/rebrand/INVENTORY.md"
     "scripts/check_branding.sh"
+    "scripts/test_docker_build.sh"
 )
 
 EXEMPT_EXTENSIONS=(
@@ -48,6 +49,8 @@ ERRORS=0
 # Function to check if path is exempt
 is_exempt() {
     local path="$1"
+    # Normalize paths from grep output (often prefixed with "./")
+    path="${path#./}"
     
     # Check exempt directories
     for exempt_dir in "${EXEMPT_DIRS[@]}"; do

@@ -158,14 +158,20 @@ def has_axgt_balance(wallet_address: str) -> bool:
         logger.warning(f"Invalid wallet address format: {mask_wallet_address(wallet_address)}")
         return False
     
-    # Get configuration from environment
-    contract_address = os.getenv('AXGT_CONTRACT_ADDRESS', '0x6112C3509A8a787df576028450FebB3786A2274d')
-    rpc_url = os.getenv('AXGT_RPC_URL', 'https://ethereum-rpc.publicnode.com')
-    chain_id = os.getenv('AXGT_CHAIN_ID', '1')
-    
-    # Ensure contract address matches expected value (case-insensitive)
-    expected_contract = '0x6112C3509A8a787df576028450FebB3786A2274d'
-    if contract_address.lower() != expected_contract.lower():
+    # Get configuration from environment (no hardcoded defaults)
+    contract_address = (os.getenv('AXGT_CONTRACT_ADDRESS') or '').strip()
+    rpc_url = (os.getenv('AXGT_RPC_URL') or '').strip()
+    chain_id = (os.getenv('AXGT_CHAIN_ID') or '').strip()
+
+    if not contract_address or not rpc_url or not chain_id:
+        logger.error(
+            "AXGT verification not configured. Set AXGT_CONTRACT_ADDRESS, AXGT_RPC_URL, and AXGT_CHAIN_ID."
+        )
+        return False
+
+    # Optional safety check: if an expected contract is provided, enforce it.
+    expected_contract = (os.getenv('AXGT_EXPECTED_CONTRACT_ADDRESS') or '').strip()
+    if expected_contract and contract_address.lower() != expected_contract.lower():
         logger.error(f"Contract address mismatch. Expected: {expected_contract}, Got: {contract_address}")
         return False
     

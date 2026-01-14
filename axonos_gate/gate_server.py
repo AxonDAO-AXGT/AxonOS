@@ -137,8 +137,8 @@ def main():
     port = int(os.getenv('GATE_PORT', '8889'))
     
     logger.info(f"Starting AxonOS AXGT Gate Server on {host}:{port}")
-    logger.info(f"AXGT Contract: {os.getenv('AXGT_CONTRACT_ADDRESS', '0x6112C3509A8a787df576028450FebB3786A2274d')}")
-    logger.info(f"RPC URL: {os.getenv('AXGT_RPC_URL', 'https://ethereum-rpc.publicnode.com')}")
+    logger.info(f"AXGT Contract: {(os.getenv('AXGT_CONTRACT_ADDRESS') or '<unset>').strip()}")
+    logger.info(f"RPC URL: {(os.getenv('AXGT_RPC_URL') or '<unset>').strip()}")
     
     app.run(host=host, port=port, debug=False, use_reloader=False)
 

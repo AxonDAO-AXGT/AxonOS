@@ -106,7 +106,7 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         self.wfile.write(body)
 
     def do_OPTIONS(self):
-        if self.path.startswith('/api/auth/verify-wallet'):
+        if self.path.startswith('/api/auth/verify-wallet') or self.path.startswith('/api/config'):
             self.send_response(200)
             origin = cors_origin_for_request(
                 self.headers.get("Origin"),
@@ -118,11 +118,23 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', origin)
                 self.send_header('Vary', 'Origin')
                 self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address')
-                self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+                self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Content-Length', '0')
             self.end_headers()
             return
         return super().do_OPTIONS()
+
+    def do_GET(self):
+        # Serve a minimal config endpoint for UI display (no secrets).
+        if self.path.startswith('/api/config'):
+            contract = (os.getenv("AXGT_CONTRACT_ADDRESS") or "").strip()
+            chain_id = (os.getenv("AXGT_CHAIN_ID") or "").strip()
+            payload = {
+                "axgt_contract_address": contract or None,
+                "axgt_chain_id": chain_id or None,
+            }
+            return self._send_json(200, payload)
+        return super().do_GET()
 
     def do_POST(self):
         if not self.path.startswith('/api/auth/verify-wallet'):

@@ -339,7 +339,7 @@ Copyright (C) 2019 The noVNC Authors
                     To access AxonOS, you must hold AXGT in your wallet or use your 7-day free trial.
                 </p>
                 <p class="axonos-wallet-contract">
-                    AXGT Contract: <code>0x6112C3509A8a787df576028450FebB3786A2274d</code>
+                    AXGT Contract: <code id="axonos-axgt-contract">(loading…)</code>
                 </p>
                 <p class="axonos-wallet-contract" style="opacity: 0.85;">
                     Official site: <a href="https://axondao.io" target="_blank" rel="noopener noreferrer">axondao.io</a>
@@ -665,6 +665,21 @@ document.addEventListener("DOMContentLoaded", function() {
     const walletStatus = document.getElementById('axonos-wallet-status');
     const walletStatusContent = document.getElementById('axonos-wallet-status-content');
     const connectButton = document.getElementById('noVNC_connect_button');
+    const contractEl = document.getElementById('axonos-axgt-contract');
+
+    // Populate AXGT contract display dynamically (same-origin; avoids hardcoding in static HTML)
+    if (contractEl) {
+        const cfgUrl = new URL('/api/config', window.location.origin).toString();
+        fetch(cfgUrl, { method: 'GET' })
+            .then(r => r.json())
+            .then(cfg => {
+                const addr = (cfg && cfg.axgt_contract_address) ? String(cfg.axgt_contract_address) : '';
+                contractEl.textContent = addr || '(not configured)';
+            })
+            .catch(() => {
+                contractEl.textContent = '(not configured)';
+            });
+    }
     
     function setWalletStatus(state, message) {
         if (!walletStatus || !walletStatusContent) return;
