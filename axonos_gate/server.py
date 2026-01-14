@@ -15,7 +15,14 @@ from urllib.parse import parse_qs, urlparse
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
-from axonos_gate.axgt_verifier import has_axgt_balance, validate_wallet_address, mask_wallet_address
+# Import our modules (support running as a script in /axonos_gate)
+try:
+    from axgt_verifier import has_axgt_balance, validate_wallet_address, mask_wallet_address
+    from security_utils import cors_origin_for_request, get_rate_limiter_from_env, parse_cors_allowlist
+except ImportError:
+    # Fallback to package import (support running as module)
+    from axonos_gate.axgt_verifier import has_axgt_balance, validate_wallet_address, mask_wallet_address
+    from axonos_gate.security_utils import cors_origin_for_request, get_rate_limiter_from_env, parse_cors_allowlist
 
 # Configure logging
 logging.basicConfig(
@@ -25,7 +32,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+# CORS: default is same-origin only. Configure AXGT_CORS_ORIGINS for unusual deployments.
+_allow_any, _allowlist = parse_cors_allowlist(os.getenv("AXGT_CORS_ORIGINS"))
+CORS(app, resources={r"/api/*": {"origins": []}})
+_rate_limiter = get_rate_limiter_from_env()
 
 # Configuration
 NOVNC_WEB_DIR = Path('/usr/share/novnc')
@@ -39,6 +49,11 @@ if not NOVNC_WEB_DIR.exists():
 def verify_wallet():
     """Verify wallet holds AXGT tokens."""
     try:
+        if _rate_limiter is not None:
+            client_ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "unknown").split(",")[0].strip()
+            if not _rate_limiter.allow(client_ip):
+                return jsonify({"verified": False, "error": "Rate limit exceeded"}), 429
+
         data = request.get_json()
         if not data:
             return jsonify({'verified': False, 'error': 'No JSON data provided'}), 400
@@ -71,6 +86,23 @@ def verify_wallet():
     except Exception as e:
         logger.error(f"Error in verify_wallet: {e}", exc_info=True)
         return jsonify({'verified': False, 'error': 'Internal server error'}), 500
+
+
+@app.after_request
+def after_request(response):
+    """Emit CORS headers only when appropriate (avoid wildcard by default)."""
+    origin = cors_origin_for_request(
+        request.headers.get("Origin"),
+        request.headers.get("Host"),
+        _allow_any,
+        _allowlist,
+    )
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Wallet-Address"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    return response
 
 @app.route('/')
 def index():

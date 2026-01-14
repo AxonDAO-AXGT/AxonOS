@@ -12,10 +12,10 @@ axonos list
 axonos generate
 
 # Build Docker image
-axonos build --password your_secure_password
+axonos build --password "$AXONOS_VNC_PASSWORD"
 
 # Build and deploy with GPU support
-axonos build --password your_secure_password && axonos deploy --gpu
+axonos build --password "$AXONOS_VNC_PASSWORD" && axonos deploy --gpu
 ```
 
 ## Commands
@@ -101,7 +101,7 @@ axonos config load --file my-config.json
     "granite3.2-vision"
   ],
   "username": "aXonian",
-  "password": "your_secure_password",
+  "password": "REPLACE_WITH_STRONG_PASSWORD",
   "image_tag": "axonos:latest",
   "gpu_enabled": true
 }
@@ -150,7 +150,7 @@ axonos deploy --gpu
 ssh user@gpu-server
 
 # Clone and setup
-git clone https://github.com/[org]/axonos.git
+git clone https://github.com/AxonDAO-AXGT/AxonOS.git
 cd axonos
 
 # Build with GPU support

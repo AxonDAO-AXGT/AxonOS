@@ -22,7 +22,7 @@ fi
 
 # Get password from user or use default
 if [ -z "$1" ]; then
-    echo -e "${YELLOW}⚠️  No password provided. Using default 'vncpassword' (not recommended for production)${NC}"
+    echo -e "${YELLOW}⚠️  No password provided. Using default 'axonpassword' (not recommended for production)${NC}"
     echo "Usage: $0 <password> [image_tag]"
     echo "Example: $0 mySecurePassword123 axonos:latest"
     echo ""
@@ -32,7 +32,7 @@ if [ -z "$1" ]; then
         echo "Build cancelled."
         exit 1
     fi
-    PASSWORD="vncpassword"
+    PASSWORD="axonpassword"
     IMAGE_TAG="${2:-axonos:latest}"
 else
     PASSWORD="$1"
@@ -83,8 +83,13 @@ if docker build --build-arg PASSWORD="$PASSWORD" -t "$IMAGE_TAG" .; then
     echo ""
     echo "Image created: ${IMAGE_TAG}"
     echo ""
-    echo "To run the container:"
-    echo "  docker run -d --gpus all -p 6080:6080 -p 5901:5901 \\"
+    echo "To run the container (secure-by-default: publish noVNC only):"
+    echo "  docker run -d --gpus all --env-file .env -p 6080:6080 \\"
+    echo "    --name axonos ${IMAGE_TAG}"
+    echo ""
+    echo "Advanced (publish VNC + IPFS ports if you explicitly need host access):"
+    echo "  docker run -d --gpus all --env-file .env -p 6080:6080 \\"
+    echo "    -p 5901:5901 \\"
     echo "    -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 \\"
     echo "    --name axonos ${IMAGE_TAG}"
     echo ""

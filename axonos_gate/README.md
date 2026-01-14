@@ -2,6 +2,12 @@
 
 This module implements AXGT token-based gating for AxonOS remote desktop access.
 
+## Official References
+
+- **AxonDAO website**: `https://axondao.io`
+- **AXGT contract (Ethereum mainnet)**: `0x6112C3509A8a787df576028450FebB3786A2274d`
+- **Explorer**: `https://etherscan.io/address/0x6112C3509A8a787df576028450FebB3786A2274d`
+
 ## Overview
 
 AxonOS access is restricted to users who hold AXGT tokens in their Ethereum wallet. The gate checks token balance before allowing WebSocket connections to the noVNC desktop.
@@ -13,6 +19,12 @@ Required environment variables:
 - `AXGT_CONTRACT_ADDRESS`: AXGT ERC-20 contract address (default: `0x6112C3509A8a787df576028450FebB3786A2274d`)
 - `AXGT_CHAIN_ID`: Ethereum chain ID (default: `1` for mainnet)
 - `AXGT_RPC_URL`: Ethereum RPC endpoint (default: `https://ethereum-rpc.publicnode.com`)
+
+Optional hardening environment variables:
+
+- `AXGT_CORS_ORIGINS`: CORS allowlist for `/api/auth/verify-wallet`. Use comma-separated origins (exact match) or `*` to allow any. Default: same-origin only.
+- `AXGT_RATE_LIMIT_PER_MIN`: Best-effort per-client rate limit for verify calls. Default: `60`. Set `0` to disable.
+- `AXGT_TRIAL_DB_PATH`: Persistent trial registry path (JSON). Default: `/var/lib/axonos_gate/trials.json`
 
 Additional configuration for websockify:
 
@@ -58,10 +70,8 @@ or
 
 ## Security
 
-- Wallet addresses are masked in logs (first 6 and last 4 characters shown)
-- Invalid wallet formats are rejected early
-- System fails closed if RPC is unavailable
-- Contract address is validated against expected value
+- The gate performs basic input validation and avoids logging full wallet addresses.
+- The verification path is designed to behave conservatively if upstream dependencies (e.g., RPC) are unavailable.
 
 ## Installation
 

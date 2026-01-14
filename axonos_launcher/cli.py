@@ -77,7 +77,7 @@ def build_image(core, image_tag='axonos:latest', dockerfile=None):
         print(f"\n❌ Build failed with return code: {process.returncode}")
         return False
 
-def deploy_image(image_tag='axonos:latest', container_name='axonos', gpu=False, ports_only=False):
+def deploy_image(image_tag='axonos:latest', container_name='axonos', gpu=False, ports_only=False, expose_vnc=False, expose_ipfs=False, env_file=None):
     """Deploy Docker container"""
     # Check if image exists
     result = subprocess.run(['docker', 'images', '-q', image_tag], 
@@ -96,13 +96,22 @@ def deploy_image(image_tag='axonos:latest', container_name='axonos', gpu=False, 
     if gpu:
         docker_cmd.extend(['--gpus', 'all'])
     
-    # Port mappings
-    docker_cmd.extend([
-        '-p', '6080:6080',  # noVNC
-        '-p', '5901:5901',  # VNC
-    ])
-    
-    if not ports_only:
+    # Environment file (recommended for self-hosting)
+    if env_file:
+        docker_cmd.extend(['--env-file', env_file])
+
+    # Port mappings (secure-by-default: publish noVNC only)
+    docker_cmd.extend(['-p', '6080:6080'])  # noVNC
+
+    if ports_only:
+        # Backward-compatible flag: publish noVNC only
+        expose_vnc = False
+        expose_ipfs = False
+
+    if expose_vnc:
+        docker_cmd.extend(['-p', '5901:5901'])  # direct VNC (optional)
+
+    if expose_ipfs:
         docker_cmd.extend([
             '-p', '4001:4001',      # IPFS swarm TCP
             '-p', '4001:4001/udp',  # IPFS swarm UDP
@@ -122,7 +131,7 @@ def deploy_image(image_tag='axonos:latest', container_name='axonos', gpu=False, 
         container_id = result.stdout.strip()[:12]
         print(f"✅ Container started successfully: {container_id}")
         print(f"\n🌐 Access AxonOS at: http://localhost:6080/vnc.html")
-        if not ports_only:
+        if expose_ipfs:
             print(f"📡 IPFS Gateway: http://localhost:8080")
             print(f"🔧 IPFS API: http://localhost:5001")
             print(f"📁 IPFS Web UI: http://localhost:5001/webui")
@@ -203,7 +212,13 @@ Examples:
     deploy_parser.add_argument('--gpu', action='store_true', 
                               help='Enable GPU support')
     deploy_parser.add_argument('--ports-only', action='store_true',
-                              help='Only expose VNC ports (no IPFS ports)')
+                              help='Backward-compatible: only publish noVNC (6080)')
+    deploy_parser.add_argument('--expose-vnc', action='store_true',
+                              help='Publish direct VNC port (5901) on the host')
+    deploy_parser.add_argument('--expose-ipfs', action='store_true',
+                              help='Publish IPFS ports (4001/5001/8080/9090) on the host')
+    deploy_parser.add_argument('--env-file', default=None,
+                              help='Path to an env file to pass to docker run (recommended: .env)')
     
     # Config command
     config_parser = subparsers.add_parser('config', help='Configuration management')
@@ -254,7 +269,15 @@ Examples:
         return 0 if success else 1
     
     elif args.command == 'deploy':
-        success = deploy_image(args.image, args.name, args.gpu, args.ports_only)
+        success = deploy_image(
+            image_tag=args.image,
+            container_name=args.name,
+            gpu=args.gpu,
+            ports_only=args.ports_only,
+            expose_vnc=args.expose_vnc,
+            expose_ipfs=args.expose_ipfs,
+            env_file=args.env_file,
+        )
         return 0 if success else 1
     
     elif args.command == 'config':

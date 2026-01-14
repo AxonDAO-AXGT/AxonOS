@@ -15,6 +15,8 @@ from urllib.parse import parse_qs, urlparse
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
+from security_utils import cors_origin_for_request, get_rate_limiter_from_env, parse_cors_allowlist
+
 # Add /axonos_gate to path for imports
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 if '/axonos_gate' not in sys.path:
@@ -38,23 +40,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-# Configure CORS to allow requests from the noVNC origin
-CORS(app, resources={
-    r"/api/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+# CORS: default is same-origin (no wildcard). For unusual deployments, set AXGT_CORS_ORIGINS
+# to "*" or a comma-separated list of allowed origins.
+_allow_any, _allowlist = parse_cors_allowlist(os.getenv("AXGT_CORS_ORIGINS"))
+# Keep flask-cors installed but don't let it default to "*".
+CORS(app, resources={r"/api/*": {"origins": []}})
+
+_rate_limiter = get_rate_limiter_from_env()
 
 NOVNC_WEB_DIR = Path('/usr/share/novnc')
 
 @app.after_request
 def after_request(response):
     """Add CORS headers to all responses."""
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    origin = cors_origin_for_request(
+        request.headers.get("Origin"),
+        request.headers.get("Host"),
+        _allow_any,
+        _allowlist,
+    )
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Wallet-Address"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
     return response
 
 @app.route('/api/auth/verify-wallet', methods=['POST', 'OPTIONS'])
@@ -63,6 +72,12 @@ def verify_wallet():
     if request.method == 'OPTIONS':
         return '', 200
     try:
+        # Best-effort rate limiting (per client IP)
+        if _rate_limiter is not None:
+            client_ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "unknown").split(",")[0].strip()
+            if not _rate_limiter.allow(client_ip):
+                return jsonify({"verified": False, "error": "Rate limit exceeded"}), 429
+
         data = request.get_json()
         if not data:
             return jsonify({'verified': False, 'error': 'No JSON data provided'}), 400
@@ -116,8 +131,10 @@ def serve_static(path):
 
 def main():
     """Run the gate server."""
-    host = os.getenv('GATE_HOST', '0.0.0.0')
-    port = int(os.getenv('GATE_PORT', '8080'))  # Default to 8080, not 6080
+    # Defaults chosen to avoid collisions with IPFS gateway (8080) and reduce surface area.
+    # Override via env for non-default deployments.
+    host = os.getenv('GATE_HOST', '127.0.0.1')
+    port = int(os.getenv('GATE_PORT', '8889'))
     
     logger.info(f"Starting AxonOS AXGT Gate Server on {host}:{port}")
     logger.info(f"AXGT Contract: {os.getenv('AXGT_CONTRACT_ADDRESS', '0x6112C3509A8a787df576028450FebB3786A2274d')}")

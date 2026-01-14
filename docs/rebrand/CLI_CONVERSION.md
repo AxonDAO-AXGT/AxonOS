@@ -41,7 +41,7 @@ axonos list
 axonos generate
 
 # Build image
-axonos build --password your_password
+axonos build --password "$AXONOS_VNC_PASSWORD"
 
 # Deploy container
 axonos deploy --gpu

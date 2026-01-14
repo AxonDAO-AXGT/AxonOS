@@ -6,17 +6,17 @@
 
 ```bash
 # Build with custom password
-./scripts/build_axonos.sh your_secure_password
+./scripts/build_axonos.sh "$AXONOS_VNC_PASSWORD"
 
 # Build with custom password and tag
-./scripts/build_axonos.sh your_secure_password axonos:latest
+./scripts/build_axonos.sh "$AXONOS_VNC_PASSWORD" axonos:latest
 ```
 
 ### Manual Build
 
 ```bash
 # Build with custom password (recommended)
-docker build --build-arg PASSWORD=your_secure_password -t axonos:latest .
+docker build --build-arg PASSWORD="$AXONOS_VNC_PASSWORD" -t axonos:latest .
 
 # Build with default password (testing only)
 docker build -t axonos:latest .
@@ -116,7 +116,7 @@ The warning about `ARG PASSWORD` is informational. The password is used during b
 ### Using BuildKit Cache
 
 ```bash
-DOCKER_BUILDKIT=1 docker build --build-arg PASSWORD=your_password -t axonos:latest .
+DOCKER_BUILDKIT=1 docker build --build-arg PASSWORD="$AXONOS_VNC_PASSWORD" -t axonos:latest .
 ```
 
 ### Building Specific Stages
@@ -150,5 +150,5 @@ After building:
 Build logs are saved to `/tmp/axonos_build.log` when using the build script, or you can redirect manually:
 
 ```bash
-docker build --build-arg PASSWORD=your_password -t axonos:latest . 2>&1 | tee build.log
+docker build --build-arg PASSWORD="$AXONOS_VNC_PASSWORD" -t axonos:latest . 2>&1 | tee build.log
 ```

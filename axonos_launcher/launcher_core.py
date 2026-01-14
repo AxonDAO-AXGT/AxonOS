@@ -235,7 +235,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
                               for app_id, app_info in self.get_all_applications().items()}
         self.ollama_models = ['command-r7b', 'granite3.2-vision']
         self.username = 'aXonian'
-        self.password = 'vncpassword'
+        self.password = 'axonpassword'
         self.gpu_enabled = False
         self.image_tag = 'axonos:custom'
     
@@ -318,7 +318,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         
         default_models = self.ollama_models == ['command-r7b', 'granite3.2-vision']
         default_user = self.username == 'aXonian'
-        default_password = self.password == 'vncpassword'
+        default_password = self.password == 'axonpassword'
         
         return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password
     

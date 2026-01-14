@@ -143,7 +143,7 @@ For developers who want to build their own package:
 
 ```bash
 # Clone the repository
-git clone https://github.com/GizmoQuest/AxonOS.git
+git clone https://github.com/AxonDAO-AXGT/AxonOS.git
 cd AxonOS
 
 # Set up build environment
@@ -161,9 +161,9 @@ make release
 
 ## 📞 Support
 
-- **GitHub Issues**: https://github.com/GizmoQuest/AxonOS/issues
-- **Documentation**: https://github.com/GizmoQuest/AxonOS
-- **Community**: DeSci India and global DeSci movement
+- **GitHub Issues**: https://github.com/AxonDAO-AXGT/AxonOS/issues
+- **Documentation**: https://github.com/AxonDAO-AXGT/AxonOS
+- **Community**: Global DeSci movement
 
 ## 📄 License
 

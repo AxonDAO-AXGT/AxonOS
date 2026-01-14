@@ -274,5 +274,5 @@ If you encounter issues:
 1. Check this documentation
 2. Clean build artifacts: `make clean`
 3. Verify prerequisites are installed
-4. Check GitHub issues: https://github.com/GizmoQuest/AxonOS/issues
+4. Check GitHub issues: https://github.com/AxonDAO-AXGT/AxonOS/issues
 5. Create new issue with build logs 

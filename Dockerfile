@@ -2,7 +2,7 @@ FROM python:3.10-slim-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV USER=aXonian
-ARG PASSWORD=vncpassword
+ARG PASSWORD=axonpassword
 
 # Basic system setup
 RUN apt update && apt install -y \
@@ -55,15 +55,20 @@ ID=axonos\n\
 ID_LIKE=debian\n\
 PRETTY_NAME="AxonOS"\n\
 VERSION_ID="0.1"\n\
-SUPPORT_URL="https://github.com/[org]/axonos/issues"\n\
-BUG_REPORT_URL="https://github.com/[org]/axonos/issues"' > /etc/os-release && \
+SUPPORT_URL="https://github.com/AxonDAO-AXGT/AxonOS/issues"\n\
+BUG_REPORT_URL="https://github.com/AxonDAO-AXGT/AxonOS/issues"' > /etc/os-release && \
     echo 'AxonOS' > /etc/hostname && \
     mv /bin/uname /bin/uname.real && \
     echo '#!/bin/sh\nif [ "$1" = "-a" ]; then\n  echo -n "AxonOS " && /bin/uname.real -a\nelse\n  /bin/uname.real "$@"\nfi' > /bin/uname && \
     chmod +x /bin/uname
 
-# Install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
+# Install Ollama (supply-chain hardening: optional SHA256 verification of install script)
+# Provide OLLAMA_INSTALL_SHA256 to verify the downloaded script before execution.
+ARG OLLAMA_INSTALL_SHA256=""
+RUN curl --proto '=https' --tlsv1.2 -fsSL https://ollama.com/install.sh -o /tmp/ollama_install.sh && \
+    if [ -n "$OLLAMA_INSTALL_SHA256" ]; then echo "$OLLAMA_INSTALL_SHA256  /tmp/ollama_install.sh" | sha256sum -c - ; fi && \
+    sh /tmp/ollama_install.sh && \
+    rm -f /tmp/ollama_install.sh
 
 # Pull the command-r7b model
 RUN ollama serve & sleep 5 && ollama pull granite3-guardian && ollama pull command-r7b && ollama pull granite3.2-vision
@@ -328,10 +333,7 @@ COPY axonos_gate/ /axonos_gate/
 RUN pip3 install -r /axonos_gate/requirements.txt
 RUN chmod +x /axonos_gate/*.py
 
-# Set AXGT environment variables
-ENV AXGT_CONTRACT_ADDRESS=0x6112C3509A8a787df576028450FebB3786A2274d
-ENV AXGT_CHAIN_ID=1
-ENV AXGT_RPC_URL=https://ethereum-rpc.publicnode.com
+# AXGT / gate configuration is provided via environment variables at runtime.
 
 # Copy theme application script for manual testing
 COPY apply_theme.sh /usr/local/bin/apply_theme.sh

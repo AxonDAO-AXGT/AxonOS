@@ -13,7 +13,7 @@ The launcher defaults to CLI mode, perfect for headless GPU servers without GUI 
 axonos list
 
 # Build image
-axonos build --password your_secure_password
+axonos build --password "$AXONOS_VNC_PASSWORD"
 
 # Deploy with GPU support
 axonos deploy --gpu

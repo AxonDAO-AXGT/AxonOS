@@ -32,10 +32,16 @@ fi
 echo "Initializing IPFS..."
 su - aXonian -c 'ipfs init --profile=server' || echo "IPFS already initialized or failed to initialize"
 
-# Configure IPFS to bind to all interfaces for external access
-echo "Configuring IPFS for external access..."
-su - aXonian -c 'ipfs config Addresses.API "/ip4/0.0.0.0/tcp/5001"'
-su - aXonian -c 'ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080"'
+# Configure IPFS bind addresses (runtime-configurable via env).
+# Defaults preserve prior behavior unless overridden.
+IPFS_API_BIND="${IPFS_API_BIND:-0.0.0.0}"
+IPFS_API_PORT="${IPFS_API_PORT:-5001}"
+IPFS_GATEWAY_BIND="${IPFS_GATEWAY_BIND:-0.0.0.0}"
+IPFS_GATEWAY_PORT="${IPFS_GATEWAY_PORT:-8080}"
+
+echo "Configuring IPFS bind addresses..."
+su - aXonian -c "ipfs config Addresses.API \"/ip4/${IPFS_API_BIND}/tcp/${IPFS_API_PORT}\""
+su - aXonian -c "ipfs config Addresses.Gateway \"/ip4/${IPFS_GATEWAY_BIND}/tcp/${IPFS_GATEWAY_PORT}\""
 
 # Start IPFS daemon in background
 echo "Starting IPFS daemon..."

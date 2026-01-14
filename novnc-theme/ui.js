@@ -1179,6 +1179,8 @@ const UI = {
         // the websocket connection is established.
         const verifiedWallet = window.verifiedWalletAddress || null;
         if (verifiedWallet) {
+            // Prefer explicit config (URL/config var). Fall back to the image default.
+            // NOTE: The VNC password is not a secret in this flow; access is gated by AXGT verification.
             const password = WebUtil.getConfigVar('password') || 'axonpassword';
             UI.reconnectPassword = password;
             try {
@@ -1230,7 +1232,7 @@ const UI = {
         }
 
         // Wallet is verified, proceed with connection using default password
-        // The password is typically "axonpassword" or from config
+        // The password is typically from config var, otherwise image default.
         const password = WebUtil.getConfigVar('password') || 'axonpassword';
         UI.reconnectPassword = password;
         

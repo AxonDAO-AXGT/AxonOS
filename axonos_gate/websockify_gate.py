@@ -12,6 +12,9 @@ import logging
 import json
 from urllib.parse import parse_qs, urlparse
 
+# Local security helpers (same directory)
+from security_utils import cors_origin_for_request, get_rate_limiter_from_env, parse_cors_allowlist
+
 # Add system Python path for Debian packages (websockify) FIRST
 if '/usr/lib/python3/dist-packages' not in sys.path:
     sys.path.insert(0, '/usr/lib/python3/dist-packages')
@@ -53,6 +56,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+_allow_any, _allowlist = parse_cors_allowlist(os.getenv("AXGT_CORS_ORIGINS"))
+_rate_limiter = get_rate_limiter_from_env()
+
 def _extract_wallet_from_path_and_headers(path: str, headers) -> str | None:
     """Extract wallet address from query string (?wallet=0x...) or header X-Wallet-Address."""
     try:
@@ -84,19 +90,35 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         self.send_response(status_code)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))
-        # CORS (harmless for same-origin, helpful for odd deployments)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        # CORS: default is same-origin (no wildcard). For unusual deployments set AXGT_CORS_ORIGINS.
+        origin = cors_origin_for_request(
+            self.headers.get("Origin"),
+            self.headers.get("Host"),
+            _allow_any,
+            _allowlist,
+        )
+        if origin:
+            self.send_header('Access-Control-Allow-Origin', origin)
+            self.send_header('Vary', 'Origin')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address')
+            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.end_headers()
         self.wfile.write(body)
 
     def do_OPTIONS(self):
         if self.path.startswith('/api/auth/verify-wallet'):
             self.send_response(200)
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address')
-            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            origin = cors_origin_for_request(
+                self.headers.get("Origin"),
+                self.headers.get("Host"),
+                _allow_any,
+                _allowlist,
+            )
+            if origin:
+                self.send_header('Access-Control-Allow-Origin', origin)
+                self.send_header('Vary', 'Origin')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address')
+                self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
             self.send_header('Content-Length', '0')
             self.end_headers()
             return
@@ -106,6 +128,12 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         if not self.path.startswith('/api/auth/verify-wallet'):
             # websockify doesn't implement POST for static; return 404 for safety
             return self.send_error(404, "Not Found")
+
+        # Best-effort rate limiting (per client IP)
+        if _rate_limiter is not None:
+            client_ip = (self.headers.get("X-Forwarded-For") or self.client_address[0] or "unknown").split(",")[0].strip()
+            if not _rate_limiter.allow(client_ip):
+                return self._send_json(429, {"verified": False, "error": "Rate limit exceeded"})
 
         try:
             content_length = int(self.headers.get('Content-Length') or '0')

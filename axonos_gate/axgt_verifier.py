@@ -9,6 +9,7 @@ import os
 import re
 import logging
 import time
+import json
 from typing import Optional, Tuple, Dict
 import requests
 from threading import Lock
@@ -16,10 +17,51 @@ from threading import Lock
 logger = logging.getLogger(__name__)
 
 # Trial tracking (in-memory, per-process)
-# In production, this should be stored in a database
+# In production, this should be stored in a database. For now we persist to disk
+# to prevent trivial trial resets on container restart.
 _trial_registry: Dict[str, float] = {}  # wallet_address (lowercase) -> trial_start_timestamp
 _trial_lock = Lock()
 TRIAL_DURATION_SECONDS = 7 * 24 * 60 * 60  # 7 days in seconds
+
+# Persist trials to disk (best-effort). Use a path that is writable in-container.
+_TRIAL_DB_PATH_DEFAULT = "/var/lib/axonos_gate/trials.json"
+_trial_db_loaded = False
+
+def _trial_db_path() -> str:
+    return os.getenv("AXGT_TRIAL_DB_PATH", _TRIAL_DB_PATH_DEFAULT)
+
+def _ensure_trial_db_loaded() -> None:
+    """Load persisted trials once per process (best-effort)."""
+    global _trial_db_loaded
+    if _trial_db_loaded:
+        return
+    path = _trial_db_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f) or {}
+            if isinstance(data, dict):
+                # Only accept string->number mappings
+                for k, v in data.items():
+                    if isinstance(k, str) and isinstance(v, (int, float)):
+                        _trial_registry[k.lower()] = float(v)
+    except Exception as e:
+        logger.warning(f"Failed to load trial registry from disk: {e}")
+    finally:
+        _trial_db_loaded = True
+
+def _persist_trials_best_effort() -> None:
+    """Persist current trial registry to disk (best-effort, atomic write)."""
+    path = _trial_db_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = f"{path}.tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(_trial_registry, f)
+        os.replace(tmp, path)
+    except Exception as e:
+        logger.warning(f"Failed to persist trial registry to disk: {e}")
 
 # ERC-20 balanceOf function signature hash (first 4 bytes of keccak256)
 BALANCE_OF_SIGNATURE = "0x70a08231"
@@ -54,6 +96,7 @@ def start_trial(wallet_address: str) -> bool:
     wallet_key = wallet_address.lower()
     
     with _trial_lock:
+        _ensure_trial_db_loaded()
         # Check if trial already exists and is still valid
         if wallet_key in _trial_registry:
             trial_start = _trial_registry[wallet_key]
@@ -64,6 +107,7 @@ def start_trial(wallet_address: str) -> bool:
         
         # Start new trial
         _trial_registry[wallet_key] = time.time()
+        _persist_trials_best_effort()
         logger.info(f"Started 7-day trial for {mask_wallet_address(wallet_address)}")
         return True
 
@@ -83,6 +127,7 @@ def is_trial_active(wallet_address: str) -> Tuple[bool, Optional[float]]:
     wallet_key = wallet_address.lower()
     
     with _trial_lock:
+        _ensure_trial_db_loaded()
         if wallet_key not in _trial_registry:
             return False, None
         
@@ -95,6 +140,7 @@ def is_trial_active(wallet_address: str) -> Tuple[bool, Optional[float]]:
         else:
             # Trial expired, remove it
             del _trial_registry[wallet_key]
+            _persist_trials_best_effort()
             return False, None
 
 def has_axgt_balance(wallet_address: str) -> bool:

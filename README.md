@@ -39,6 +39,18 @@ AxonOS provides a comprehensive scientific computing environment with extensive 
 
 ---
 
+## 🔗 Official Links & AXGT Contract
+
+- **Official website**: `https://axondao.io`
+- **GitHub**: `https://github.com/AxonDAO-AXGT/AxonOS`
+- **AXGT (Ethereum mainnet) contract**: `0x6112C3509A8a787df576028450FebB3786A2274d`
+- **Token page (ERC-20)**: `https://etherscan.io/token/0x6112C3509A8a787df576028450FebB3786A2274d`
+- **Contract address page**: `https://etherscan.io/address/0x6112C3509A8a787df576028450FebB3786A2274d`
+
+**Verification status**: Contract verification on Etherscan is pending.
+
+---
+
 ## 📦 What's Inside
 
 | Component        | Description                                                      |
@@ -154,15 +166,14 @@ AxonOS provides a comprehensive scientific computing environment with extensive 
 
 ```bash
 # Clone the repo
-# TODO: Update [org] for developmental purposes
-git clone https://github.com/[org]/AxonOS.git
+git clone https://github.com/AxonDAO-AXGT/AxonOS.git
 cd axonos
 
 # List available applications
 axonos list
 
 # Build image with custom password
-axonos build --password your_secure_password
+axonos build --password "$AXONOS_VNC_PASSWORD"
 
 # Deploy with GPU support
 axonos deploy --gpu
@@ -316,18 +327,30 @@ AxonOS is accessed through a web browser using noVNC. Supported browsers:
 
 ## 🧪 Quick Start
 
+### Configuration via Environment
+
+For self-hosting, prefer environment-based configuration.
+
+1. Copy the example file and fill placeholders:
+
+```bash
+cp env.example .env
+```
+
+2. Use `.env` values for build/run (examples below). **Do not commit `.env`.**
+
 ### Option 1: CLI Launcher (Recommended for Headless Servers)
 
 ```bash
 # Clone the repo
-git clone https://github.com/[org]/axonos.git
+git clone https://github.com/AxonDAO-AXGT/AxonOS.git
 cd axonos
 
 # List applications
 axonos list
 
 # Build image
-axonos build --password your_secure_password
+axonos build --password "$AXONOS_VNC_PASSWORD"
 
 # Deploy with GPU
 axonos deploy --gpu
@@ -350,25 +373,30 @@ Use the intuitive GUI to:
 
 ```bash
 # Clone the repo
-git clone https://github.com/[org]/axonos.git
+git clone https://github.com/AxonDAO-AXGT/AxonOS.git
 cd axonos
 
 # Build the Docker image (with custom password - recommended)
-docker build --build-arg PASSWORD=your_secure_password -t axonos .
+docker build --build-arg PASSWORD="$AXONOS_VNC_PASSWORD" -t axonos .
 
 # Or use the build script
-./scripts/build_axonos.sh your_secure_password
+./scripts/build_axonos.sh "$AXONOS_VNC_PASSWORD"
 
 # Or build with default password (not recommended for production)
 docker build -t axonos .
 
-# Run the container (recommended: with GPU support and IPFS ports)
-docker run -d --gpus all -p 6080:6080 -p 5901:5901 \
-  -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 \
+# Run the container (recommended default: expose noVNC only)
+# - noVNC provides browser access to the desktop on port 6080.
+# - Not publishing VNC/IPFS ports does NOT remove functionality inside the desktop;
+#   it only avoids exposing those services to the host/internet by default.
+docker run -d --gpus all --env-file .env -p 6080:6080 \
   --name axonos-lab axonos
 
-# Without GPU (if no NVIDIA GPU available)
-docker run -d -p 6080:6080 -p 5901:5901 \
+# Advanced: publish additional ports if you explicitly need host access
+# - Direct VNC (optional): 5901
+# - IPFS (optional): 4001, 5001, 8080, 9090
+docker run -d --gpus all --env-file .env -p 6080:6080 \
+  -p 5901:5901 \
   -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 \
   --name axonos-lab axonos
 ```
@@ -380,7 +408,20 @@ docker run -d -p 6080:6080 -p 5901:5901 \
 * 🔧 `http://localhost:5001` → IPFS API
 * 📁 `http://localhost:5001/webui` → IPFS Web UI
 
-> **Security Note**: For production use, always set a custom password during build using `--build-arg PASSWORD=your_secure_password`. The default password `vncpassword` is for development purposes only.
+> **Security Note**: For production use, always set a custom password during build using `--build-arg PASSWORD="$AXONOS_VNC_PASSWORD"`. The default password `axonpassword` is for development purposes only.
+
+### Self-Hosting Disclaimer
+
+If you self-host AxonOS on a public server (or expose ports beyond localhost), you are responsible for hardening your deployment.
+
+- **Passwords**: Always set a strong VNC password at build/run time. The default is intended for development only.
+- **Port exposure**: Avoid exposing **direct VNC** (`5901`) to the internet. Prefer accessing the desktop via **noVNC** (`6080`) behind a reverse proxy with TLS.
+- **Reverse proxy**: If using a tunnel/reverse proxy, ensure it terminates TLS and applies basic abuse protections (rate limits, request size limits, IP allowlists where appropriate).
+- **AXGT gate configuration**: For non-standard hosting setups, configure the gate via environment variables (e.g., allowed origins and rate limits) so wallet verification continues to work while reducing cross-origin abuse.
+- **Data/IPFS**: Exposing IPFS API (`5001`) publicly is risky. If you need remote access, restrict it to trusted networks/users.
+- **Supply chain**: If you need stronger build integrity guarantees, pin/verify external installers where supported (e.g., the optional Ollama installer SHA256 build arg).
+
+---
 
 ---
 
@@ -390,7 +431,7 @@ AxonOS is designed for:
 
 * Students needing a portable research environment
 * Scientists working offline or from remote labs
-* Contributors to the DeSci India and global DeSci movement
+* Contributors to the global DeSci movement
 * Educators seeking open, reproducible science infrastructure
 
 > **Build open science tools the decentralized way. Host your own lab. Publish without gatekeepers.**

@@ -1070,7 +1070,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         username_entry.grid(row=0, column=1, sticky='ew', padx=(20, 0), pady=12)
         
         ttk.Label(user_grid, text="VNC Password:", font=('TkDefaultFont', 13)).grid(row=1, column=0, sticky='w', pady=12)  # 11 * 1.2 = 13
-        self.password_var = tk.StringVar(value="vncpassword")
+        self.password_var = tk.StringVar(value="axonpassword")
         self.password_var.trace('w', lambda *args: self.update_config_status())
         password_entry = ttk.Entry(user_grid, textvariable=self.password_var, width=25, show="*")
         password_entry.grid(row=1, column=1, sticky='ew', padx=(20, 0), pady=12)
@@ -1096,6 +1096,47 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
                                  text="💡 Note: GPU support requires NVIDIA Docker runtime and compatible GPU drivers.",
                                  style='Description.TLabel')
         gpu_info_label.pack(anchor='w', padx=15, pady=(0, 15))
+
+        # Exposure settings (secure-by-default)
+        expose_header = ttk.Label(content_frame, text="🌐 Exposure (Self-Hosting)", style='SectionHeader.TLabel')
+        expose_header.pack(anchor='w', pady=(0, 15))
+
+        expose_frame = ttk.Frame(content_frame, style='Section.TFrame')
+        expose_frame.pack(fill='x', pady=(0, 30))
+
+        expose_content = ttk.Frame(expose_frame)
+        expose_content.pack(fill='x', padx=20, pady=15)
+
+        ttk.Label(
+            expose_content,
+            text="By default, only noVNC (6080) is published. Enable the options below only if you need host access.",
+            style='Description.TLabel',
+            wraplength=720,
+        ).pack(anchor='w', padx=15, pady=(0, 10))
+
+        self.expose_vnc_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            expose_content,
+            text="Expose direct VNC port (5901) on the host (not recommended on public servers)",
+            variable=self.expose_vnc_var,
+            command=self.update_docker_command,
+        ).pack(anchor='w', padx=15, pady=(0, 6))
+
+        self.expose_ipfs_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            expose_content,
+            text="Expose IPFS ports on the host (4001/5001/8080/9090) (not recommended on public servers)",
+            variable=self.expose_ipfs_var,
+            command=self.update_docker_command,
+        ).pack(anchor='w', padx=15, pady=(0, 10))
+
+        env_row = ttk.Frame(expose_content)
+        env_row.pack(fill='x', padx=15, pady=(6, 0))
+
+        ttk.Label(env_row, text="Env file for docker run (recommended):", style='Description.TLabel').pack(side='left')
+        self.env_file_var = tk.StringVar(value=".env")
+        ttk.Entry(env_row, textvariable=self.env_file_var, width=32).pack(side='left', padx=(10, 10))
+        ttk.Label(env_row, text="(leave empty to skip --env-file)", style='Description.TLabel').pack(side='left')
         
     def setup_build_tab(self, parent):
         # Title
@@ -1199,24 +1240,34 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         """Update the Docker run command based on current settings"""
         image_tag = self.image_tag_var.get()
         gpu_flag = "--gpus all " if self.gpu_enabled_var.get() else ""
-        
-        basic_cmd = f"docker run -p 6080:6080 {gpu_flag}{image_tag}"
-        advanced_cmd = f"docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name axonos {image_tag}"
-        ipfs_cmd = f"docker run -d -p 6080:6080 -p 5901:5901 -p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 {gpu_flag}--name axonos {image_tag}"
+
+        env_file = ""
+        try:
+            env_path = (self.env_file_var.get() or "").strip()
+            if env_path:
+                env_file = f"--env-file {env_path} "
+        except Exception:
+            env_file = ""
+
+        expose_vnc = bool(getattr(self, "expose_vnc_var", tk.BooleanVar(value=False)).get())
+        expose_ipfs = bool(getattr(self, "expose_ipfs_var", tk.BooleanVar(value=False)).get())
+
+        vnc_ports = "-p 5901:5901 " if expose_vnc else ""
+        ipfs_ports = "-p 4001:4001 -p 4001:4001/udp -p 5001:5001 -p 8080:8080 -p 9090:9090 " if expose_ipfs else ""
+
+        # Secure-by-default: publish noVNC only
+        basic_cmd = f"docker run {env_file}-p 6080:6080 {gpu_flag}{image_tag}".strip()
+        deploy_cmd = f"docker run -d {env_file}-p 6080:6080 {vnc_ports}{ipfs_ports}{gpu_flag}--name axonos {image_tag}".strip()
         
         command_text = f"""# MAIN COMMAND (used by Deploy! button):
-{ipfs_cmd}
+{deploy_cmd}
 
 # Basic command (web access via http://localhost:6080):
-docker run -p 6080:6080 {image_tag}
+docker run {env_file}-p 6080:6080 {image_tag}
 
-# Advanced command (background mode with VNC):
-docker run -d -p 6080:6080 -p 5901:5901 {gpu_flag}--name axonos {image_tag}
-
-# IPFS Access URLs:
-# - IPFS Gateway: http://localhost:8080
-# - IPFS API: http://localhost:5001
-# - IPFS Web UI: http://localhost:5001/webui
+# Notes:
+# - VNC/IPFS host ports are NOT published unless enabled in the Exposure section above.
+# - Services still work inside the desktop even if not published on the host.
 
 # To stop the container:
 docker stop axonos
@@ -1246,7 +1297,7 @@ docker start axonos
         # Check if default models and user settings
         default_models = self.ollama_models.get('1.0', tk.END).strip() == 'command-r7b\ngranite3.2-vision'
         default_user = self.username_var.get() == 'aXonian'
-        default_password = self.password_var.get() == 'vncpassword'
+        default_password = self.password_var.get() == 'axonpassword'
         
         return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password
             
@@ -1549,7 +1600,10 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                 'username': self.username_var.get(),
                 'password': self.password_var.get(),
                 'image_tag': self.image_tag_var.get(),
-                'gpu_enabled': self.gpu_enabled_var.get()
+                'gpu_enabled': self.gpu_enabled_var.get(),
+                'expose_vnc': bool(getattr(self, "expose_vnc_var", tk.BooleanVar(value=False)).get()),
+                'expose_ipfs': bool(getattr(self, "expose_ipfs_var", tk.BooleanVar(value=False)).get()),
+                'env_file': (getattr(self, "env_file_var", tk.StringVar(value="")).get() or "").strip(),
             }
             
             filename = filedialog.asksaveasfilename(
@@ -1573,6 +1627,9 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
         try:
             image_tag = self.image_tag_var.get()
             gpu_enabled = self.gpu_enabled_var.get()
+            expose_vnc = bool(getattr(self, "expose_vnc_var", tk.BooleanVar(value=False)).get())
+            expose_ipfs = bool(getattr(self, "expose_ipfs_var", tk.BooleanVar(value=False)).get())
+            env_path = (getattr(self, "env_file_var", tk.StringVar(value="")).get() or "").strip()
             
             # Check if image exists
             check_cmd = ['docker', 'images', '-q', image_tag]
@@ -1590,25 +1647,25 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
             remove_cmd = ['docker', 'rm', 'axonos']
             subprocess.run(remove_cmd, capture_output=True)
             
-            # Build the docker run command with IPFS ports
+            docker_cmd = ['docker', 'run', '-d']
             if gpu_enabled:
-                docker_cmd = [
-                    'docker', 'run', '-d', '--gpus', 'all', 
-                    '-p', '6080:6080', '-p', '5901:5901',
+                docker_cmd.extend(['--gpus', 'all'])
+
+            if env_path:
+                docker_cmd.extend(['--env-file', env_path])
+
+            # Secure-by-default: publish only noVNC
+            docker_cmd.extend(['-p', '6080:6080'])
+            if expose_vnc:
+                docker_cmd.extend(['-p', '5901:5901'])
+            if expose_ipfs:
+                docker_cmd.extend([
                     '-p', '4001:4001', '-p', '4001:4001/udp',
                     '-p', '5001:5001', '-p', '8080:8080', '-p', '9090:9090',
-                    '--name', 'axonos', image_tag
-                ]
-                self.log_message("🚀 Deploying with GPU support and IPFS ports...")
-            else:
-                docker_cmd = [
-                    'docker', 'run', '-d', 
-                    '-p', '6080:6080', '-p', '5901:5901',
-                    '-p', '4001:4001', '-p', '4001:4001/udp',
-                    '-p', '5001:5001', '-p', '8080:8080', '-p', '9090:9090',
-                    '--name', 'axonos', image_tag
-                ]
-                self.log_message("🚀 Deploying with IPFS ports...")
+                ])
+
+            docker_cmd.extend(['--name', 'axonos', image_tag])
+            self.log_message("🚀 Deploying (noVNC published; optional ports per Exposure settings)...")
             
             # Run the container
             self.log_message(f"\n🚀 [Deploy] Running this command:")
@@ -1644,9 +1701,10 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                 threading.Thread(target=open_browser, daemon=True).start()
                 
                 self.log_message(f"🎉 AxonOS is now running at: http://localhost:6080/vnc.html")
-                self.log_message("🌐 IPFS Gateway: http://localhost:8080")
-                self.log_message("🔧 IPFS API: http://localhost:5001")
-                self.log_message("📁 IPFS Web UI: http://localhost:5001/webui")
+                if expose_ipfs:
+                    self.log_message("🌐 IPFS Gateway: http://localhost:8080")
+                    self.log_message("🔧 IPFS API: http://localhost:5001")
+                    self.log_message("📁 IPFS Web UI: http://localhost:5001/webui")
                 self.log_message("💡 To stop: docker stop axonos")
                 
                 # Show info about custom apps if any
@@ -1677,7 +1735,7 @@ Examples:
   axonos --version          # Show version
   
 AxonOS is a containerized scientific computing environment.
-Visit: https://github.com/[org]/axonos
+Visit: https://github.com/AxonDAO-AXGT/AxonOS
         """
     )
     
@@ -1755,7 +1813,7 @@ Visit: https://github.com/[org]/axonos
             return 1
         
         # Clone the repository
-        clone_cmd = ['git', 'clone', 'https://github.com/[org]/axonos.git', clone_dir]
+        clone_cmd = ['git', 'clone', 'https://github.com/AxonDAO-AXGT/AxonOS.git', clone_dir]
         result = subprocess.run(clone_cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
@@ -1764,7 +1822,7 @@ Visit: https://github.com/[org]/axonos
         else:
             print(f"❌ Failed to clone AxonOS: {result.stderr}")
             print("Please clone manually:")
-            print("  git clone https://github.com/[org]/axonos.git ~/axonos")
+            print("  git clone https://github.com/AxonDAO-AXGT/AxonOS.git ~/axonos")
             return 1
     
     # Change to AxonOS directory

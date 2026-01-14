@@ -38,7 +38,7 @@
 | DeSciOS Launcher | AxonOS Launcher | Application name |
 | DeSciOS Assistant | AxonOS Assistant | Application name |
 | deScier | aXonian | Default username |
-| GizmoQuest/DeSciOS | [New repo URL] | GitHub repository |
+| GizmoQuest/DeSciOS | AxonDAO-AXGT/AxonOS | GitHub repository |
 | descios.desciindia.org | Remove or update | Domain references |
 
 ## Tone Guidelines
