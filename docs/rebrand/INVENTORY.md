@@ -108,7 +108,7 @@ This document catalogs all occurrences of DeSciOS branding that need to be chang
 | Location | Type | Change Needed | Risk |
 |----------|------|---------------|------|
 | `build/build_all.py` | Package names, descriptions | Yes | Medium |
-| `build/build_deb.py` | Debian package metadata | Yes | Medium |
+| `build/build_deb.py` | Ubuntu 22.04 package metadata | Yes | Medium |
 | `build/build_macos.py` | macOS bundle identifiers | Yes | Medium |
 | `build/build_windows.py` | Windows installer metadata | Yes | Medium |
 | `build/build_launcher.py` | Binary names | Yes | Medium |

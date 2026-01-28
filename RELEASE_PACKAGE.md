@@ -10,7 +10,7 @@
 
 ## 🎯 What's Included
 
-This Debian package contains:
+This Ubuntu 22.04 package (.deb) contains:
 
 - **AxonOS Launcher Binary**: Self-contained executable (`/usr/local/bin/axonos`)
 - **Desktop Integration**: Application menu entry and icon
@@ -96,7 +96,7 @@ sudo apt purge axonos-launcher
 /usr/share/pixmaps/axonos.svg            # Application icon
 /usr/share/doc/axonos-launcher/          # Documentation
 ├── copyright                             # License information
-└── changelog.Debian.gz                   # Package changelog
+└── changelog.Ubuntu2204.gz               # Package changelog
 ```
 
 ## 🔍 Troubleshooting

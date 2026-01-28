@@ -142,13 +142,14 @@ class AxonOSLauncher:
             "r_rstudio": {
                 "name": "R & RStudio",
                 "description": "Statistical computing language and IDE",
-                "dockerfile_section": '''# Install R for Debian bookworm
+                "dockerfile_section": '''# Install R for Ubuntu 22.04 (jammy)
 RUN apt update -qq && \\
-    apt install --no-install-recommends -y dirmngr ca-certificates gnupg wget && \\
-    gpg --keyserver keyserver.ubuntu.com --recv-key 95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7 && \\
-    gpg --armor --export 95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7 | \\
-    tee /etc/apt/trusted.gpg.d/cran_debian_key.asc && \\
-    echo "deb http://cloud.r-project.org/bin/linux/debian bookworm-cran40/" > /etc/apt/sources.list.d/cran.list && \\
+    apt install --no-install-recommends -y ca-certificates curl gnupg && \\
+    install -d -m 0755 /etc/apt/keyrings && \\
+    curl -fsSL https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \\
+      | gpg --dearmor -o /etc/apt/keyrings/cran.gpg && \\
+    echo "deb [signed-by=/etc/apt/keyrings/cran.gpg] https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/" \\
+      > /etc/apt/sources.list.d/cran.list && \\
     apt update -qq && \\
     apt install --no-install-recommends -y r-base
 

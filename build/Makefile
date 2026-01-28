@@ -95,7 +95,7 @@ deps:
 	@echo "📋 Installing build dependencies..."
 	pip3 install pyinstaller
 	@if [ "$(shell uname)" = "Linux" ]; then \
-		echo "Installing Debian packaging tools..."; \
+		echo "Installing Ubuntu 22.04 packaging tools..."; \
 		sudo apt update; \
 		sudo apt install -y dpkg-dev gzip; \
 	fi

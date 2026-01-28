@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bookworm
+FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV USER=aXonian
@@ -7,13 +7,14 @@ ARG PASSWORD=axonpassword
 # Basic system setup
 RUN apt update && apt install -y \
     xfce4 xfce4-goodies tightvncserver \
-    novnc websockify python3-websockify \
+    novnc websockify python3 python-is-python3 python3-pip python3-websockify \
     xterm curl sudo git wget supervisor \
     dbus-x11 gvfs policykit-1 thunar \
     software-properties-common gnupg2 \
+    zstd \
+    bzip2 \
     libgl1-mesa-glx libglib2.0-0 \
     libsm6 libxrender1 libxext6 \
-    firefox-esr \
     libglvnd0 \
     libgl1 \
     libglx0 \
@@ -39,6 +40,11 @@ RUN apt update && apt install -y \
     libgtk-3-dev \
     fonts-noto-color-emoji \
     fonts-symbola \
+    adwaita-icon-theme \
+    hicolor-icon-theme \
+    gnome-icon-theme \
+    gnome-icon-theme-symbolic \
+    libgtk-3-bin \
     xdotool \
     x11-xserver-utils \
     xautomation \
@@ -48,11 +54,26 @@ RUN apt update && apt install -y \
     x11-apps \
     && apt clean
 
+# Warm icon caches for desktop icons
+RUN gtk-update-icon-cache -f /usr/share/icons/Adwaita || true && \
+    gtk-update-icon-cache -f /usr/share/icons/hicolor || true && \
+    gtk-update-icon-cache -f /usr/share/icons/gnome || true
+
+# Install Firefox ESR (non-snap) for Ubuntu base image
+RUN apt update && apt install -y ca-certificates gnupg && \
+    install -d -m 0755 /etc/apt/keyrings && \
+    curl -fsSL https://packages.mozilla.org/apt/repo-signing-key.gpg \
+      | gpg --dearmor -o /etc/apt/keyrings/mozilla.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/mozilla.gpg] https://packages.mozilla.org/apt mozilla main" \
+      > /etc/apt/sources.list.d/mozilla.list && \
+    apt update && apt install -y firefox-esr && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
 # Set up OS identification
 RUN echo 'NAME="AxonOS"\n\
 VERSION="0.1"\n\
 ID=axonos\n\
-ID_LIKE=debian\n\
+ID_LIKE=ubuntu\n\
 PRETTY_NAME="AxonOS"\n\
 VERSION_ID="0.1"\n\
 SUPPORT_URL="https://github.com/AxonDAO-AXGT/AxonOS/issues"\n\
@@ -87,16 +108,15 @@ fi' >> /home/$USER/.bashrc && \
 # Install JupyterLab and other global Python tools with default pip
 RUN pip install --no-cache-dir jupyterlab
 
-# Install pip for system Python
-RUN apt update && apt install -y python3-pip
 
-# Install R for Debian bookworm
+# Install R for Ubuntu 22.04 (jammy)
 RUN apt update -qq && \
-    apt install --no-install-recommends -y dirmngr ca-certificates gnupg wget && \
-    gpg --keyserver keyserver.ubuntu.com --recv-key 95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7 && \
-    gpg --armor --export 95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7 | \
-    tee /etc/apt/trusted.gpg.d/cran_debian_key.asc && \
-    echo "deb http://cloud.r-project.org/bin/linux/debian bookworm-cran40/" > /etc/apt/sources.list.d/cran.list && \
+    apt install --no-install-recommends -y ca-certificates curl gnupg && \
+    install -d -m 0755 /etc/apt/keyrings && \
+    curl -fsSL https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
+      | gpg --dearmor -o /etc/apt/keyrings/cran.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/cran.gpg] https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/" \
+      > /etc/apt/sources.list.d/cran.list && \
     apt update -qq && \
     apt install --no-install-recommends -y r-base
 
@@ -123,14 +143,15 @@ RUN wget https://github.com/ugeneunipro/ugene/releases/download/52.1/ugene-52.1-
 RUN apt update && apt install -y octave
 
 # Install Fiji (ImageJ) with bundled JDK
-RUN apt update && apt install -y unzip wget && \
-    wget https://downloads.imagej.net/fiji/latest/fiji-latest-linux64-jdk.zip && \
-    unzip fiji-latest-linux64-jdk.zip -d /opt && \
-    rm fiji-latest-linux64-jdk.zip && \
-    chown $USER:$USER -R /opt/Fiji && \
-    chmod +x /opt/Fiji/fiji-linux-x64 && \
-    echo 'alias fiji=/opt/Fiji/fiji-linux-x64' >> /home/$USER/.bashrc && \
-    echo '[Desktop Entry]\nName=Fiji\nExec=bash -c "cd /opt/Fiji && ./fiji"\nIcon=applications-science\nType=Application\nCategories=Science;' \
+RUN apt update && apt install -y unzip && \
+    wget https://mirrors.pasteur.fr/fiji/downloads/stable/fiji-stable-linux64-jdk.zip && \
+    unzip fiji-stable-linux64-jdk.zip -d /opt && \
+    rm fiji-stable-linux64-jdk.zip && \
+    chown $USER:$USER -R /opt/Fiji.app && \
+    chmod +x /opt/Fiji.app/fiji-linux-x64 && \
+    ln -s /opt/Fiji.app /opt/Fiji && \
+    echo 'alias fiji=/opt/Fiji.app/fiji-linux-x64' >> /home/$USER/.bashrc && \
+    echo '[Desktop Entry]\nName=Fiji\nExec=bash -c "cd /opt/Fiji.app && ./fiji"\nIcon=applications-science\nType=Application\nCategories=Science;' \
     > /usr/share/applications/fiji.desktop
 
 # Install Nextflow
@@ -143,7 +164,11 @@ RUN apt-get update && apt-get install -y openjdk-17-jre-headless && \
 
 # Install QGIS and GRASS GIS 8
 RUN apt update && apt install -y qgis qgis-plugin-grass grass && \
-    sed -i 's|^Exec=grass$|Exec=bash -c "export GRASS_PYTHON=/usr/bin/python3; grass"|' /usr/share/applications/grass82.desktop && \
+    if [ -f /usr/share/applications/grass.desktop ]; then \
+      sed -i 's|^Exec=grass$|Exec=bash -c "export GRASS_PYTHON=/usr/bin/python3; grass"|' /usr/share/applications/grass.desktop; \
+    elif [ -f /usr/share/applications/grass82.desktop ]; then \
+      sed -i 's|^Exec=grass$|Exec=bash -c "export GRASS_PYTHON=/usr/bin/python3; grass"|' /usr/share/applications/grass82.desktop; \
+    fi && \
     echo 'export GRASS_PYTHON=/usr/bin/python3' >> /home/$USER/.bashrc && \
     echo 'export GRASS_PYTHON=/usr/bin/python3' >> /root/.bashrc && \
     update-desktop-database /usr/share/applications
@@ -213,7 +238,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \
 WORKDIR /opt
 COPY axonos_assistant /opt/axonos_assistant
 RUN cd /opt/axonos_assistant && \
-    /usr/bin/python3 -m pip install --break-system-packages -r requirements.txt && \
+    /usr/bin/python3 -m pip install -r requirements.txt && \
     chmod +x main.py && \
     cp axonos-assistant.desktop /usr/share/applications/ && \
     chown -R $USER:$USER /opt/axonos_assistant
@@ -221,7 +246,7 @@ RUN cd /opt/axonos_assistant && \
 # Install Talk to K Assistant
 COPY talk_to_k /opt/talk_to_k
 RUN cd /opt/talk_to_k && \
-    /usr/bin/python3 -m pip install --break-system-packages -r requirements.txt && \
+    /usr/bin/python3 -m pip install -r requirements.txt && \
     chmod +x main.py && \
     cp talk-to-k.desktop /usr/share/applications/ && \
     chown -R $USER:$USER /opt/talk_to_k

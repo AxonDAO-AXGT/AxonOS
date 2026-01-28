@@ -34,7 +34,7 @@ docker build -t axonos:latest .
 
 The build process includes:
 
-1. **Base Image**: Python 3.10 on Debian Bookworm
+1. **Base Image**: NVIDIA CUDA 12.2 on Ubuntu 22.04 (jammy)
 2. **System Packages**: XFCE4, VNC, noVNC, scientific tools
 3. **Ollama Installation**: AI model server
 4. **Model Downloads**: 
@@ -99,7 +99,7 @@ df -h
 
 - Check internet connection
 - Retry the build (Docker caches layers)
-- Check if Debian repositories are accessible
+- Check if Ubuntu 22.04 repositories are accessible
 
 ### Build Fails During Model Download
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build .deb package for AxonOS Launcher on Ubuntu/Debian systems
+Build .deb package for AxonOS Launcher on Ubuntu 22.04 systems
 """
 
 # MIT License
@@ -41,7 +41,7 @@ MAINTAINER = "Avimanyu Bandyopadhyay <avimanyu786@gmail.com>"
 DESCRIPTION = "GUI launcher for customizing and deploying AxonOS scientific computing environments"
 
 def create_package_structure(temp_dir):
-    """Create the Debian package directory structure"""
+    """Create the deb package directory structure"""
     pkg_dir = Path(temp_dir) / f"{PACKAGE_NAME}_{PACKAGE_VERSION}_{PACKAGE_ARCH}"
     
     # Create directory structure
@@ -184,7 +184,7 @@ exit 0
 def create_documentation(pkg_dir):
     """Create documentation files"""
     # Copyright file
-    copyright_content = f"""Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+    copyright_content = f"""Format: https://www.ubuntu.com/legal/terms-and-policies/copyright-policy
 Upstream-Name: AxonOS Launcher
 Upstream-Contact: AxonOS Team
 Source: https://github.com/GizmoQuest/AxonOS
@@ -231,7 +231,7 @@ License: MIT
  -- {MAINTAINER}  {datetime.now().strftime('%a, %d %b %Y %H:%M:%S %z')}
 """
     
-    changelog_file = pkg_dir / "usr/share/doc/axonos-launcher/changelog.Debian"
+    changelog_file = pkg_dir / "usr/share/doc/axonos-launcher/changelog.Ubuntu2204"
     with open(changelog_file, "w") as f:
         f.write(changelog_content)
     
@@ -291,7 +291,7 @@ def main():
     for tool in required_tools:
         if shutil.which(tool) is None:
             print(f"✗ Error: Required tool '{tool}' not found")
-            print("Please install debian package building tools:")
+            print("Please install Ubuntu 22.04 package building tools:")
             print("  sudo apt install dpkg-dev gzip")
             sys.exit(1)
     

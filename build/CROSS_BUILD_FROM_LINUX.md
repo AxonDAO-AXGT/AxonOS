@@ -15,7 +15,7 @@ python3 build_simple_cross.py
 
 ## 📋 Requirements
 
-- **Linux system** (Ubuntu/Debian recommended)
+- **Linux system** (Ubuntu 22.04 recommended)
 - **Docker** installed and running
 - **Python 3.6+** with pip
 
@@ -23,7 +23,7 @@ python3 build_simple_cross.py
 
 ### Install Docker
 ```bash
-# Ubuntu/Debian
+# Ubuntu 22.04
 sudo apt update
 sudo apt install -y docker.io
 sudo usermod -aG docker $USER

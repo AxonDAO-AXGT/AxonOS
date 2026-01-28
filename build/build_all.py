@@ -93,7 +93,7 @@ def build_binary():
     return True
 
 def build_deb_package():
-    """Build .deb package for Ubuntu/Debian (Linux only)"""
+    """Build .deb package for Ubuntu 22.04 (Linux only)"""
     if platform.system().lower() != "linux":
         print("⚠️  .deb package building only supported on Linux")
         return True  # Not an error, just skip
@@ -145,7 +145,7 @@ Files Created:
 Installation Instructions:
 =========================
 
-Linux (Ubuntu/Debian):
+Linux (Ubuntu 22.04):
   # Using .deb package (recommended)
   sudo dpkg -i axonos-launcher_*.deb
   sudo apt-get install -f  # Fix dependencies if needed

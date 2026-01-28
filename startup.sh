@@ -98,6 +98,15 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             DISPLAY=:1 xfconf-query -c xsettings -p /Net/IconThemeName -s "Adwaita" 2>/dev/null
             echo "WhiteSur theme applied"
 
+            # Enforce AxonOS wallpaper at runtime (Ubuntu XFCE can reset)
+            WALLPAPER_PATH="/usr/share/desktop-base/active-theme/wallpaper/contents/images/1920x1080.svg"
+            if [ -f "$WALLPAPER_PATH" ]; then
+                for MON in monitor0 monitor0-0; do
+                    DISPLAY=:1 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/last-image" -n -t string -s "$WALLPAPER_PATH" 2>/dev/null || true
+                    DISPLAY=:1 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/image-style" -n -t int -s 5 2>/dev/null || true
+                done
+            fi
+
             # Panel: transparent by default + ~2x height + use AxonOS icon for menu
             # NOTE: do this after xfconfd is ready so xfce4-panel channel is writable.
             DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/size -n -t uint -s 56 2>/dev/null || true

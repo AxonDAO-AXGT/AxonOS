@@ -267,7 +267,7 @@ The launcher includes example plugins and comprehensive documentation in the `ax
 
 ### Installation Prerequisites
 
-#### Ubuntu/Debian
+#### Ubuntu 22.04
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y

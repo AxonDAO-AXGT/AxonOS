@@ -15,7 +15,7 @@ from urllib.parse import parse_qs, urlparse
 # Local security helpers (same directory)
 from security_utils import cors_origin_for_request, get_rate_limiter_from_env, parse_cors_allowlist
 
-# Add system Python path for Debian packages (websockify) FIRST
+# Add system Python path for Ubuntu 22.04 packages (websockify) FIRST
 if '/usr/lib/python3/dist-packages' not in sys.path:
     sys.path.insert(0, '/usr/lib/python3/dist-packages')
 

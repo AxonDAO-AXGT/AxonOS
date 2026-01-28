@@ -11,14 +11,35 @@
 
 import * as Log from '../core/util/logging.js';
 import _, { l10n } from './localization.js';
-import { isTouchDevice, isSafari, hasScrollbarGutter, dragThreshold }
-    from '../core/util/browser.js';
+import * as Browser from '../core/util/browser.js';
 import { setCapture, getPointerEvent } from '../core/util/events.js';
 import KeyTable from "../core/input/keysym.js";
 import keysyms from "../core/input/keysymdef.js";
 import Keyboard from "../core/input/keyboard.js";
 import RFB from "../core/rfb.js";
 import * as WebUtil from "./webutil.js";
+
+const isTouchDevice = (typeof Browser.isTouchDevice === 'function')
+    ? Browser.isTouchDevice()
+    : !!Browser.isTouchDevice;
+const isSafari = (typeof Browser.isSafari === 'function')
+    ? Browser.isSafari
+    : () => !!Browser.isSafari;
+const hasScrollbarGutter = (typeof Browser.hasScrollbarGutter === 'function')
+    ? Browser.hasScrollbarGutter()
+    : !!Browser.hasScrollbarGutter;
+const dragThreshold = (Browser.dragThreshold !== undefined)
+    ? Browser.dragThreshold
+    : 10;
+const setSetting = (name, value) => {
+    if (typeof WebUtil.setSetting === 'function') {
+        WebUtil.setSetting(name, value);
+        return;
+    }
+    if (typeof WebUtil.writeSetting === 'function') {
+        WebUtil.writeSetting(name, value);
+    }
+};
 
 const PAGE_TITLE = "noVNC";
 
@@ -45,7 +66,10 @@ const UI = {
     reconnectPassword: null,
 
     prime() {
-        return WebUtil.initSettings().then(() => {
+        const initResult = (typeof WebUtil.initSettings === 'function')
+            ? WebUtil.initSettings()
+            : undefined;
+        return Promise.resolve(initResult).then(() => {
             if (document.readyState === "interactive" || document.readyState === "complete") {
                 return UI.start();
             }
@@ -733,14 +757,14 @@ const UI = {
         if (val === null) {
             val = WebUtil.readSetting(name, defVal);
         }
-        WebUtil.setSetting(name, val);
+        setSetting(name, val);
         UI.updateSetting(name);
         return val;
     },
 
     // Set the new value, update and disable form control setting
     forceSetting(name, val) {
-        WebUtil.setSetting(name, val);
+        setSetting(name, val);
         UI.updateSetting(name);
         UI.disableSetting(name);
     },
@@ -1712,7 +1736,9 @@ const UI = {
     },
 
     updateLogging() {
-        WebUtil.initLogging(UI.getSetting('logging'));
+        if (typeof WebUtil.initLogging === 'function') {
+            WebUtil.initLogging(UI.getSetting('logging'));
+        }
     },
 
     updateDesktopName(e) {

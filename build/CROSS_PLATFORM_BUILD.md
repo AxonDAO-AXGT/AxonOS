@@ -4,7 +4,7 @@ This guide explains how to build AxonOS Launcher packages for Linux, macOS, and 
 
 ## 🎯 Quick Start
 
-### Linux (Debian/Ubuntu)
+### Linux (Ubuntu 22.04)
 ```bash
 # Build .deb package
 cd build
@@ -32,7 +32,7 @@ make exe
 - PyInstaller
 - PyYAML
 
-### Linux (Debian/Ubuntu)
+### Linux (Ubuntu 22.04)
 - dpkg-dev
 - gzip
 
@@ -64,7 +64,7 @@ make deb
 ```
 
 **Output:**
-- `axonos-launcher_0.1.0_amd64.deb` - Debian package
+- `axonos-launcher_0.1.0_amd64.deb` - Ubuntu 22.04 package
 - `dist/axonos` - Binary executable
 
 ### 2. macOS (.app + DMG)

@@ -35,7 +35,7 @@ python3 build_all.py
 - tkinter (usually included with Python)
 - PyInstaller (installed automatically)
 
-### Linux (Ubuntu/Debian)
+### Linux (Ubuntu 22.04)
 ```bash
 # Essential packages
 sudo apt update
@@ -84,7 +84,7 @@ Features:
 
 ### 2. Package Creation (`build_deb.py`)
 
-Creates `.deb` package for Ubuntu/Debian systems:
+Creates `.deb` package for Ubuntu 22.04 systems:
 
 **Output**: `axonos-launcher_0.1.0_amd64.deb`
 
@@ -94,7 +94,7 @@ Package includes:
 - Icon and documentation
 - Dependency management (python3, python3-tk, docker.io)
 - Post-installation scripts for setup
-- Proper Debian package structure
+- Proper .deb package structure
 
 ### 3. Complete Build (`build_all.py`)
 
@@ -122,7 +122,7 @@ axonos-launcher_1.0.0_amd64.deb
 │   └── axonos.svg      # Application icon
 └── usr/share/doc/axonos-launcher/
     ├── copyright        # License information
-    └── changelog.Debian.gz  # Package changelog
+    └── changelog.Ubuntu2204.gz  # Package changelog
 ```
 
 ### Dependencies
@@ -132,7 +132,7 @@ axonos-launcher_1.0.0_amd64.deb
 
 ## 🚀 Installation Methods
 
-### Ubuntu/Debian (.deb package)
+### Ubuntu 22.04 (.deb package)
 ```bash
 # Install package
 sudo dpkg -i axonos-launcher_0.1.0_amd64.deb
@@ -220,7 +220,7 @@ pip3 install pyinstaller
 
 ### tkinter Not Found
 ```bash
-# Ubuntu/Debian
+# Ubuntu 22.04
 sudo apt install python3-tk
 
 # CentOS/RHEL
