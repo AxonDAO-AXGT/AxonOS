@@ -68,6 +68,7 @@ python3 axonos_launcher/main.py
 - **GNU Octave** - MATLAB-compatible scientific computing
 - **Fiji (ImageJ)** - Image processing and analysis
 - **Nextflow** - Workflow management system
+- **GROMACS (MPI)** - Molecular dynamics package (release-2026)
 - **QGIS & GRASS GIS** - Geographic Information Systems
 - **IPFS Desktop** - Decentralized file system GUI
 - **Syncthing** - Continuous file synchronization

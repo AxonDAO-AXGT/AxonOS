@@ -233,6 +233,103 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \
     chmod 644 /usr/share/applications/cellmodeller.desktop && \
     update-desktop-database /usr/share/applications
 
+# Install newer CMake (GROMACS 2026 requires >= 3.28)
+RUN apt-get remove -y cmake && \
+    apt-get autoremove -y && \
+    wget -O /tmp/cmake.sh https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3-linux-x86_64.sh && \
+    chmod +x /tmp/cmake.sh && \
+    /tmp/cmake.sh --skip-license --prefix=/usr/local && \
+    rm -f /tmp/cmake.sh
+
+ARG GMX_CUDA_ARCHS="70;75;86;89"
+
+# Install CUDA-aware UCX + OpenMPI
+RUN apt update && apt install -y \
+    autoconf \
+    automake \
+    libevent-dev \
+    libhwloc-dev \
+    libibverbs-dev \
+    libnuma-dev \
+    libpciaccess-dev \
+    librdmacm-dev \
+    libtool \
+    libtool-bin \
+    m4 \
+    flex \
+    bison \
+    perl \
+    file \
+    && apt clean && \
+    git clone --depth 1 https://github.com/openucx/ucx.git /opt/ucx-src && \
+    cd /opt/ucx-src && \
+    ./autogen.sh && \
+    ./configure --prefix=/opt/ucx --enable-mt --enable-cuda --with-cuda=/usr/local/cuda && \
+    make -j"$(nproc)" && \
+    make install && \
+    git clone --depth 1 --recursive --shallow-submodules https://github.com/open-mpi/ompi.git /opt/ompi-src && \
+    cd /opt/ompi-src && \
+    ./autogen.pl && \
+    ./configure --prefix=/opt/openmpi --with-ucx=/opt/ucx --with-cuda=/usr/local/cuda --enable-mpirun-prefix-by-default && \
+    make -j"$(nproc)" && \
+    make install && \
+    rm -rf /opt/ucx-src /opt/ompi-src
+
+# Install NVIDIA HPC SDK (cuFFTMp + NVSHMEM) — repo + small deps first
+RUN curl -fsSL https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK | \
+    gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /" \
+    > /etc/apt/sources.list.d/nvhpc.list && \
+    apt update -y && \
+    apt install -y --no-install-recommends gfortran gfortran-11 libgfortran-11-dev && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
+# Install NVHPC 26.1 + CUDA multi package (includes cuFFTMp)
+RUN apt-get update -y && \
+    apt-get -o APT::Status-Fd=2 -o Debug::pkgAcquire::Progress=1 -o DPKG::Progress-Fancy=1 install -y --no-install-recommends nvhpc-26-1-cuda-multi && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV UCX_HOME=/opt/ucx
+ENV OMPI_HOME=/opt/openmpi
+ENV NVHPC_ROOT=/opt/nvidia/hpc_sdk
+ENV NVHPC_COMM_LIBS=/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/comm_libs
+ENV PATH=/opt/openmpi/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/openmpi/lib:/opt/ucx/lib:${NVHPC_COMM_LIBS}/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/12.2/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/12.9/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/nvshmem/lib:${NVHPC_COMM_LIBS}/12.2/nvshmem/lib:${NVHPC_COMM_LIBS}/12.9/nvshmem/lib:$LD_LIBRARY_PATH
+
+# Install GROMACS (release-2026, MPI-enabled)
+RUN apt update && apt install -y \
+    && apt clean && \
+    git clone --branch release-2026 --depth 1 https://github.com/gromacs/gromacs.git /opt/gromacs-src && \
+    CUFFTMP_INCLUDE="$(find /opt/nvidia/hpc_sdk /usr/local/cuda -type f -iname 'cufft*mp*.h' 2>/dev/null | head -n 1)" && \
+    CUFFTMP_LIBRARY="$(find /opt/nvidia/hpc_sdk /usr/local/cuda -type f -iname 'libcufft*mp*.so*' 2>/dev/null | head -n 1)" && \
+    CUFFTMP_ROOT="$(dirname "${CUFFTMP_INCLUDE}")/.." && \
+    if [ -z "$CUFFTMP_ROOT" ] || [ -z "$CUFFTMP_INCLUDE" ] || [ -z "$CUFFTMP_LIBRARY" ]; then \
+      echo "cuFFTMp not found under /opt/nvidia/hpc_sdk; check NVHPC install" >&2; \
+      find /opt/nvidia/hpc_sdk -maxdepth 4 -type d 2>/dev/null || true; \
+      exit 1; \
+    fi && \
+    cmake -S /opt/gromacs-src -B /opt/gromacs-build \
+      -DGMX_BUILD_OWN_FFTW=ON \
+      -DREGRESSIONTEST_DOWNLOAD=OFF \
+      -DGMX_GPU=CUDA \
+      -DGMX_MPI=ON \
+      -DGMX_OPENMP=ON \
+      -DGMX_USE_CUFFTMP=ON \
+      -DcuFFTMp_ROOT="${CUFFTMP_ROOT}" \
+      -DcuFFTMp_INCLUDE_DIR="$(dirname "${CUFFTMP_INCLUDE}")" \
+      -DcuFFTMp_LIBRARY="${CUFFTMP_LIBRARY}" \
+      -DCUDAToolkit_ROOT=/usr/local/cuda \
+      -DCMAKE_CUDA_ARCHITECTURES="${GMX_CUDA_ARCHS}" \
+      -DCMAKE_INSTALL_PREFIX=/opt/gromacs && \
+    cmake --build /opt/gromacs-build -j"$(nproc)" && \
+    cmake --install /opt/gromacs-build && \
+    ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx && \
+    ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx_mpi && \
+    echo 'source /opt/gromacs/bin/GMXRC' > /etc/profile.d/gromacs.sh && \
+    echo 'source /opt/gromacs/bin/GMXRC' >> /home/$USER/.bashrc && \
+    rm -rf /opt/gromacs-src /opt/gromacs-build && \
+    echo '[Desktop Entry]\nName=GROMACS (MPI)\nExec=bash -lc "gmx"\nIcon=applications-science\nType=Application\nTerminal=true\nCategories=Science;' \
+    > /usr/share/applications/gromacs.desktop    
 
 # Install AxonOS Assistant
 WORKDIR /opt

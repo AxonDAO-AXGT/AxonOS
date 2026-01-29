@@ -213,6 +213,45 @@ RUN apt-get update && apt-get install -y openjdk-17-jre-headless && \\
     chown $USER:$USER /usr/bin/nextflow''',
                 "enabled": True
             },
+            "gromacs": {
+                "name": "GROMACS (MPI)",
+                "description": "Molecular dynamics package (release-2026, MPI-enabled)",
+                "dockerfile_section": '''# Install GROMACS (release-2026, MPI-enabled)
+RUN apt update && apt install -y \\
+    && apt clean && \\
+    git clone --branch release-2026 --depth 1 https://github.com/gromacs/gromacs.git /opt/gromacs-src && \\
+    CUFFTMP_INCLUDE="$(find /opt/nvidia/hpc_sdk /usr/local/cuda -type f -iname 'cufft*mp*.h' 2>/dev/null | head -n 1)" && \\
+    CUFFTMP_LIBRARY="$(find /opt/nvidia/hpc_sdk /usr/local/cuda -type f -iname 'libcufft*mp*.so*' 2>/dev/null | head -n 1)" && \\
+    CUFFTMP_ROOT="$(dirname "${CUFFTMP_INCLUDE}")/.." && \\
+    if [ -z "$CUFFTMP_ROOT" ] || [ -z "$CUFFTMP_INCLUDE" ] || [ -z "$CUFFTMP_LIBRARY" ]; then \\
+      echo "cuFFTMp not found under /opt/nvidia/hpc_sdk or /usr/local/cuda" >&2; \\
+      find /opt/nvidia/hpc_sdk -maxdepth 4 -type d 2>/dev/null || true; \\
+      exit 1; \\
+    fi && \\
+    cmake -S /opt/gromacs-src -B /opt/gromacs-build \\
+      -DGMX_BUILD_OWN_FFTW=ON \\
+      -DREGRESSIONTEST_DOWNLOAD=OFF \\
+      -DGMX_GPU=CUDA \\
+      -DGMX_MPI=ON \\
+      -DGMX_OPENMP=ON \\
+      -DGMX_USE_CUFFTMP=ON \\
+      -DcuFFTMp_ROOT="${CUFFTMP_ROOT}" \\
+      -DcuFFTMp_INCLUDE_DIR="$(dirname "${CUFFTMP_INCLUDE}")" \\
+      -DcuFFTMp_LIBRARY="${CUFFTMP_LIBRARY}" \\
+      -DCUDAToolkit_ROOT=/usr/local/cuda \\
+      -DCMAKE_CUDA_ARCHITECTURES="${GMX_CUDA_ARCHS}" \\
+      -DCMAKE_INSTALL_PREFIX=/opt/gromacs && \\
+    cmake --build /opt/gromacs-build -j"$(nproc)" && \\
+    cmake --install /opt/gromacs-build && \\
+    ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx && \\
+    ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx_mpi && \\
+    echo 'source /opt/gromacs/bin/GMXRC' > /etc/profile.d/gromacs.sh && \\
+    echo 'source /opt/gromacs/bin/GMXRC' >> /home/$USER/.bashrc && \\
+    rm -rf /opt/gromacs-src /opt/gromacs-build && \\
+    echo '[Desktop Entry]\\nName=GROMACS (MPI)\\nExec=bash -lc "gmx"\\nIcon=applications-science\\nType=Application\\nTerminal=true\\nCategories=Science;' \\
+    > /usr/share/applications/gromacs.desktop''',
+                "enabled": True
+            },
             "qgis_grass": {
                 "name": "QGIS & GRASS GIS",
                 "description": "Geographic Information Systems",
@@ -1098,6 +1137,24 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
                                  style='Description.TLabel')
         gpu_info_label.pack(anchor='w', padx=15, pady=(0, 15))
 
+        cuda_archs_row = ttk.Frame(gpu_content)
+        cuda_archs_row.pack(fill='x', padx=15, pady=(0, 15))
+        cuda_archs_row.grid_columnconfigure(1, weight=1)
+
+        ttk.Label(cuda_archs_row, text="GROMACS CUDA archs:", style='Description.TLabel').grid(row=0, column=0, sticky='w')
+        self.cuda_archs_var = tk.StringVar(value="70;75;86;89")
+        self.cuda_archs_var.trace('w', lambda *args: self.update_config_status())
+        ttk.Entry(cuda_archs_row, textvariable=self.cuda_archs_var, width=35).grid(row=0, column=1, sticky='ew', padx=(10, 0))
+        ttk.Label(cuda_archs_row, text="(e.g. 70;86;89)", style='Description.TLabel').grid(row=0, column=2, sticky='w', padx=(10, 0))
+
+        self.gmx_cufftmp_var = tk.BooleanVar(value=True)
+        self.gmx_cufftmp_var.trace('w', lambda *args: self.update_config_status())
+        ttk.Checkbutton(
+            gpu_content,
+            text="Enable GROMACS cuFFTMp (multi-GPU FFT; adds NVHPC ~6 GB)",
+            variable=self.gmx_cufftmp_var,
+        ).pack(anchor='w', padx=15, pady=(0, 10))
+
         # Exposure settings (secure-by-default)
         expose_header = ttk.Label(content_frame, text="🌐 Exposure (Self-Hosting)", style='SectionHeader.TLabel')
         expose_header.pack(anchor='w', pady=(0, 15))
@@ -1299,8 +1356,10 @@ docker start axonos
         default_models = self.ollama_models.get('1.0', tk.END).strip() == 'command-r7b\ngranite3.2-vision'
         default_user = self.username_var.get() == 'aXonian'
         default_password = self.password_var.get() == 'axonpassword'
+        default_cuda_archs = getattr(self, "cuda_archs_var", tk.StringVar(value="70;75;86;89")).get() == '70;75;86;89'
+        default_cufftmp = getattr(self, "gmx_cufftmp_var", tk.BooleanVar(value=True)).get() is True
         
-        return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password
+        return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password and default_cuda_archs and default_cufftmp
             
     def update_config_status(self):
         """Update the configuration status display"""
@@ -1514,6 +1573,18 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                     new_content[i] = f'ENV USER={username}'
                 elif line.startswith('ARG PASSWORD='):
                     new_content[i] = f'ARG PASSWORD={password}'
+                elif line.startswith('ARG GMX_CUDA_ARCHS='):
+                    cuda_archs = self.cuda_archs_var.get()
+                    new_content[i] = f'ARG GMX_CUDA_ARCHS="{cuda_archs}"'
+
+            # Optionally disable cuFFTMp flags for single-GPU builds
+            if not getattr(self, "gmx_cufftmp_var", tk.BooleanVar(value=True)).get():
+                filtered = []
+                for line in new_content:
+                    if 'GMX_USE_CUFFTMP' in line or 'cuFFTMp_' in line or 'CUFFTMP_' in line:
+                        continue
+                    filtered.append(line)
+                new_content = filtered
             
             # Write new Dockerfile
             output_path = 'Dockerfile.custom'
@@ -1602,6 +1673,8 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                 'password': self.password_var.get(),
                 'image_tag': self.image_tag_var.get(),
                 'gpu_enabled': self.gpu_enabled_var.get(),
+                'gmx_cuda_archs': getattr(self, "cuda_archs_var", tk.StringVar(value="70;75;86;89")).get(),
+                'gmx_use_cufftmp': getattr(self, "gmx_cufftmp_var", tk.BooleanVar(value=True)).get(),
                 'expose_vnc': bool(getattr(self, "expose_vnc_var", tk.BooleanVar(value=False)).get()),
                 'expose_ipfs': bool(getattr(self, "expose_ipfs_var", tk.BooleanVar(value=False)).get()),
                 'env_file': (getattr(self, "env_file_var", tk.StringVar(value="")).get() or "").strip(),

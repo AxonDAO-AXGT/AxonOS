@@ -194,6 +194,11 @@ Examples:
     generate_parser.add_argument('--config', '-c', help='Configuration file (JSON)')
     generate_parser.add_argument('--output', '-o', default='Dockerfile.custom', 
                                 help='Output Dockerfile path')
+    generate_parser.add_argument('--cuda-archs', help='GROMACS CUDA archs (e.g. "70;86;89")')
+    generate_parser.add_argument('--gmx-cufftmp', action='store_true',
+                                help='Enable GROMACS cuFFTMp (multi-GPU FFT)')
+    generate_parser.add_argument('--no-gmx-cufftmp', action='store_true',
+                                help='Disable GROMACS cuFFTMp (single-GPU builds)')
     
     # Build command
     build_parser = subparsers.add_parser('build', help='Build Docker image')
@@ -202,6 +207,11 @@ Examples:
     build_parser.add_argument('--dockerfile', '-f', help='Dockerfile path')
     build_parser.add_argument('--config', '-c', help='Configuration file (JSON)')
     build_parser.add_argument('--password', '-p', help='VNC password for build')
+    build_parser.add_argument('--cuda-archs', help='GROMACS CUDA archs (e.g. "70;86;89")')
+    build_parser.add_argument('--gmx-cufftmp', action='store_true',
+                             help='Enable GROMACS cuFFTMp (multi-GPU FFT)')
+    build_parser.add_argument('--no-gmx-cufftmp', action='store_true',
+                             help='Disable GROMACS cuFFTMp (single-GPU builds)')
     
     # Deploy command
     deploy_parser = subparsers.add_parser('deploy', help='Deploy Docker container')
@@ -257,6 +267,12 @@ Examples:
         return 0
     
     elif args.command == 'generate':
+        if args.cuda_archs:
+            core.set_cuda_archs(args.cuda_archs)
+        if args.no_gmx_cufftmp:
+            core.set_gmx_cufftmp(False)
+        elif args.gmx_cufftmp:
+            core.set_gmx_cufftmp(True)
         success = generate_dockerfile(core, args.config, args.output)
         return 0 if success else 1
     
@@ -265,6 +281,12 @@ Examples:
             load_config(core, args.config)
         if args.password:
             core.set_password(args.password)
+        if args.cuda_archs:
+            core.set_cuda_archs(args.cuda_archs)
+        if args.no_gmx_cufftmp:
+            core.set_gmx_cufftmp(False)
+        elif args.gmx_cufftmp:
+            core.set_gmx_cufftmp(True)
         success = build_image(core, args.image, args.dockerfile)
         return 0 if success else 1
     

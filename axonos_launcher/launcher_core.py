@@ -140,6 +140,45 @@ RUN apt-get update && apt-get install -y openjdk-17-jre-headless && \\
     chown $USER:$USER /usr/bin/nextflow''',
                 "enabled": True
             },
+            "gromacs": {
+                "name": "GROMACS (MPI)",
+                "description": "Molecular dynamics package (release-2026, MPI-enabled)",
+                "dockerfile_section": '''# Install GROMACS (release-2026, MPI-enabled)
+RUN apt update && apt install -y \\
+    && apt clean && \\
+    git clone --branch release-2026 --depth 1 https://github.com/gromacs/gromacs.git /opt/gromacs-src && \\
+    CUFFTMP_INCLUDE="$(find /opt/nvidia/hpc_sdk /usr/local/cuda -type f -iname 'cufft*mp*.h' 2>/dev/null | head -n 1)" && \\
+    CUFFTMP_LIBRARY="$(find /opt/nvidia/hpc_sdk /usr/local/cuda -type f -iname 'libcufft*mp*.so*' 2>/dev/null | head -n 1)" && \\
+    CUFFTMP_ROOT="$(dirname "${CUFFTMP_INCLUDE}")/.." && \\
+    if [ -z "$CUFFTMP_ROOT" ] || [ -z "$CUFFTMP_INCLUDE" ] || [ -z "$CUFFTMP_LIBRARY" ]; then \\
+      echo "cuFFTMp not found under /opt/nvidia/hpc_sdk or /usr/local/cuda" >&2; \\
+      find /opt/nvidia/hpc_sdk -maxdepth 4 -type d 2>/dev/null || true; \\
+      exit 1; \\
+    fi && \\
+    cmake -S /opt/gromacs-src -B /opt/gromacs-build \\
+      -DGMX_BUILD_OWN_FFTW=ON \\
+      -DREGRESSIONTEST_DOWNLOAD=OFF \\
+      -DGMX_GPU=CUDA \\
+      -DGMX_MPI=ON \\
+      -DGMX_OPENMP=ON \\
+      -DGMX_USE_CUFFTMP=ON \\
+      -DcuFFTMp_ROOT="${CUFFTMP_ROOT}" \\
+      -DcuFFTMp_INCLUDE_DIR="$(dirname "${CUFFTMP_INCLUDE}")" \\
+      -DcuFFTMp_LIBRARY="${CUFFTMP_LIBRARY}" \\
+      -DCUDAToolkit_ROOT=/usr/local/cuda \\
+      -DCMAKE_CUDA_ARCHITECTURES="${GMX_CUDA_ARCHS}" \\
+      -DCMAKE_INSTALL_PREFIX=/opt/gromacs && \\
+    cmake --build /opt/gromacs-build -j"$(nproc)" && \\
+    cmake --install /opt/gromacs-build && \\
+    ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx && \\
+    ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx_mpi && \\
+    echo 'source /opt/gromacs/bin/GMXRC' > /etc/profile.d/gromacs.sh && \\
+    echo 'source /opt/gromacs/bin/GMXRC' >> /home/$USER/.bashrc && \\
+    rm -rf /opt/gromacs-src /opt/gromacs-build && \\
+    echo '[Desktop Entry]\\nName=GROMACS (MPI)\\nExec=bash -lc "gmx"\\nIcon=applications-science\\nType=Application\\nTerminal=true\\nCategories=Science;' \\
+    > /usr/share/applications/gromacs.desktop''',
+                "enabled": True
+            },
             "qgis_grass": {
                 "name": "QGIS & GRASS GIS",
                 "description": "Geographic Information Systems",
@@ -238,6 +277,8 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         self.username = 'aXonian'
         self.password = 'axonpassword'
         self.gpu_enabled = False
+        self.gmx_cuda_archs = '70;75;86;89'
+        self.gmx_use_cufftmp = True
         self.image_tag = 'axonos:custom'
     
     def load_custom_applications(self):
@@ -320,8 +361,10 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         default_models = self.ollama_models == ['command-r7b', 'granite3.2-vision']
         default_user = self.username == 'aXonian'
         default_password = self.password == 'axonpassword'
+        default_cuda_archs = self.gmx_cuda_archs == '70;75;86;89'
+        default_cufftmp = self.gmx_use_cufftmp is True
         
-        return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password
+        return builtin_defaults_match and not custom_apps_enabled and default_models and default_user and default_password and default_cuda_archs and default_cufftmp
     
     def generate_dockerfile(self, output_path='Dockerfile.custom'):
         """Generate custom Dockerfile"""
@@ -460,6 +503,17 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                 new_content[i] = f'ENV USER={self.username}'
             elif line.startswith('ARG PASSWORD='):
                 new_content[i] = f'ARG PASSWORD={self.password}'
+            elif line.startswith('ARG GMX_CUDA_ARCHS='):
+                new_content[i] = f'ARG GMX_CUDA_ARCHS="{self.gmx_cuda_archs}"'
+
+        # Optionally disable cuFFTMp flags for single-GPU builds
+        if not self.gmx_use_cufftmp:
+            filtered = []
+            for line in new_content:
+                if 'GMX_USE_CUFFTMP' in line or 'cuFFTMp_' in line or 'CUFFTMP_' in line:
+                    continue
+                filtered.append(line)
+            new_content = filtered
         
         # Write new Dockerfile
         with open(output_path, 'w') as f:
@@ -473,7 +527,9 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
             'username': self.username,
             'password': self.password,
             'image_tag': self.image_tag,
-            'gpu_enabled': self.gpu_enabled
+            'gpu_enabled': self.gpu_enabled,
+            'gmx_cuda_archs': self.gmx_cuda_archs,
+            'gmx_use_cufftmp': self.gmx_use_cufftmp
         }
     
     def load_config(self, config):
@@ -484,7 +540,17 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
         self.password = config.get('password', self.password)
         self.image_tag = config.get('image_tag', self.image_tag)
         self.gpu_enabled = config.get('gpu_enabled', self.gpu_enabled)
+        self.gmx_cuda_archs = config.get('gmx_cuda_archs', self.gmx_cuda_archs)
+        self.gmx_use_cufftmp = config.get('gmx_use_cufftmp', self.gmx_use_cufftmp)
     
     def set_password(self, password):
         """Set VNC password"""
         self.password = password
+
+    def set_cuda_archs(self, cuda_archs):
+        """Set CUDA architectures for GROMACS build"""
+        self.gmx_cuda_archs = cuda_archs
+
+    def set_gmx_cufftmp(self, enabled):
+        """Enable/disable cuFFTMp (multi-GPU FFT) for GROMACS"""
+        self.gmx_use_cufftmp = bool(enabled)
