@@ -42,7 +42,8 @@ Section "Device"
   VendorName "NVIDIA Corporation"
  Option "PrimaryGPU" "true"
   Option "AllowEmptyInitialConfiguration"
- Option "UseDisplayDevice" "None"
+  # For headless Tesla GPUs, force a display output so Xorg can start.
+  Option "ConnectedMonitor" "DFP-0"
   Option "AllowIndirectGLXProtocol" "1"
   Option "HardDPMS" "false"
 EndSection
