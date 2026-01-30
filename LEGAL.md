@@ -75,6 +75,19 @@ If you need a distribution that releases **no source code at all**, you must avo
 
 Many commercial systems ship a combination of proprietary code and open-source components. This repository supports a similar model: **MIT files are permissive**, while **MPL files require source availability for those files when distributed**.
 
+## Third-party components (bundled in the image)
+
+The AxonOS image may bundle additional software. Compliance with each component’s license is required when you redistribute the image.
+
+### PyMOL (open-source)
+
+The image may include **PyMOL (open-source)** from [schrodinger/pymol-open-source](https://github.com/schrodinger/pymol-open-source), installed via conda-forge (`pymol-open-source`). It is **not** the commercial PyMOL product distributed by Schrödinger, LLC.
+
+- **License:** Permissive (use, copy, modify, distribute for any purpose and without fee). Commercial use and bundling are permitted.
+- **Conditions:** Keep copyright notices; do not use “Schrödinger, LLC” in advertising for your distribution without written permission.
+- **Trademark:** PyMOL(TM) is a trademark of Schrodinger, LLC. When mentioning PyMOL in your product, you may use the notice: *“PyMOL is a trademark of Schrodinger, LLC.”* and distinguish this build from Schrödinger’s official PyMOL products.
+- **Full text:** See `docs/PYMOL_LICENSE.md` and, in the image, `/usr/share/doc/pymol-open-source/LICENSE`.
+
 ## Contact
 
 For licensing questions or commercial arrangements, contact the repository maintainer(s) listed in `LICENSE`.

@@ -63,17 +63,17 @@ cat > /tmp/setup_x.sh << 'EOF'
 #!/bin/bash
 
 # Set DISPLAY variable
-export DISPLAY=:1
+export DISPLAY=:0
 
 # Create .Xauthority if it doesn't exist
 touch ~/.Xauthority
 
 # Add local authorization
-xauth generate :1 . trusted
+xauth generate :0 . trusted
 
 # Wait for X server to be fully ready
 for i in {1..30}; do
-    if DISPLAY=:1 xset q &>/dev/null; then
+    if DISPLAY=:0 xset q &>/dev/null; then
         echo "X server is ready"
         break
     fi
@@ -91,76 +91,76 @@ sleep 10
 if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
     # Wait for xfconfd to be ready, then apply theme
     for i in {1..20}; do
-        if DISPLAY=:1 xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null > /dev/null; then
+        if DISPLAY=:0 xfconf-query -c xsettings -p /Net/ThemeName 2>/dev/null > /dev/null; then
             echo "xfconfd is ready, applying WhiteSur theme..."
-            DISPLAY=:1 xfconf-query -c xsettings -p /Net/ThemeName -s "WhiteSur-Dark" 2>/dev/null
-            DISPLAY=:1 xfconf-query -c xfwm4 -p /general/theme -s "WhiteSur-Dark" 2>/dev/null
-            DISPLAY=:1 xfconf-query -c xsettings -p /Net/IconThemeName -s "Adwaita" 2>/dev/null
+            DISPLAY=:0 xfconf-query -c xsettings -p /Net/ThemeName -s "WhiteSur-Dark" 2>/dev/null
+            DISPLAY=:0 xfconf-query -c xfwm4 -p /general/theme -s "WhiteSur-Dark" 2>/dev/null
+            DISPLAY=:0 xfconf-query -c xsettings -p /Net/IconThemeName -s "Adwaita" 2>/dev/null
             echo "WhiteSur theme applied"
 
             # Enforce AxonOS wallpaper at runtime (Ubuntu XFCE can reset)
             WALLPAPER_PATH="/usr/share/desktop-base/active-theme/wallpaper/contents/images/1920x1080.svg"
             if [ -f "$WALLPAPER_PATH" ]; then
                 for MON in monitor0 monitor0-0; do
-                    DISPLAY=:1 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/last-image" -n -t string -s "$WALLPAPER_PATH" 2>/dev/null || true
-                    DISPLAY=:1 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/image-style" -n -t int -s 5 2>/dev/null || true
+                    DISPLAY=:0 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/last-image" -n -t string -s "$WALLPAPER_PATH" 2>/dev/null || true
+                    DISPLAY=:0 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/image-style" -n -t int -s 5 2>/dev/null || true
                 done
             fi
 
             # Panel: transparent by default + ~2x height + use AxonOS icon for menu
             # NOTE: do this after xfconfd is ready so xfce4-panel channel is writable.
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/size -n -t uint -s 56 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/size -n -t uint -s 56 2>/dev/null || true
             # Panel length: with length-adjust=true this is stored as a percentage.
             # 50% of a 1920px-wide screen = 960px.
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/length -n -t double -s 50 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/length -n -t double -s 50 2>/dev/null || true
             # Keep auto-length enabled so items never disappear
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/length-adjust -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/length-adjust -n -t bool -s true 2>/dev/null || true
             # Move panel further up (y=940) to give tooltips vertical space above the panel
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/position -n -t string -s "p=10;x=480;y=940" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/position -n -t string -s "p=10;x=480;y=940" 2>/dev/null || true
             # Disable tooltips globally on the panel
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/show-tooltips -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/background-style -n -t int -s 0 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/background-alpha -n -t uint -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/show-tooltips -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/background-style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/background-alpha -n -t uint -s 0 2>/dev/null || true
             # Don't reserve space on borders - allows tooltips to appear above panel
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /panels/panel-1/don-t-reserve-space-on-borders -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /panels/panel-1/don-t-reserve-space-on-borders -n -t bool -s true 2>/dev/null || true
 
             # Separator plugins: force "Transparent" style (0) instead of visible line
             # plugin-3,6,8,10 are separators per /etc/xdg/xfce4/panel/default.xml
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-3/style -n -t int -s 0 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-6/style -n -t int -s 0 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-8/style -n -t int -s 0 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-10/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-3/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-6/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-8/style -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-10/style -n -t int -s 0 2>/dev/null || true
 
             if [ -f "/usr/share/novnc/icon.png" ]; then
                 # applicationsmenu plugin is plugin-1 per /etc/xdg/xfce4/panel/default.xml
-                DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-1/button-icon -n -t string -s "/usr/share/novnc/icon.png" 2>/dev/null || true
+                DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-1/button-icon -n -t string -s "/usr/share/novnc/icon.png" 2>/dev/null || true
             fi
             # Disable tooltips for applications menu
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-1/show-tooltips -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-1/show-tooltips -n -t bool -s false 2>/dev/null || true
 
             # Clock defaults (plugin-5) as per your screenshot
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/timezone -n -t string -s "UTC" 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/mode -n -t int -s 2 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-layout -n -t int -s 0 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-date-font -n -t string -s "Sans 23" 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-time-font -n -t string -s "Sans 23" 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-time-format -n -t string -s "%T" 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/show-seconds -n -t bool -s true 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/show-meridiem -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/flash-separators -n -t bool -s true 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/tooltip-format -n -t string -s "%A %d %B %Y" 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-5/command -n -t string -s "" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/timezone -n -t string -s "UTC" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/mode -n -t int -s 2 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-layout -n -t int -s 0 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-date-font -n -t string -s "Sans 23" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-time-font -n -t string -s "Sans 23" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/digital-time-format -n -t string -s "%T" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/show-seconds -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/show-meridiem -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/flash-separators -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/tooltip-format -n -t string -s "%A %d %B %Y" 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-5/command -n -t string -s "" 2>/dev/null || true
 
             # Launcher plugins: hide labels to show only icons (images)
             # plugin-7: AxonOS Assistant, plugin-9: Talk to K
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-label -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/names-visible -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-tooltips -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-7/disable-tooltips -n -t bool -s true 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-label -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/names-visible -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-tooltips -n -t bool -s false 2>/dev/null || true
-            DISPLAY=:1 xfconf-query -c xfce4-panel -p /plugins/plugin-9/disable-tooltips -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-label -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-7/names-visible -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-7/show-tooltips -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-7/disable-tooltips -n -t bool -s true 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-label -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-9/names-visible -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-tooltips -n -t bool -s false 2>/dev/null || true
+            DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-9/disable-tooltips -n -t bool -s true 2>/dev/null || true
 
             # Disable GTK tooltips globally (GTK3)
             mkdir -p /home/$USER/.config/gtk-3.0
@@ -168,7 +168,7 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             chown -R $USER:$USER /home/$USER/.config/gtk-3.0
 
             # Restart panel to ensure new settings apply
-            DISPLAY=:1 xfce4-panel -r 2>/dev/null || true
+            DISPLAY=:0 xfce4-panel -r 2>/dev/null || true
             break
         fi
         sleep 1
@@ -176,7 +176,7 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
 fi
 
 # Try to get root window geometry using xwininfo
-if DISPLAY=:1 xwininfo -root > ~/.vnc/geometry.log 2>&1; then
+if DISPLAY=:0 xwininfo -root > ~/.vnc/geometry.log 2>&1; then
     # Extract dimensions from xwininfo output
     WIDTH=$(grep 'Width:' ~/.vnc/geometry.log | awk '{print $2}')
     HEIGHT=$(grep 'Height:' ~/.vnc/geometry.log | awk '{print $2}')
@@ -189,7 +189,7 @@ if DISPLAY=:1 xwininfo -root > ~/.vnc/geometry.log 2>&1; then
         # Try to move cursor using xte
         echo "Attempting to move cursor to $X,$Y" >> ~/.vnc/cursor.log
         for i in {1..5}; do
-            if DISPLAY=:1 xte "mousemove $X $Y" 2>/dev/null; then
+            if DISPLAY=:0 xte "mousemove $X $Y" 2>/dev/null; then
                 echo "Successfully moved cursor using xte (attempt $i)" >> ~/.vnc/cursor.log
                 break
             else

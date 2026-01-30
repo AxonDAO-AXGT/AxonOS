@@ -331,6 +331,23 @@ RUN apt update && apt install -y \
     echo '[Desktop Entry]\nName=GROMACS (MPI)\nExec=bash -lc "gmx"\nIcon=applications-science\nType=Application\nTerminal=true\nCategories=Science;' \
     > /usr/share/applications/gromacs.desktop    
 
+# Install PyMOL (open-source from conda-forge; commercial use permitted under its license)
+# See docs/PYMOL_LICENSE.md and LEGAL.md for notice and trademark.
+RUN apt update && apt install -y wget && \
+    wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
+    bash /tmp/miniconda.sh -b -p /opt/conda && \
+    rm /tmp/miniconda.sh && \
+    /opt/conda/bin/conda install --override-channels -c conda-forge -y pymol-open-source && \
+    ln -sf /opt/conda/bin/pymol /usr/local/bin/pymol && \
+    echo 'export PATH="/opt/conda/bin:$PATH"' > /etc/profile.d/conda.sh && \
+    echo 'export PATH="/opt/conda/bin:$PATH"' >> /home/$USER/.bashrc && \
+    echo '[Desktop Entry]\nName=PyMOL (open-source)\nComment=Molecular visualization (includes PyMOL(TM) source code)\nExec=pymol\nIcon=applications-science\nType=Application\nCategories=Science;Chemistry;\nStartupNotify=true' \
+    > /usr/share/applications/pymol.desktop && \
+    chmod 644 /usr/share/applications/pymol.desktop && \
+    mkdir -p /usr/share/doc/pymol-open-source && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+COPY docs/PYMOL_LICENSE.md /usr/share/doc/pymol-open-source/LICENSE
+
 # Install AxonOS Assistant
 WORKDIR /opt
 COPY axonos_assistant /opt/axonos_assistant
@@ -368,6 +385,22 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
 
+# VirtualGL: GPU-accelerated OpenGL for apps (e.g. PyMOL) over VNC. Uses X :0 with nvidia driver.
+# PackageCloud has no jammy repo; install from SourceForge .deb (3.0.2).
+RUN apt update && apt install -y wget libxv1 && \
+    wget -q "https://downloads.sourceforge.net/project/virtualgl/3.0.2/virtualgl_3.0.2_amd64.deb" -O /tmp/virtualgl.deb && \
+    apt install -y /tmp/virtualgl.deb && \
+    rm /tmp/virtualgl.deb && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+COPY xorg.conf.nvidia /etc/X11/xorg.conf.nvidia
+COPY scripts/start-xorg-nvidia.sh /usr/local/bin/start-xorg-nvidia.sh
+RUN chmod +x /usr/local/bin/start-xorg-nvidia.sh && \
+    echo 'export VGL_DISPLAY=:0' > /etc/profile.d/virtualgl.sh && \
+    echo 'export VGL_DISPLAY=:0' >> /home/$USER/.bashrc
+
+# PyMOL desktop: use vglrun so OpenGL runs on GPU (X :0) when container is run with --gpus all
+RUN sed -i 's#^Exec=pymol$#Exec=bash -c "vglrun pymol 2>/dev/null || pymol"#' /usr/share/applications/pymol.desktop
+
 # Switch to aXonian user
 USER $USER
 WORKDIR /home/$USER
@@ -379,7 +412,7 @@ RUN mkdir -p /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml && \
 
 # Configure VNC
 RUN mkdir -p /home/$USER/.vnc && \
-    echo -e '#!/bin/bash\nxrdb $HOME/.Xresources\nstartxfce4 &' > /home/$USER/.vnc/xstartup && \
+    echo -e '#!/bin/bash\nexport VGL_DISPLAY=:0\nxrdb $HOME/.Xresources\nstartxfce4 &' > /home/$USER/.vnc/xstartup && \
     chmod +x /home/$USER/.vnc/xstartup && \
     echo "$PASSWORD" | vncpasswd -f > /home/$USER/.vnc/passwd && \
     chmod 600 /home/$USER/.vnc/passwd && \
@@ -460,6 +493,18 @@ RUN chmod +x /axonos_gate/*.py
 # Copy theme application script for manual testing
 COPY apply_theme.sh /usr/local/bin/apply_theme.sh
 RUN chmod +x /usr/local/bin/apply_theme.sh
+
+# Install NVIDIA Xorg/OpenGL userspace driver (for GPU-backed Xorg :0)
+# Keep this late in the Dockerfile to preserve cache for heavy build steps.
+# Set NVIDIA_DRIVER_VERSION to match host `nvidia-smi` (e.g., 535, 550).
+ARG NVIDIA_DRIVER_VERSION=535
+# Only install the Xorg + GL userspace pieces needed for GPU-backed Xorg :0.
+# Avoid nvidia-utils to prevent overlayfs hardlink backup failures.
+RUN apt-get update && \
+    apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+      xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION} \
+      libnvidia-gl-${NVIDIA_DRIVER_VERSION} && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Start services
 CMD ["/startup.sh"]

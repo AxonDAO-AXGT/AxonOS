@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script to apply WhiteSur theme manually (for testing)
 
-export DISPLAY=:1
+export DISPLAY=:0
 
 echo "=== Applying WhiteSur Theme ==="
 echo "Available themes:"
