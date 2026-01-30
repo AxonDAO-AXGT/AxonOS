@@ -430,8 +430,7 @@ RUN chmod +x /usr/local/bin/start-xorg-nvidia.sh && \
 RUN sed -i 's#^Exec=pymol$#Exec=bash -c "vglrun pymol 2>/dev/null || pymol"#' /usr/share/applications/pymol.desktop
 
 # Install Terminator (in universe; enable repo + update in same layer)
-RUN add-apt-repository -y universe && \
-    apt-get update && apt-get install -y terminator && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y terminator && rm -rf /var/lib/apt/lists/*
 
 # Switch to aXonian user
 USER $USER
