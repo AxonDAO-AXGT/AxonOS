@@ -438,6 +438,10 @@ RUN mkdir -p /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml && \
     echo -e '<channel name="xfce4-session" version="1.0">\n  <property name="General">\n    <property name="SaveOnExit" type="bool" value="false"/>\n  </property>\n</channel>' \
     > /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
 
+# Default terminal emulator: Terminator (Open in Terminal, keyboard shortcut, etc.)
+RUN apt install -y terminator && mkdir -p /home/$USER/.config/xfce4 && \
+    printf '%s\n' '[Terminal Emulator]' 'TerminalEmulator=terminator' > /home/$USER/.config/xfce4/helpers.rc
+
 # Configure VNC
 RUN mkdir -p /home/$USER/.vnc && \
     echo -e '#!/bin/bash\nexport VGL_DISPLAY=:0\nxrdb $HOME/.Xresources\nstartxfce4 &' > /home/$USER/.vnc/xstartup && \

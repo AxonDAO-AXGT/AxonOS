@@ -346,7 +346,7 @@ def launch_application(app_name: str, args: List[str] = None) -> dict:
             'imagej': ['imagej'],
             'firefox': ['firefox'],
             'thunar': ['thunar'],
-            'terminal': ['xfce4-terminal'],
+            'terminal': ['terminator'],
             'calculator': ['qalculate-gtk'],
             'texteditor': ['mousepad']
         }

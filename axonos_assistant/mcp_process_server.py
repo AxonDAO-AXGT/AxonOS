@@ -216,7 +216,7 @@ def start_process(command: str, args: List[str] = None, background: bool = True)
         # Security: Only allow specific safe commands
         safe_commands = {
             'jupyter', 'jupyter-lab', 'rstudio', 'spyder', 'octave',
-            'qgis', 'ugene', 'fiji', 'firefox', 'thunar', 'xfce4-terminal',
+            'qgis', 'ugene', 'fiji', 'firefox', 'thunar', 'terminator',
             'python3', 'python', 'r', 'git', 'ls', 'pwd', 'whoami'
         }
         

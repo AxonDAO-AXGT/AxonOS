@@ -2268,7 +2268,7 @@ Please try asking for help with a specific tool or task, and I'll provide detail
                         'cellmodeller': ['bash', '-c', 'cd /opt && python CellModeller/Scripts/CellModellerGUI.py'],  # CellModeller from Dockerfile
                         'firefox': ['firefox'],
                         'thunar': ['thunar'],
-                        'terminal': ['xfce4-terminal'],
+                        'terminal': ['terminator'],
                         'calculator': ['qalculate-gtk'],
                         'texteditor': ['mousepad']
                     }
