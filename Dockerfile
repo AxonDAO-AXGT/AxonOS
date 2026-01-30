@@ -429,6 +429,9 @@ RUN chmod +x /usr/local/bin/start-xorg-nvidia.sh && \
 # PyMOL desktop: use vglrun so OpenGL runs on GPU (X :0) when container is run with --gpus all
 RUN sed -i 's#^Exec=pymol$#Exec=bash -c "vglrun pymol 2>/dev/null || pymol"#' /usr/share/applications/pymol.desktop
 
+# Install Terminator
+RUN apt install -y terminator
+
 # Switch to aXonian user
 USER $USER
 WORKDIR /home/$USER
@@ -439,7 +442,7 @@ RUN mkdir -p /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml && \
     > /home/$USER/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
 
 # Default terminal emulator: Terminator (Open in Terminal, keyboard shortcut, etc.)
-RUN apt install -y terminator && mkdir -p /home/$USER/.config/xfce4 && \
+RUN mkdir -p /home/$USER/.config/xfce4 && \
     printf '%s\n' '[Terminal Emulator]' 'TerminalEmulator=terminator' > /home/$USER/.config/xfce4/helpers.rc
 
 # Configure VNC
