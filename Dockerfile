@@ -383,7 +383,7 @@ RUN mkdir -p /etc/OpenCL/vendors && \
     echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
 RUN ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
 ENV NVIDIA_VISIBLE_DEVICES=all
-ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
 
 # VirtualGL: GPU-accelerated OpenGL for apps (e.g. PyMOL) over VNC. Uses X :0 with nvidia driver.
 # PackageCloud has no jammy repo; install from SourceForge .deb (3.0.2).
@@ -503,7 +503,13 @@ ARG NVIDIA_DRIVER_VERSION=535
 RUN apt-get update && \
     apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
       xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION} \
-      libnvidia-gl-${NVIDIA_DRIVER_VERSION} && \
+      libnvidia-gl-${NVIDIA_DRIVER_VERSION} \
+      libnvidia-egl-${NVIDIA_DRIVER_VERSION} \
+      libglvnd0 libglx0 libegl1 && \
+    if [ -d /usr/lib/x86_64-linux-gnu/nvidia ] && [ ! -d /usr/lib/x86_64-linux-gnu/nvidia/current ]; then \
+      ver="$(ls /usr/lib/x86_64-linux-gnu/nvidia | sort -V | tail -1)"; \
+      ln -s "/usr/lib/x86_64-linux-gnu/nvidia/${ver}" /usr/lib/x86_64-linux-gnu/nvidia/current; \
+    fi && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Start services
