@@ -296,6 +296,15 @@ ENV NVHPC_COMM_LIBS=/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/comm_libs
 ENV PATH=/opt/openmpi/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/openmpi/lib:/opt/ucx/lib:${NVHPC_COMM_LIBS}/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/12.2/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/12.9/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/nvshmem/lib:${NVHPC_COMM_LIBS}/12.2/nvshmem/lib:${NVHPC_COMM_LIBS}/12.9/nvshmem/lib:$LD_LIBRARY_PATH
 
+# Ensure NVSHMEM runtime libraries are discoverable (libnvshmem_host.so.*)
+RUN NVSHMEM_LIB_DIR="$(ls -d /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
+  /opt/nvidia/hpc_sdk/*/comm_libs/*/nvshmem*/lib 2>/dev/null | head -n 1)" && \
+  if [ -n "$NVSHMEM_LIB_DIR" ]; then \
+    echo "$NVSHMEM_LIB_DIR" > /etc/ld.so.conf.d/nvshmem.conf && ldconfig; \
+  else \
+    echo "WARNING: NVSHMEM lib dir not found under /opt/nvidia/hpc_sdk" >&2; \
+  fi
+
 # Install GROMACS (release-2026, MPI-enabled)
 RUN apt update && apt install -y \
     && apt clean && \
