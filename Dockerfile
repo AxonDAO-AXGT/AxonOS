@@ -384,6 +384,8 @@ RUN mkdir -p /etc/OpenCL/vendors && \
 RUN ln -s /usr/lib/x86_64-linux-gnu/libOpenCL.so.1 /usr/lib/libOpenCL.so
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
+ENV __GLX_VENDOR_LIBRARY_NAME=nvidia
+ENV LIBGL_DRI3_DISABLE=1
 
 # VirtualGL: GPU-accelerated OpenGL for apps (e.g. PyMOL) over VNC. Uses X :0 with nvidia driver.
 # PackageCloud has no jammy repo; install from SourceForge .deb (3.0.2).
@@ -396,7 +398,11 @@ COPY xorg.conf.nvidia /etc/X11/xorg.conf.nvidia
 COPY scripts/start-xorg-nvidia.sh /usr/local/bin/start-xorg-nvidia.sh
 RUN chmod +x /usr/local/bin/start-xorg-nvidia.sh && \
     echo 'export VGL_DISPLAY=:0' > /etc/profile.d/virtualgl.sh && \
-    echo 'export VGL_DISPLAY=:0' >> /home/$USER/.bashrc
+    echo 'export __GLX_VENDOR_LIBRARY_NAME=nvidia' >> /etc/profile.d/virtualgl.sh && \
+    echo 'export LIBGL_DRI3_DISABLE=1' >> /etc/profile.d/virtualgl.sh && \
+    echo 'export VGL_DISPLAY=:0' >> /home/$USER/.bashrc && \
+    echo 'export __GLX_VENDOR_LIBRARY_NAME=nvidia' >> /home/$USER/.bashrc && \
+    echo 'export LIBGL_DRI3_DISABLE=1' >> /home/$USER/.bashrc
 
 # PyMOL desktop: use vglrun so OpenGL runs on GPU (X :0) when container is run with --gpus all
 RUN sed -i 's#^Exec=pymol$#Exec=bash -c "vglrun pymol 2>/dev/null || pymol"#' /usr/share/applications/pymol.desktop
@@ -498,19 +504,36 @@ RUN chmod +x /usr/local/bin/apply_theme.sh
 # Keep this late in the Dockerfile to preserve cache for heavy build steps.
 # Set NVIDIA_DRIVER_VERSION to match host `nvidia-smi` (e.g., 535, 550).
 ARG NVIDIA_DRIVER_VERSION=535
+# Optional full package version (e.g., 535.274.02-0ubuntu0.22.04.1).
+# If set, packages are pinned to this exact version.
+ARG NVIDIA_DRIVER_PKG_VERSION=
 # Only install the Xorg + GL userspace pieces needed for GPU-backed Xorg :0.
 # Avoid nvidia-utils to prevent overlayfs hardlink backup failures.
 RUN apt-get update && \
-    apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
-      xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION} \
-      libnvidia-gl-${NVIDIA_DRIVER_VERSION} \
-      libglvnd0 libglx0 libegl1 && \
-    if apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION} >/dev/null 2>&1; then \
+    if [ -n "${NVIDIA_DRIVER_PKG_VERSION}" ]; then \
       apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
-        libnvidia-egl-${NVIDIA_DRIVER_VERSION}; \
-    elif apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server >/dev/null 2>&1; then \
+        xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION}=${NVIDIA_DRIVER_PKG_VERSION} \
+        libnvidia-gl-${NVIDIA_DRIVER_VERSION}=${NVIDIA_DRIVER_PKG_VERSION} \
+        libglvnd0 libglx0 libegl1 && \
+      if apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION} >/dev/null 2>&1; then \
+        apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+          libnvidia-egl-${NVIDIA_DRIVER_VERSION}=${NVIDIA_DRIVER_PKG_VERSION}; \
+      elif apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server >/dev/null 2>&1; then \
+        apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+          libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server=${NVIDIA_DRIVER_PKG_VERSION}; \
+      fi; \
+    else \
       apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
-        libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server; \
+        xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION} \
+        libnvidia-gl-${NVIDIA_DRIVER_VERSION} \
+        libglvnd0 libglx0 libegl1 && \
+      if apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION} >/dev/null 2>&1; then \
+        apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+          libnvidia-egl-${NVIDIA_DRIVER_VERSION}; \
+      elif apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server >/dev/null 2>&1; then \
+        apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+          libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server; \
+      fi; \
     fi && \
     if [ -d /usr/lib/x86_64-linux-gnu/nvidia ] && [ ! -d /usr/lib/x86_64-linux-gnu/nvidia/current ]; then \
       ver="$(ls /usr/lib/x86_64-linux-gnu/nvidia | sort -V | tail -1)"; \
