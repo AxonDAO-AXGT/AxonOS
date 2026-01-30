@@ -10,8 +10,12 @@ BUS_ID_RAW="$(nvidia-smi --query-gpu=pci.bus_id --format=csv,noheader 2>/dev/nul
 CONFIG_SRC="/etc/X11/xorg.conf.nvidia"
 CONFIG_TMP="/tmp/xorg.conf.nvidia"
 if [ -n "$BUS_ID_RAW" ]; then
-  # Convert 00000000:01:00.0 -> PCI:1:0:0
-  BUS_ID_FMT="PCI:$(echo "$BUS_ID_RAW" | awk -F'[:.]' '{printf("%d:%d:%d", strtonum("0x"$2), strtonum("0x"$3), strtonum("0x"$4))}')"
+  # Convert 00000000:01:00.0 -> PCI:1:0:0 (avoid awk strtonum dependency)
+  IFS=':.' read -r _domain bus_hex dev_hex func_hex <<<"$BUS_ID_RAW"
+  bus_dec="$(printf '%d' "0x${bus_hex}")"
+  dev_dec="$(printf '%d' "0x${dev_hex}")"
+  func_dec="$(printf '%d' "0x${func_hex}")"
+  BUS_ID_FMT="PCI:${bus_dec}:${dev_dec}:${func_dec}"
   echo "Using NVIDIA BusID: $BUS_ID_FMT"
   awk -v busid="$BUS_ID_FMT" '
     $0 ~ /Section "Device"/ {print; in_dev=1; next}
