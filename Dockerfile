@@ -504,8 +504,14 @@ RUN apt-get update && \
     apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
       xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION} \
       libnvidia-gl-${NVIDIA_DRIVER_VERSION} \
-      libnvidia-egl-${NVIDIA_DRIVER_VERSION} \
       libglvnd0 libglx0 libegl1 && \
+    if apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION} >/dev/null 2>&1; then \
+      apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+        libnvidia-egl-${NVIDIA_DRIVER_VERSION}; \
+    elif apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server >/dev/null 2>&1; then \
+      apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+        libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server; \
+    fi && \
     if [ -d /usr/lib/x86_64-linux-gnu/nvidia ] && [ ! -d /usr/lib/x86_64-linux-gnu/nvidia/current ]; then \
       ver="$(ls /usr/lib/x86_64-linux-gnu/nvidia | sort -V | tail -1)"; \
       ln -s "/usr/lib/x86_64-linux-gnu/nvidia/${ver}" /usr/lib/x86_64-linux-gnu/nvidia/current; \
