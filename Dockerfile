@@ -505,22 +505,37 @@ RUN chmod +x /usr/local/bin/apply_theme.sh
 # Set NVIDIA_DRIVER_VERSION to match host `nvidia-smi` (e.g., 535, 550).
 ARG NVIDIA_DRIVER_VERSION=535
 # Optional full package version (e.g., 535.274.02-0ubuntu0.22.04.1).
-# If set, packages are pinned to this exact version.
+# If set and available in apt, packages are pinned to this exact version.
 ARG NVIDIA_DRIVER_PKG_VERSION=
 # Only install the Xorg + GL userspace pieces needed for GPU-backed Xorg :0.
 # Avoid nvidia-utils to prevent overlayfs hardlink backup failures.
 RUN apt-get update && \
-    if [ -n "${NVIDIA_DRIVER_PKG_VERSION}" ]; then \
+    if [ -n "${NVIDIA_DRIVER_PKG_VERSION}" ] && \
+       apt-cache madison "xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION}" | awk '{print $3}' | grep -qx "${NVIDIA_DRIVER_PKG_VERSION}" && \
+       apt-cache madison "libnvidia-gl-${NVIDIA_DRIVER_VERSION}" | awk '{print $3}' | grep -qx "${NVIDIA_DRIVER_PKG_VERSION}"; then \
       apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
         xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION}=${NVIDIA_DRIVER_PKG_VERSION} \
         libnvidia-gl-${NVIDIA_DRIVER_VERSION}=${NVIDIA_DRIVER_PKG_VERSION} \
         libglvnd0 libglx0 libegl1 && \
-      if apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION} >/dev/null 2>&1; then \
+      if apt-cache madison libnvidia-egl-${NVIDIA_DRIVER_VERSION} | awk '{print $3}' | grep -qx "${NVIDIA_DRIVER_PKG_VERSION}"; then \
         apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
           libnvidia-egl-${NVIDIA_DRIVER_VERSION}=${NVIDIA_DRIVER_PKG_VERSION}; \
-      elif apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server >/dev/null 2>&1; then \
+      elif apt-cache madison libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server | awk '{print $3}' | grep -qx "${NVIDIA_DRIVER_PKG_VERSION}"; then \
         apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
           libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server=${NVIDIA_DRIVER_PKG_VERSION}; \
+      fi; \
+    elif [ -n "${NVIDIA_DRIVER_PKG_VERSION}" ]; then \
+      echo "Requested NVIDIA_DRIVER_PKG_VERSION=${NVIDIA_DRIVER_PKG_VERSION} not available in apt; falling back to latest."; \
+      apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+        xserver-xorg-video-nvidia-${NVIDIA_DRIVER_VERSION} \
+        libnvidia-gl-${NVIDIA_DRIVER_VERSION} \
+        libglvnd0 libglx0 libegl1 && \
+      if apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION} >/dev/null 2>&1; then \
+        apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+          libnvidia-egl-${NVIDIA_DRIVER_VERSION}; \
+      elif apt-cache show libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server >/dev/null 2>&1; then \
+        apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
+          libnvidia-egl-${NVIDIA_DRIVER_VERSION}-server; \
       fi; \
     else \
       apt-get -o Dpkg::Options::=--force-unsafe-io install -y --no-install-recommends \
