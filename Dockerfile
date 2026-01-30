@@ -303,10 +303,16 @@ RUN NVSHMEM_LIB_DIR="$(ls -d /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
   if [ -n "$NVSHMEM_LIB_DIR" ]; then \
     echo "$NVSHMEM_LIB_DIR" > /etc/ld.so.conf.d/nvshmem.conf && ldconfig && \
     printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" > /etc/profile.d/nvshmem.sh && \
-    printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.bashrc; \
+    printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.bashrc && \
+    printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.profile; \
   else \
     echo "WARNING: NVSHMEM lib dir not found under /opt/nvidia/hpc_sdk" >&2; \
   fi
+
+# Ensure nvcc (CUDA) is in PATH for desktop terminals (profile.d + .bashrc + .profile)
+RUN echo 'export PATH="/usr/local/cuda/bin:$PATH"' > /etc/profile.d/cuda.sh && \
+    echo 'export PATH="/usr/local/cuda/bin:$PATH"' >> /home/aXonian/.bashrc && \
+    echo 'export PATH="/usr/local/cuda/bin:$PATH"' >> /home/aXonian/.profile
 
 # Install GROMACS (release-2026, MPI-enabled)
 RUN apt update && apt install -y \
