@@ -297,14 +297,18 @@ ENV PATH=/opt/openmpi/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/openmpi/lib:/opt/ucx/lib:${NVHPC_COMM_LIBS}/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/12.2/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/12.9/nvshmem_cufftmp_compat/lib:${NVHPC_COMM_LIBS}/nvshmem/lib:${NVHPC_COMM_LIBS}/12.2/nvshmem/lib:${NVHPC_COMM_LIBS}/12.9/nvshmem/lib:$LD_LIBRARY_PATH
 
 # Ensure NVSHMEM runtime libraries are discoverable (libnvshmem_host.so.*)
-# ld.so.conf.d for all processes; profile.d + .bashrc so desktop terminals get LD_LIBRARY_PATH.
-RUN NVSHMEM_LIB_DIR="$(ls -d /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
-  /opt/nvidia/hpc_sdk/*/comm_libs/*/nvshmem*/lib 2>/dev/null | head -n 1)" && \
-  if [ -n "$NVSHMEM_LIB_DIR" ]; then \
-    echo "$NVSHMEM_LIB_DIR" > /etc/ld.so.conf.d/nvshmem.conf && ldconfig && \
-    printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" > /etc/profile.d/nvshmem.sh && \
-    printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.bashrc && \
-    printf '%s\n' "export LD_LIBRARY_PATH=\"$NVSHMEM_LIB_DIR:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.profile; \
+# Add all nvshmem lib dirs so gmx works in desktop terminals (e.g. 12.2 vs 12.9).
+RUN set -e; \
+  NVSHMEM_DIRS="$(ls -d /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
+    /opt/nvidia/hpc_sdk/*/comm_libs/*/nvshmem*/lib 2>/dev/null | sort -u)" && \
+  if [ -n "$NVSHMEM_DIRS" ]; then \
+    echo "$NVSHMEM_DIRS" > /etc/ld.so.conf.d/nvshmem.conf && \
+    ldconfig && \
+    NVSHMEM_LD_PATH="$(echo "$NVSHMEM_DIRS" | tr '\n' ':')"; \
+    NVSHMEM_LD_PATH="${NVSHMEM_LD_PATH%:}"; \
+    printf '%s\n' "export LD_LIBRARY_PATH=\"${NVSHMEM_LD_PATH}:\$LD_LIBRARY_PATH\"" > /etc/profile.d/nvshmem.sh && \
+    printf '%s\n' "export LD_LIBRARY_PATH=\"${NVSHMEM_LD_PATH}:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.bashrc && \
+    printf '%s\n' "export LD_LIBRARY_PATH=\"${NVSHMEM_LD_PATH}:\$LD_LIBRARY_PATH\"" >> /home/aXonian/.profile; \
   else \
     echo "WARNING: NVSHMEM lib dir not found under /opt/nvidia/hpc_sdk" >&2; \
   fi
