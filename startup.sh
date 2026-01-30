@@ -64,16 +64,17 @@ cat > /tmp/setup_x.sh << 'EOF'
 
 # Set DISPLAY variable
 export DISPLAY=:0
+export XAUTHORITY=/home/aXonian/.Xauthority
 
 # Create .Xauthority if it doesn't exist
-touch ~/.Xauthority
+touch "$XAUTHORITY"
 
 # Add local authorization
-xauth generate :0 . trusted
+XAUTHORITY="$XAUTHORITY" xauth generate :0 . trusted
 
 # Wait for X server to be fully ready
 for i in {1..30}; do
-    if DISPLAY=:0 xset q &>/dev/null; then
+    if XAUTHORITY="$XAUTHORITY" xset q &>/dev/null; then
         echo "X server is ready"
         break
     fi
@@ -213,6 +214,17 @@ chmod +x /tmp/setup_x.sh
 # Switch to aXonian user and run the script
 su - aXonian -c '/tmp/setup_x.sh'
 
+
+set -e
+echo "== Xorg log =="; ls -l /var/log/Xorg.0.log || true
+test -f /var/log/Xorg.0.log && tail -n 200 /var/log/Xorg.0.log || true
+echo "== try start-xorg manually =="; /usr/local/bin/start-xorg-nvidia.sh
+
+ls -l /tmp/.X11-unix/X0 /tmp/.X0-lock || true
+ps -ef | grep -E "Xorg" || true
+
+su - aXonian -c "DISPLAY=:0 XAUTHORITY=/home/aXonian/.Xauthority xset q" || true
+su - aXonian -c "DISPLAY=:0 XAUTHORITY=/home/aXonian/.Xauthority vglrun glxinfo | head -20" || true
 
 # Keep the container running
 tail -f /dev/null
