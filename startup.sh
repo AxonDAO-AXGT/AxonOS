@@ -215,7 +215,6 @@ chmod +x /tmp/setup_x.sh
 su - aXonian -c '/tmp/setup_x.sh'
 
 
-set -e
 echo "== Xorg log =="; ls -l /var/log/Xorg.0.log || true
 test -f /var/log/Xorg.0.log && tail -n 200 /var/log/Xorg.0.log || true
 echo "== try start-xorg manually =="; /usr/local/bin/start-xorg-nvidia.sh
