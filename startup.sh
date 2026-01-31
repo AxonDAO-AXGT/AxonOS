@@ -28,6 +28,16 @@ if ! grep -q "AxonOS" /etc/hosts; then
     echo "127.0.0.1 AxonOS" >> /etc/hosts
 fi
 
+# Refresh NVSHMEM library paths at runtime so GUI shells match SSH
+NVSHMEM_DIRS="$(ls -d \
+  /opt/nvidia/hpc_sdk/Linux_x86_64/*/comm_libs/nvshmem*/lib \
+  /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
+  /opt/nvidia/hpc_sdk/*/comm_libs/*/nvshmem*/lib 2>/dev/null | sort -u)"
+if [ -n "$NVSHMEM_DIRS" ]; then
+    echo "$NVSHMEM_DIRS" > /etc/ld.so.conf.d/nvshmem.conf
+    ldconfig
+fi
+
 # Initialize IPFS for aXonian user
 echo "Initializing IPFS..."
 su - aXonian -c 'ipfs init --profile=server' || echo "IPFS already initialized or failed to initialize"

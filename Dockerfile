@@ -299,7 +299,9 @@ ENV LD_LIBRARY_PATH=/opt/openmpi/lib:/opt/ucx/lib:${NVHPC_COMM_LIBS}/nvshmem_cuf
 # Ensure NVSHMEM runtime libraries are discoverable (libnvshmem_host.so.*)
 # Add all nvshmem lib dirs so gmx works in desktop terminals (e.g. 12.2 vs 12.9).
 RUN set -e; \
-  NVSHMEM_DIRS="$(ls -d /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
+  NVSHMEM_DIRS="$(ls -d \
+    /opt/nvidia/hpc_sdk/Linux_x86_64/*/comm_libs/nvshmem*/lib \
+    /opt/nvidia/hpc_sdk/*/comm_libs/nvshmem*/lib \
     /opt/nvidia/hpc_sdk/*/comm_libs/*/nvshmem*/lib 2>/dev/null | sort -u)" && \
   if [ -n "$NVSHMEM_DIRS" ]; then \
     echo "$NVSHMEM_DIRS" > /etc/ld.so.conf.d/nvshmem.conf && \
@@ -345,6 +347,7 @@ RUN apt update && apt install -y \
       -DCMAKE_INSTALL_PREFIX=/opt/gromacs && \
     cmake --build /opt/gromacs-build -j"$(nproc)" && \
     cmake --install /opt/gromacs-build && \
+    echo "/opt/gromacs/lib" > /etc/ld.so.conf.d/gromacs.conf && ldconfig && \
     ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx && \
     ln -s /opt/gromacs/bin/gmx_mpi /usr/local/bin/gmx_mpi && \
     echo 'source /opt/gromacs/bin/GMXRC' > /etc/profile.d/gromacs.sh && \
