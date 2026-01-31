@@ -112,9 +112,16 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             # Enforce AxonOS wallpaper at runtime (Ubuntu XFCE can reset)
             WALLPAPER_PATH="/usr/share/desktop-base/active-theme/wallpaper/contents/images/1920x1080.svg"
             if [ -f "$WALLPAPER_PATH" ]; then
-                for MON in monitor0 monitor0-0; do
-                    DISPLAY=:0 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/last-image" -n -t string -s "$WALLPAPER_PATH" 2>/dev/null || true
-                    DISPLAY=:0 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace0/image-style" -n -t int -s 5 2>/dev/null || true
+                MONS=$(DISPLAY=:0 xfconf-query -c xfce4-desktop -l 2>/dev/null | \
+                    sed -n 's|^/backdrop/screen0/\(monitor[^/]*\)/workspace[0-9]\+/last-image$|\1|p' | sort -u)
+                if [ -z "$MONS" ]; then
+                    MONS="monitor0 monitor0-0"
+                fi
+                for MON in $MONS; do
+                    for WS in 0 1 2 3; do
+                        DISPLAY=:0 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace${WS}/last-image" -n -t string -s "$WALLPAPER_PATH" 2>/dev/null || true
+                        DISPLAY=:0 xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${MON}/workspace${WS}/image-style" -n -t int -s 5 2>/dev/null || true
+                    done
                 done
             fi
 
