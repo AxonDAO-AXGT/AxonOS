@@ -173,9 +173,14 @@ if [ -d "/usr/share/themes/WhiteSur-Dark" ]; then
             DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-9/show-tooltips -n -t bool -s false 2>/dev/null || true
             DISPLAY=:0 xfconf-query -c xfce4-panel -p /plugins/plugin-9/disable-tooltips -n -t bool -s true 2>/dev/null || true
 
-            # Disable GTK tooltips globally (GTK3)
+            # Disable GTK tooltips globally (GTK3) + restore dark theme
             mkdir -p /home/$USER/.config/gtk-3.0
-            echo "gtk-enable-tooltips=0" > /home/$USER/.config/gtk-3.0/settings.ini
+            cat > /home/$USER/.config/gtk-3.0/settings.ini << 'GTK3'
+gtk-enable-tooltips=0
+gtk-theme-name=WhiteSur-Dark
+gtk-icon-theme-name=Adwaita
+gtk-application-prefer-dark-theme=1
+GTK3
             chown -R $USER:$USER /home/$USER/.config/gtk-3.0
 
             # Restart panel to ensure new settings apply
