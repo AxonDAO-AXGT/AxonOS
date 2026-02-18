@@ -10,7 +10,12 @@ This module implements AXGT token-based gating for AxonOS remote desktop access.
 
 ## Overview
 
-AxonOS access is restricted to users who hold AXGT tokens in their Ethereum wallet. The gate checks token balance before allowing WebSocket connections to the noVNC desktop.
+AxonOS access uses a hold-based, off-chain credit model:
+
+- Wallet must hold at least the configured AXGT minimum.
+- Usage is metered per wallet globally (across sessions/devices), with no on-chain debit/transfer.
+- Credit capacity scales linearly with holdings (`100 AXGT = 60 minutes` by default).
+- Access locks automatically when wallet credit is exhausted.
 
 ## Configuration
 
@@ -24,7 +29,11 @@ Optional hardening environment variables:
 
 - `AXGT_CORS_ORIGINS`: CORS allowlist for `/api/auth/verify-wallet`. Use comma-separated origins (exact match) or `*` to allow any. Default: same-origin only.
 - `AXGT_RATE_LIMIT_PER_MIN`: Best-effort per-client rate limit for verify calls. Default: `60`. Set `0` to disable.
-- `AXGT_TRIAL_DB_PATH`: Persistent trial registry path (JSON). Default: `/var/lib/axonos_gate/trials.json`
+- `AXGT_MIN_HOLD_AMOUNT`: Minimum AXGT required for access, in token units (e.g. `100` means 100 AXGT). Default: `100`.
+- `AXGT_CREDIT_PER_100_AXGT_MINUTES`: Minutes of usage credit granted per 100 AXGT held. Default: `60`.
+- `AXGT_WARNING_THRESHOLD_MINUTES`: Warning threshold used by API/UI lockout warnings. Default: `10`.
+- `AXGT_USAGE_DB_PATH`: Persistent per-wallet usage ledger path (JSON). Default: `/var/lib/axonos_gate/usage.json`.
+- `AXGT_USAGE_RETENTION_DAYS`: Cleanup window for stale wallet usage entries. Default: `180`.
 - `AXGT_EXPECTED_CONTRACT_ADDRESS`: Optional safety check; if set, the gate will only accept this contract address.
 
 Additional configuration for websockify:
@@ -44,7 +53,7 @@ Additional configuration for websockify:
 
 ### POST /api/auth/verify-wallet
 
-Verify if a wallet holds AXGT tokens.
+Verify wallet hold + credit state.
 
 **Request:**
 ```json
@@ -56,7 +65,16 @@ Verify if a wallet holds AXGT tokens.
 **Response:**
 ```json
 {
-  "verified": true
+  "verified": true,
+  "access_type": "holding_credit",
+  "locked": false,
+  "remaining_minutes": 42.5,
+  "consumed_minutes": 17.5,
+  "capacity_minutes": 60.0,
+  "warning_threshold_minutes": 10,
+  "min_hold_amount": "100",
+  "credit_per_100_axgt_minutes": 60,
+  "balance_axgt": "142.0"
 }
 ```
 
@@ -65,7 +83,30 @@ or
 ```json
 {
   "verified": false,
-  "error": "No AXGT balance found in this wallet"
+  "locked": true,
+  "remaining_minutes": 0.0,
+  "error": "Usage credit exhausted. Increase held AXGT to raise capacity and unlock access."
+}
+```
+
+### GET /api/auth/wallet-status
+
+Get current wallet credit status for warning/lock overlays.
+
+**Query:**
+- `wallet_address=0x...` (or `wallet` alias)
+
+**Response:**
+```json
+{
+  "verified": true,
+  "access_type": "holding_credit",
+  "locked": false,
+  "remaining_minutes": 9.8,
+  "consumed_minutes": 50.2,
+  "capacity_minutes": 60.0,
+  "warning_threshold_minutes": 10,
+  "reason": "Warning: less than 10 minutes of AXGT usage credit remaining."
 }
 ```
 
