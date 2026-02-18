@@ -20,24 +20,16 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Get password from user or use default
+# Require explicit password input (used for both VNC auth and container user sudo password).
 if [ -z "$1" ]; then
-    echo -e "${YELLOW}⚠️  No password provided. Using default 'axonpassword' (not recommended for production)${NC}"
+    echo -e "${RED}❌ No password provided.${NC}"
     echo "Usage: $0 <password> [image_tag]"
     echo "Example: $0 mySecurePassword123 axonos:latest"
-    echo ""
-    read -p "Continue with default password? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Build cancelled."
-        exit 1
-    fi
-    PASSWORD="axonpassword"
-    IMAGE_TAG="${2:-axonos:latest}"
-else
-    PASSWORD="$1"
-    IMAGE_TAG="${2:-axonos:latest}"
+    exit 1
 fi
+
+PASSWORD="$1"
+IMAGE_TAG="${2:-axonos:latest}"
 
 echo -e "${GREEN}Building AxonOS image: ${IMAGE_TAG}${NC}"
 echo "Password: ${PASSWORD:0:3}*** (hidden)"

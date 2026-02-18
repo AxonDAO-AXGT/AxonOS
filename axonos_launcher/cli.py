@@ -43,9 +43,13 @@ def generate_dockerfile(core, config_file=None, output='Dockerfile.custom'):
         print(f"❌ Error generating Dockerfile: {e}")
         return False
 
-def build_image(core, image_tag='axonos:latest', dockerfile=None):
+def build_image(core, image_tag='axonos:latest', dockerfile=None, password=''):
     """Build Docker image"""
     print(f"🔨 Building Docker image: {image_tag}")
+    password = (password or "").strip()
+    if not password:
+        print("❌ Build password is required. Pass --password or set it in your config file.")
+        return False
     
     if dockerfile:
         dockerfile_path = dockerfile
@@ -59,7 +63,13 @@ def build_image(core, image_tag='axonos:latest', dockerfile=None):
         dockerfile_path = 'Dockerfile.custom'
         print("🔧 Using custom configuration - building from Dockerfile.custom")
     
-    cmd = ['docker', 'build', '-f', dockerfile_path, '-t', image_tag, '.']
+    cmd = [
+        'docker', 'build',
+        '--build-arg', f'PASSWORD={password}',
+        '-f', dockerfile_path,
+        '-t', image_tag,
+        '.',
+    ]
     print(f"Running: {' '.join(cmd)}")
     
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
@@ -167,8 +177,8 @@ Examples:
   # Generate Dockerfile with default settings
   axonos generate
 
-  # Build image
-  axonos build
+  # Build image (password required)
+  axonos build --password "$AXONOS_VNC_PASSWORD"
 
   # Build and deploy with GPU support
   axonos build --gpu && axonos deploy --gpu
@@ -206,7 +216,7 @@ Examples:
                              help='Docker image tag')
     build_parser.add_argument('--dockerfile', '-f', help='Dockerfile path')
     build_parser.add_argument('--config', '-c', help='Configuration file (JSON)')
-    build_parser.add_argument('--password', '-p', help='VNC password for build')
+    build_parser.add_argument('--password', '-p', help='Build password (required unless provided in --config)')
     build_parser.add_argument('--cuda-archs', help='GROMACS CUDA archs (e.g. "70;86;89")')
     build_parser.add_argument('--gmx-cufftmp', action='store_true',
                              help='Enable GROMACS cuFFTMp (multi-GPU FFT)')
@@ -287,7 +297,7 @@ Examples:
             core.set_gmx_cufftmp(False)
         elif args.gmx_cufftmp:
             core.set_gmx_cufftmp(True)
-        success = build_image(core, args.image, args.dockerfile)
+        success = build_image(core, args.image, args.dockerfile, core.password)
         return 0 if success else 1
     
     elif args.command == 'deploy':

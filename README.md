@@ -382,9 +382,6 @@ docker build --build-arg PASSWORD="$AXONOS_VNC_PASSWORD" -t axonos .
 # Or use the build script
 ./scripts/build_axonos.sh "$AXONOS_VNC_PASSWORD"
 
-# Or build with default password (not recommended for production)
-docker build -t axonos .
-
 # Run the container (recommended default: expose noVNC only)
 # - noVNC provides browser access to the desktop on port 6080.
 # - Not publishing VNC/IPFS ports does NOT remove functionality inside the desktop;
@@ -408,13 +405,13 @@ docker run -d --gpus all --env-file .env -p 6080:6080 \
 * 🔧 `http://localhost:5001` → IPFS API
 * 📁 `http://localhost:5001/webui` → IPFS Web UI
 
-> **Security Note**: For production use, always set a custom password during build using `--build-arg PASSWORD="$AXONOS_VNC_PASSWORD"`. The default password `axonpassword` is for development purposes only.
+> **Security Note**: A build password is required via `--build-arg PASSWORD="$AXONOS_VNC_PASSWORD"`. This password is used for both VNC authentication and the container user password (including sudo inside the desktop terminal).
 
 ### Self-Hosting Disclaimer
 
 If you self-host AxonOS on a public server (or expose ports beyond localhost), you are responsible for hardening your deployment.
 
-- **Passwords**: Always set a strong VNC password at build/run time. The default is intended for development only.
+- **Passwords**: Always set a strong build password. It is used for both VNC access and sudo within the container desktop session.
 - **Port exposure**: Avoid exposing **direct VNC** (`5901`) to the internet. Prefer accessing the desktop via **noVNC** (`6080`) behind a reverse proxy with TLS.
 - **Reverse proxy**: If using a tunnel/reverse proxy, ensure it terminates TLS and applies basic abuse protections (rate limits, request size limits, IP allowlists where appropriate).
 - **AXGT gate configuration**: For non-standard hosting setups, configure the gate via environment variables (e.g., allowed origins and rate limits) so wallet verification continues to work while reducing cross-origin abuse.

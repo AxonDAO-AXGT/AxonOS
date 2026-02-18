@@ -17,9 +17,6 @@
 ```bash
 # Build with custom password (recommended)
 docker build --build-arg PASSWORD="$AXONOS_VNC_PASSWORD" -t axonos:latest .
-
-# Build with default password (testing only)
-docker build -t axonos:latest .
 ```
 
 ## Build Requirements
@@ -107,9 +104,11 @@ df -h
 - Check network connection
 - Models will be retried automatically
 
-### Password Warning
+### Password Requirement
 
-The warning about `ARG PASSWORD` is informational. The password is used during build to set VNC password and is not stored in the final image layers.
+`PASSWORD` is required at build time. It sets both:
+- VNC authentication password
+- Container desktop user password (used for sudo in terminal)
 
 ## Build Optimization
 

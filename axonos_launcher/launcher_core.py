@@ -275,7 +275,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
                               for app_id, app_info in self.get_all_applications().items()}
         self.ollama_models = ['command-r7b', 'granite3.2-vision']
         self.username = 'aXonian'
-        self.password = 'axonpassword'
+        self.password = ''
         self.gpu_enabled = False
         self.gmx_cuda_archs = '70;75;86;89'
         self.gmx_use_cufftmp = True
@@ -360,7 +360,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         
         default_models = self.ollama_models == ['command-r7b', 'granite3.2-vision']
         default_user = self.username == 'aXonian'
-        default_password = self.password == 'axonpassword'
+        default_password = not (self.password or "").strip()
         default_cuda_archs = self.gmx_cuda_archs == '70;75;86;89'
         default_cufftmp = self.gmx_use_cufftmp is True
         
@@ -501,8 +501,6 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
         for i, line in enumerate(new_content):
             if line.startswith('ENV USER='):
                 new_content[i] = f'ENV USER={self.username}'
-            elif line.startswith('ARG PASSWORD='):
-                new_content[i] = f'ARG PASSWORD={self.password}'
             elif line.startswith('ARG GMX_CUDA_ARCHS='):
                 new_content[i] = f'ARG GMX_CUDA_ARCHS="{self.gmx_cuda_archs}"'
 
@@ -545,7 +543,7 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
     
     def set_password(self, password):
         """Set VNC password"""
-        self.password = password
+        self.password = (password or "").strip()
 
     def set_cuda_archs(self, cuda_archs):
         """Set CUDA architectures for GROMACS build"""

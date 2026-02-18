@@ -2,7 +2,7 @@ FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV USER=aXonian
-ARG PASSWORD=axonpassword
+ARG PASSWORD
 
 # Basic system setup
 RUN apt update && apt install -y \
@@ -93,6 +93,9 @@ RUN curl --proto '=https' --tlsv1.2 -fsSL https://ollama.com/install.sh -o /tmp/
 
 # Pull the command-r7b model
 RUN ollama serve & sleep 5 && ollama pull granite3-guardian && ollama pull command-r7b && ollama pull granite3.2-vision
+
+# Require an explicit password at build time so we never ship a known default.
+RUN test -n "$PASSWORD" || (echo "ERROR: build arg PASSWORD is required" >&2; exit 1)
 
 # Create user and set password
 RUN useradd -ms /bin/bash $USER && echo "$USER:$PASSWORD" | chpasswd && adduser $USER sudo

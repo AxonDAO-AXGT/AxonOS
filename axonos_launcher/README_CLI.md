@@ -44,10 +44,7 @@ axonos generate --output Dockerfile.custom
 ### Build Image
 
 ```bash
-# Build with default settings
-axonos build
-
-# Build with custom password
+# Build (password required)
 axonos build --password mySecurePassword
 
 # Build with custom image tag

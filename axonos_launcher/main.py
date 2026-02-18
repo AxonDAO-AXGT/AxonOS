@@ -1110,7 +1110,7 @@ RUN git clone https://github.com/cellmodeller/CellModeller.git && \\
         username_entry.grid(row=0, column=1, sticky='ew', padx=(20, 0), pady=12)
         
         ttk.Label(user_grid, text="VNC Password:", font=('TkDefaultFont', 13)).grid(row=1, column=0, sticky='w', pady=12)  # 11 * 1.2 = 13
-        self.password_var = tk.StringVar(value="axonpassword")
+        self.password_var = tk.StringVar(value="")
         self.password_var.trace('w', lambda *args: self.update_config_status())
         password_entry = ttk.Entry(user_grid, textvariable=self.password_var, width=25, show="*")
         password_entry.grid(row=1, column=1, sticky='ew', padx=(20, 0), pady=12)
@@ -1355,7 +1355,7 @@ docker start axonos
         # Check if default models and user settings
         default_models = self.ollama_models.get('1.0', tk.END).strip() == 'command-r7b\ngranite3.2-vision'
         default_user = self.username_var.get() == 'aXonian'
-        default_password = self.password_var.get() == 'axonpassword'
+        default_password = not (self.password_var.get() or "").strip()
         default_cuda_archs = getattr(self, "cuda_archs_var", tk.StringVar(value="70;75;86;89")).get() == '70;75;86;89'
         default_cufftmp = getattr(self, "gmx_cufftmp_var", tk.BooleanVar(value=True)).get() is True
         
@@ -1566,13 +1566,14 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
             
             # Update user and password
             username = self.username_var.get()
-            password = self.password_var.get()
+            password = (self.password_var.get() or "").strip()
+            if not password:
+                self.log_message("❌ Please set a non-empty VNC password before generating Dockerfile.custom")
+                return
             
             for i, line in enumerate(new_content):
                 if line.startswith('ENV USER='):
                     new_content[i] = f'ENV USER={username}'
-                elif line.startswith('ARG PASSWORD='):
-                    new_content[i] = f'ARG PASSWORD={password}'
                 elif line.startswith('ARG GMX_CUDA_ARCHS='):
                     cuda_archs = self.cuda_archs_var.get()
                     new_content[i] = f'ARG GMX_CUDA_ARCHS="{cuda_archs}"'
@@ -1629,8 +1630,18 @@ COPY ipfs-status.desktop /usr/share/applications/ipfs-status.desktop''')
                     self.log_message("🔧 Using custom configuration - building from Dockerfile.custom")
                 
                 # Run docker build command
+                password = (self.password_var.get() or "").strip()
+                if not password:
+                    self.log_message("❌ Build password is required. Set a VNC password in Settings first.")
+                    return
                 process = subprocess.Popen(
-                    ['docker', 'build', '-f', dockerfile_path, '-t', image_tag, '.'],
+                    [
+                        'docker', 'build',
+                        '--build-arg', f'PASSWORD={password}',
+                        '-f', dockerfile_path,
+                        '-t', image_tag,
+                        '.',
+                    ],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     universal_newlines=True,
