@@ -350,7 +350,11 @@ Copyright (C) 2019 The noVNC Authors
             </li>
             <li id="noVNC_wallet_block">
                 <label>Wallet Address:</label>
-                <input id="noVNC_wallet_input" type="text" placeholder="0x...">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <input id="noVNC_wallet_input" type="text" placeholder="0x..." style="flex: 1; min-width: 200px;">
+                    <button id="axonos_connect_wallet_btn" type="button" class="noVNC_submit" style="white-space: nowrap;">Connect Wallet</button>
+                </div>
+                <p id="axonos_wallet_connected_hint" class="axonos-wallet-contract" style="display: none; margin-top: 6px; font-size: 12px;"></p>
             </li>
             <li id="axonos-wallet-status" class="axonos-wallet-status" style="display: none;">
                 <div id="axonos-wallet-status-content"></div>
@@ -670,6 +674,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // AXGT Wallet Verification (in credentials dialog)
     let verifiedWalletAddress = null;
     window.verifiedWalletAddress = null; // Make it globally accessible for ui.js
+    window.verifiedWalletAuthToken = null;
     let walletStatusPollInterval = null;
     let policyWarningThresholdMinutes = 10;
     let policyMinHoldAmount = '100';
@@ -685,6 +690,104 @@ document.addEventListener("DOMContentLoaded", function() {
     const creditOverlayTitle = document.getElementById('axgt-credit-overlay-title');
     const creditOverlayMessage = document.getElementById('axgt-credit-overlay-message');
     const creditOverlayAction = document.getElementById('axgt-credit-overlay-action');
+    const connectWalletBtn = document.getElementById('axonos_connect_wallet_btn');
+    const walletConnectedHint = document.getElementById('axonos_wallet_connected_hint');
+
+    const hasEthereum = typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
+    if (!hasEthereum && connectWalletBtn) {
+        connectWalletBtn.style.display = 'none';
+    }
+
+    let axgtChainIdHex = null;
+
+    function showWalletConnectedHint(address) {
+        if (!walletConnectedHint) return;
+        if (!address || address.length < 10) {
+            walletConnectedHint.style.display = 'none';
+            return;
+        }
+        const short = address.slice(0, 6) + '...' + address.slice(-4);
+        walletConnectedHint.textContent = 'Connected: ' + short;
+        walletConnectedHint.style.display = 'block';
+    }
+
+    function clearWalletConnectedHint() {
+        if (walletConnectedHint) {
+            walletConnectedHint.style.display = 'none';
+            walletConnectedHint.textContent = '';
+        }
+    }
+
+    function connectWithMetaMask() {
+        if (!window.ethereum || !walletInput) return;
+        const btn = connectWalletBtn;
+        if (btn) btn.disabled = true;
+        setWalletStatus('verifying', 'Connecting to wallet...');
+
+        function finish(accounts) {
+            if (btn) btn.disabled = false;
+            if (!accounts || accounts.length === 0) {
+                setWalletStatus('error', 'No account selected');
+                return;
+            }
+            const address = (accounts[0] || '').trim();
+            if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+                setWalletStatus('error', 'Invalid address from wallet');
+                return;
+            }
+            walletInput.value = address;
+            showWalletConnectedHint(address);
+            window.verifiedWalletAddress = null;
+            window.verifiedWalletAuthToken = null;
+            if (walletStatus) walletStatus.style.display = 'none';
+        }
+
+        Promise.resolve()
+            .then(function () {
+                if (axgtChainIdHex) {
+                    return window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: axgtChainIdHex }]
+                    }).catch(function (err) {
+                        if (err.code !== 4902) console.warn('Chain switch warning:', err);
+                    });
+                }
+            })
+            .then(function () {
+                return window.ethereum.request({ method: 'eth_requestAccounts' });
+            })
+            .then(finish)
+            .catch(function (err) {
+                if (btn) btn.disabled = false;
+                const msg = err && err.message ? err.message : String(err);
+                setWalletStatus('error', 'Wallet connection failed: ' + msg);
+            });
+    }
+
+    if (connectWalletBtn) {
+        connectWalletBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            connectWithMetaMask();
+        });
+    }
+
+    if (hasEthereum && window.ethereum.on) {
+        window.ethereum.on('accountsChanged', function (accounts) {
+            if (!walletInput) return;
+            window.verifiedWalletAddress = null;
+            window.verifiedWalletAuthToken = null;
+            if (accounts && accounts.length > 0) {
+                const address = (accounts[0] || '').trim();
+                if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
+                    walletInput.value = address;
+                    showWalletConnectedHint(address);
+                }
+            } else {
+                walletInput.value = '';
+                clearWalletConnectedHint();
+            }
+        });
+    }
 
     // Populate AXGT contract display dynamically (same-origin; avoids hardcoding in static HTML)
     if (contractEl) {
@@ -699,6 +802,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 const warningMins = (cfg && cfg.axgt_warning_threshold_minutes) ? Number(cfg.axgt_warning_threshold_minutes) : policyWarningThresholdMinutes;
                 policyMinHoldAmount = minHold;
                 policyWarningThresholdMinutes = warningMins;
+                if (cfg.axgt_chain_id != null && cfg.axgt_chain_id !== '') {
+                    const n = parseInt(cfg.axgt_chain_id, 10);
+                    if (!isNaN(n)) axgtChainIdHex = '0x' + n.toString(16);
+                }
                 if (policyEl) {
                     policyEl.textContent = `${minHold} AXGT minimum hold, ${minutesPerHundred} min credit per 100 AXGT`;
                 }
@@ -747,6 +854,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function applyWalletStatusState(data) {
         const remainingMinutes = Number(data && data.remaining_minutes ? data.remaining_minutes : 0);
         const warningThreshold = Number(data && data.warning_threshold_minutes ? data.warning_threshold_minutes : policyWarningThresholdMinutes);
+        if (data && data.auth_token) {
+            window.verifiedWalletAuthToken = String(data.auth_token);
+        }
 
         if (!data || !data.verified || data.locked || remainingMinutes <= 0) {
             const lockMessage = (data && (data.error || data.reason))
@@ -756,6 +866,7 @@ document.addEventListener("DOMContentLoaded", function() {
             stopWalletStatusPolling();
             verifiedWalletAddress = null;
             window.verifiedWalletAddress = null;
+            window.verifiedWalletAuthToken = null;
             if (typeof UI !== 'undefined' && typeof UI.disconnect === 'function') {
                 try {
                     UI.disconnect();
@@ -782,7 +893,11 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!walletAddress) return;
         const statusUrl = new URL('/api/auth/wallet-status', window.location.origin);
         statusUrl.searchParams.set('wallet_address', walletAddress);
-        fetch(statusUrl.toString(), { method: 'GET' })
+        const headers = {};
+        if (window.verifiedWalletAuthToken) {
+            headers['X-AXGT-Auth-Token'] = window.verifiedWalletAuthToken;
+        }
+        fetch(statusUrl.toString(), { method: 'GET', headers: headers })
             .then(response => response.json())
             .then(data => {
                 applyWalletStatusState(data);
@@ -857,87 +972,109 @@ document.addEventListener("DOMContentLoaded", function() {
         setWalletStatus('verifying', 'Verifying wallet...');
         if (verifyBtn) verifyBtn.disabled = true;
         
-        // Use same-origin API so this works behind tunnels (e.g. gradio-tun) and reverse proxies
         const apiUrl = new URL('/api/auth/verify-wallet', window.location.origin).toString();
-        fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ wallet_address: walletAddress })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.verified) {
-                verifiedWalletAddress = walletAddress;
-                window.verifiedWalletAddress = walletAddress; // Make globally accessible
-                
-                // Show appropriate message based on access type
-                let statusMessage = 'Wallet verified - Connecting...';
-                if (data.access_type === 'holding_credit') {
-                    const remaining = Number(data.remaining_minutes || 0);
-                    statusMessage = `AXGT holder verified (${remaining.toFixed(1)} min remaining) - Connecting...`;
-                } else if (data.message) {
-                    statusMessage = data.message + ' - Connecting...';
-                }
-                
-                setWalletStatus('verified', statusMessage);
-                // Set wallet address immediately (before setTimeout)
-                window.verifiedWalletAddress = walletAddress;
-                verifiedWalletAddress = walletAddress;
-                applyWalletStatusState(data);
-                startWalletStatusPolling(walletAddress);
-                
-                // Close dialog and proceed with connection
-                setTimeout(() => {
-                    // Close the credentials dialog
-                    const credentialsDialog = document.getElementById('noVNC_credentials_dlg');
-                    if (credentialsDialog) {
-                        credentialsDialog.classList.remove('noVNC_open');
-                    }
-                    
-                    // If RFB connection already exists and is waiting for credentials, send them
-                    if (typeof UI !== 'undefined' && UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
-                        const password = WebUtil.getConfigVar('password') || 'axonpassword';
-                        UI.reconnectPassword = password;
-                        try {
-                            UI.rfb.sendCredentials({ username: '', password: password });
-                            console.log('Credentials sent to existing RFB connection');
-                        } catch (e) {
-                            console.log('RFB not ready for credentials yet:', e);
-                            // If RFB not ready, initiate connection
-                            if (typeof UI.connect === 'function') {
-                                UI.connect(null, password);
+        const sendVerify = function (body) {
+            return fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+        };
+        
+        function doVerify(body) {
+            sendVerify(body)
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.verified) {
+                        verifiedWalletAddress = walletAddress;
+                        window.verifiedWalletAddress = walletAddress;
+                        window.verifiedWalletAuthToken = (data.auth_token || null);
+                        if (!window.verifiedWalletAuthToken) {
+                            stopWalletStatusPolling();
+                            hideCreditOverlay();
+                            verifiedWalletAddress = null;
+                            window.verifiedWalletAddress = null;
+                            window.verifiedWalletAuthToken = null;
+                            setWalletStatus('error', 'Verification succeeded but no auth token was issued. Please retry.');
+                            return;
+                        }
+                        var statusMessage = 'Wallet verified - Connecting...';
+                        if (data.access_type === 'holding_credit') {
+                            var remaining = Number(data.remaining_minutes || 0);
+                            statusMessage = 'AXGT holder verified (' + remaining.toFixed(1) + ' min remaining) - Connecting...';
+                        } else if (data.message) {
+                            statusMessage = data.message + ' - Connecting...';
+                        }
+                        setWalletStatus('verified', statusMessage);
+                        window.verifiedWalletAddress = walletAddress;
+                        verifiedWalletAddress = walletAddress;
+                        applyWalletStatusState(data);
+                        startWalletStatusPolling(walletAddress);
+                        setTimeout(function () {
+                            var credentialsDialog = document.getElementById('noVNC_credentials_dlg');
+                            if (credentialsDialog) credentialsDialog.classList.remove('noVNC_open');
+                            if (typeof UI !== 'undefined' && UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
+                                var password = WebUtil.getConfigVar('password') || 'axonpassword';
+                                UI.reconnectPassword = password;
+                                try {
+                                    UI.rfb.sendCredentials({ username: '', password: password });
+                                } catch (e) {
+                                    if (typeof UI.connect === 'function') UI.connect(null, password);
+                                }
+                            } else if (typeof UI !== 'undefined' && typeof UI.connect === 'function') {
+                                var pwd = WebUtil.getConfigVar('password') || 'axonpassword';
+                                UI.reconnectPassword = pwd;
+                                UI.connect(null, pwd);
                             }
-                        }
+                        }, 1500);
                     } else {
-                        // RFB not initialized yet - initiate connection now that wallet is verified
-                        console.log('Initiating VNC connection with verified wallet');
-                        if (typeof UI !== 'undefined' && typeof UI.connect === 'function') {
-                            const password = WebUtil.getConfigVar('password') || 'axonpassword';
-                            UI.reconnectPassword = password;
-                            UI.connect(null, password);
-                        }
+                        stopWalletStatusPolling();
+                        hideCreditOverlay();
+                        verifiedWalletAddress = null;
+                        window.verifiedWalletAddress = null;
+                        window.verifiedWalletAuthToken = null;
+                        setWalletStatus('not-verified', data.error || 'No access available for this wallet');
                     }
-                }, 1500);
-            } else {
-                stopWalletStatusPolling();
-                hideCreditOverlay();
-                verifiedWalletAddress = null;
-                window.verifiedWalletAddress = null;
-                setWalletStatus('not-verified', data.error || 'No access available for this wallet');
-            }
-        })
-        .catch(error => {
-            stopWalletStatusPolling();
-            hideCreditOverlay();
-            verifiedWalletAddress = null;
-            window.verifiedWalletAddress = null;
-            setWalletStatus('error', 'Error verifying wallet: ' + error.message);
-        })
-        .finally(() => {
+                })
+                .catch(function (error) {
+                    stopWalletStatusPolling();
+                    hideCreditOverlay();
+                    verifiedWalletAddress = null;
+                    window.verifiedWalletAddress = null;
+                    window.verifiedWalletAuthToken = null;
+                    setWalletStatus('error', 'Error verifying wallet: ' + error.message);
+                })
+                .finally(function () {
+                    if (verifyBtn) verifyBtn.disabled = false;
+                });
+        }
+
+        if (hasEthereum && window.ethereum && walletAddress) {
+            var challengeUrl = new URL('/api/auth/challenge', window.location.origin).toString();
+            fetch(challengeUrl, { method: 'GET' })
+                .then(function (r) { return r.json(); })
+                .then(function (json) {
+                    var challenge = (json && json.challenge) ? String(json.challenge) : '';
+                    if (!challenge) {
+                        setWalletStatus('error', 'Challenge unavailable. Please retry wallet verification.');
+                        if (verifyBtn) verifyBtn.disabled = false;
+                        return;
+                    }
+                    return window.ethereum.request({
+                        method: 'personal_sign',
+                        params: [challenge, walletAddress]
+                    }).then(function (sig) {
+                        doVerify({ wallet_address: walletAddress, message: challenge, signature: sig });
+                    });
+                })
+                .catch(function () {
+                    setWalletStatus('error', 'Signature is required to verify wallet ownership.');
+                    if (verifyBtn) verifyBtn.disabled = false;
+                });
+        } else {
+            setWalletStatus('error', 'Wallet provider not detected. Connect a compatible wallet to continue.');
             if (verifyBtn) verifyBtn.disabled = false;
-        });
+        }
     }
     
     if (verifyBtn) {

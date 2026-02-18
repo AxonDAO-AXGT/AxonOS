@@ -1059,11 +1059,17 @@ const UI = {
         }
         url += '/' + path;
         
-        // Add wallet address to query string if verified
+        // Add wallet address + strict auth token to query string if verified
         const verifiedWallet = window.verifiedWalletAddress || null;
         if (verifiedWallet) {
+            const verifiedAuthToken = window.verifiedWalletAuthToken || null;
+            if (!verifiedAuthToken) {
+                UI.showStatus(_("Wallet verification token missing. Please verify wallet again."), 'error');
+                return;
+            }
             const separator = url.includes('?') ? '&' : '?';
             url += separator + 'wallet=' + encodeURIComponent(verifiedWallet);
+            url += '&auth_token=' + encodeURIComponent(verifiedAuthToken);
         }
 
         UI.rfb = new RFB(document.getElementById('noVNC_container'), url,
