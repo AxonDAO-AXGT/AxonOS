@@ -41,11 +41,21 @@ if '/axonos_gate' not in sys.path:
 
 # Import our modules
 try:
-    from axgt_verifier import has_access, validate_wallet_address, mask_wallet_address
+    from axgt_verifier import (
+        get_wallet_access_status,
+        validate_wallet_address,
+        mask_wallet_address,
+        get_credit_policy,
+    )
 except ImportError:
     # Fallback to package import
     try:
-        from axonos_gate.axgt_verifier import has_axgt_balance, validate_wallet_address, mask_wallet_address
+        from axonos_gate.axgt_verifier import (
+            get_wallet_access_status,
+            validate_wallet_address,
+            mask_wallet_address,
+            get_credit_policy,
+        )
     except ImportError as e:
         print(f"ERROR: Cannot import axgt_verifier: {e}", file=sys.stderr)
         sys.exit(1)
@@ -60,11 +70,11 @@ _allow_any, _allowlist = parse_cors_allowlist(os.getenv("AXGT_CORS_ORIGINS"))
 _rate_limiter = get_rate_limiter_from_env()
 
 def _extract_wallet_from_path_and_headers(path: str, headers) -> str | None:
-    """Extract wallet address from query string (?wallet=0x...) or header X-Wallet-Address."""
+    """Extract wallet address from query string or header X-Wallet-Address."""
     try:
         parsed = urlparse(path if path else '/')
         query_params = parse_qs(parsed.query)
-        wallet_address = query_params.get('wallet', [None])[0]
+        wallet_address = query_params.get('wallet_address', [None])[0] or query_params.get('wallet', [None])[0]
     except Exception:
         wallet_address = None
 
@@ -82,7 +92,7 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
     """
     Extends websockify's HTTP handler to:
     - Serve /api/auth/verify-wallet on the SAME origin/port as noVNC (6080)
-    - Gate WebSocket upgrades using the wallet (AXGT balance OR 7-day trial)
+    - Gate WebSocket upgrades using wallet AXGT minimum-hold policy
     """
 
     def _send_json(self, status_code: int, payload: dict):
@@ -106,7 +116,11 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         self.wfile.write(body)
 
     def do_OPTIONS(self):
-        if self.path.startswith('/api/auth/verify-wallet') or self.path.startswith('/api/config'):
+        if (
+            self.path.startswith('/api/auth/verify-wallet')
+            or self.path.startswith('/api/auth/wallet-status')
+            or self.path.startswith('/api/config')
+        ):
             self.send_response(200)
             origin = cors_origin_for_request(
                 self.headers.get("Origin"),
@@ -129,11 +143,29 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         if self.path.startswith('/api/config'):
             contract = (os.getenv("AXGT_CONTRACT_ADDRESS") or "").strip()
             chain_id = (os.getenv("AXGT_CHAIN_ID") or "").strip()
+            policy = get_credit_policy()
             payload = {
                 "axgt_contract_address": contract or None,
                 "axgt_chain_id": chain_id or None,
+                "axgt_min_hold_amount": policy["min_hold_amount"],
+                "axgt_credit_per_100_axgt_minutes": policy["credit_per_100_axgt_minutes"],
+                "axgt_warning_threshold_minutes": policy["warning_threshold_minutes"],
             }
             return self._send_json(200, payload)
+        if self.path.startswith('/api/auth/wallet-status'):
+            wallet_address = _extract_wallet_from_path_and_headers(self.path, self.headers)
+            if not wallet_address:
+                return self._send_json(400, {'verified': False, 'error': 'wallet_address is required'})
+            if not validate_wallet_address(wallet_address):
+                return self._send_json(400, {
+                    'verified': False,
+                    'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
+                })
+            status = get_wallet_access_status(wallet_address)
+            status['wallet_address'] = wallet_address
+            if not status.get("verified"):
+                status['error'] = status.get("reason") or 'Access denied for this wallet.'
+            return self._send_json(200, status)
         return super().do_GET()
 
     def do_POST(self):
@@ -168,20 +200,21 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
                 'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
             })
 
-        access_granted, access_type, days_remaining = has_access(wallet_address)
-        if not access_granted:
+        status = get_wallet_access_status(wallet_address)
+        if not status.get("verified"):
             logger.info(f"Wallet verification failed: {mask_wallet_address(wallet_address)}")
-            return self._send_json(200, {'verified': False, 'error': 'No access available for this wallet'})
+            status['error'] = status.get("reason") or 'Access denied for this wallet.'
+            return self._send_json(200, status)
 
-        resp = {'verified': True, 'access_type': access_type}
-        if access_type == 'trial' and days_remaining is not None:
-            resp['trial_days_remaining'] = round(days_remaining, 1)
-            resp['message'] = f'7-day trial active ({days_remaining:.1f} days remaining)'
-        elif access_type == 'balance':
-            resp['message'] = 'Wallet verified - AXGT holder'
-
-        logger.info(f"Wallet verified: {mask_wallet_address(wallet_address)} (access_type: {access_type})")
-        return self._send_json(200, resp)
+        status['message'] = (
+            f"Wallet verified - {status.get('remaining_minutes', 0)} minutes remaining"
+        )
+        logger.info(
+            "Wallet verified: %s (remaining_minutes=%s)",
+            mask_wallet_address(wallet_address),
+            status.get("remaining_minutes"),
+        )
+        return self._send_json(200, status)
 
     def handle_upgrade(self):
         # Gate WebSocket upgrades. If wallet is missing/invalid/unverified -> 403 and do not upgrade.
@@ -194,12 +227,16 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
             self.send_error(403, "Invalid wallet address format")
             return
 
-        access_granted, access_type, days_remaining = has_access(wallet_address)
-        if not access_granted:
-            self.send_error(403, "Wallet does not hold AXGT and trial is not active")
+        status = get_wallet_access_status(wallet_address)
+        if not status.get("verified"):
+            self.send_error(403, status.get("reason") or "Wallet is locked")
             return
 
-        logger.info(f"WebSocket upgrade approved ({access_type}): {mask_wallet_address(wallet_address)}")
+        logger.info(
+            "WebSocket upgrade approved (%s): %s",
+            status.get("access_type"),
+            mask_wallet_address(wallet_address),
+        )
         return super().handle_upgrade()
 
 def main():

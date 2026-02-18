@@ -24,11 +24,21 @@ if '/axonos_gate' not in sys.path:
 
 # Import our modules
 try:
-    from axgt_verifier import has_access, validate_wallet_address, mask_wallet_address
+    from axgt_verifier import (
+        get_wallet_access_status,
+        validate_wallet_address,
+        mask_wallet_address,
+        get_credit_policy,
+    )
 except ImportError:
     # Fallback to package import
     try:
-        from axonos_gate.axgt_verifier import has_access, validate_wallet_address, mask_wallet_address
+        from axonos_gate.axgt_verifier import (
+            get_wallet_access_status,
+            validate_wallet_address,
+            mask_wallet_address,
+            get_credit_policy,
+        )
     except ImportError as e:
         print(f"ERROR: Cannot import axgt_verifier: {e}", file=sys.stderr)
         sys.exit(1)
@@ -93,31 +103,66 @@ def verify_wallet():
                 'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
             }), 400
         
-        has_access_result, access_type, days_remaining = has_access(wallet_address)
-        
-        if has_access_result:
-            response_data = {
-                'verified': True,
-                'access_type': access_type
-            }
-            if access_type == 'trial' and days_remaining is not None:
-                response_data['trial_days_remaining'] = round(days_remaining, 1)
-                response_data['message'] = f'7-day trial active ({days_remaining:.1f} days remaining)'
-            elif access_type == 'balance':
-                response_data['message'] = 'Wallet verified - AXGT holder'
-            
-            logger.info(f"Wallet verified: {mask_wallet_address(wallet_address)} (access_type: {access_type})")
-            return jsonify(response_data)
-        else:
-            logger.info(f"Wallet verification failed: {mask_wallet_address(wallet_address)}")
-            return jsonify({
-                'verified': False,
-                'error': 'No access available for this wallet'
-            })
+        status = get_wallet_access_status(wallet_address)
+        if status.get("verified"):
+            status['message'] = f"Wallet verified - {status.get('remaining_minutes', 0)} minutes remaining"
+            logger.info(
+                "Wallet verified: %s (remaining_minutes=%s)",
+                mask_wallet_address(wallet_address),
+                status.get("remaining_minutes"),
+            )
+            return jsonify(status)
+        logger.info(f"Wallet verification failed: {mask_wallet_address(wallet_address)}")
+        status['error'] = status.get("reason") or 'Access denied for this wallet.'
+        return jsonify(status)
             
     except Exception as e:
         logger.error(f"Error in verify_wallet: {e}", exc_info=True)
         return jsonify({'verified': False, 'error': 'Internal server error'}), 500
+
+@app.route('/api/auth/wallet-status', methods=['GET', 'OPTIONS'])
+def wallet_status():
+    """Get wallet holding-credit status for countdown/warnings."""
+    if request.method == 'OPTIONS':
+        return '', 200
+    try:
+        wallet_address = (
+            request.args.get('wallet_address', '').strip()
+            or request.headers.get('X-Wallet-Address', '').strip()
+            or request.args.get('wallet', '').strip()
+        )
+        if not wallet_address:
+            return jsonify({'verified': False, 'error': 'wallet_address is required'}), 400
+
+        if not validate_wallet_address(wallet_address):
+            return jsonify({
+                'verified': False,
+                'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
+            }), 400
+
+        status = get_wallet_access_status(wallet_address)
+        status['wallet_address'] = wallet_address
+        if not status.get("verified"):
+            status['error'] = status.get("reason") or 'Access denied for this wallet.'
+        return jsonify(status)
+
+    except Exception as e:
+        logger.error(f"Error in wallet_status: {e}", exc_info=True)
+        return jsonify({'verified': False, 'error': 'Internal server error'}), 500
+
+@app.route('/api/config', methods=['GET'])
+def config():
+    """Expose non-secret config values for frontend status/warning policy."""
+    contract = (os.getenv("AXGT_CONTRACT_ADDRESS") or "").strip()
+    chain_id = (os.getenv("AXGT_CHAIN_ID") or "").strip()
+    policy = get_credit_policy()
+    return jsonify({
+        "axgt_contract_address": contract or None,
+        "axgt_chain_id": chain_id or None,
+        "axgt_min_hold_amount": policy["min_hold_amount"],
+        "axgt_credit_per_100_axgt_minutes": policy["credit_per_100_axgt_minutes"],
+        "axgt_warning_threshold_minutes": policy["warning_threshold_minutes"],
+    })
 
 @app.route('/')
 def index():
