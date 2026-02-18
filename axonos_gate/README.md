@@ -33,6 +33,7 @@ Optional hardening environment variables:
 - `AXGT_CREDIT_PER_100_AXGT_MINUTES`: Minutes of usage credit granted per 100 AXGT held. Default: `60`.
 - `AXGT_WARNING_THRESHOLD_MINUTES`: Warning threshold used by API/UI lockout warnings. Default: `10`.
 - `AXGT_USAGE_DB_PATH`: Persistent per-wallet usage ledger path (JSON). Default: `/var/lib/axonos_gate/usage.json`.
+- `AXGT_AUTH_TOKEN_TTL_SECONDS`: Short-lived websocket auth token TTL in seconds; token is rotated during active status polling. Default: `300`.
 - `AXGT_USAGE_RETENTION_DAYS`: Cleanup window for stale wallet usage entries. Default: `180`.
 - `AXGT_EXPECTED_CONTRACT_ADDRESS`: Optional safety check; if set, the gate will only accept this contract address.
 
@@ -68,6 +69,8 @@ Verify wallet hold + credit state.
   "verified": true,
   "access_type": "holding_credit",
   "locked": false,
+  "auth_token": "token_value_here",
+  "auth_token_expires_in_seconds": 300,
   "remaining_minutes": 42.5,
   "consumed_minutes": 17.5,
   "capacity_minutes": 60.0,
@@ -95,6 +98,8 @@ Get current wallet credit status for warning/lock overlays.
 
 **Query:**
 - `wallet_address=0x...` (or `wallet` alias)
+**Headers (recommended):**
+- `X-AXGT-Auth-Token: <token from verify-wallet>` to rotate/refresh session token for reconnect UX.
 
 **Response:**
 ```json
