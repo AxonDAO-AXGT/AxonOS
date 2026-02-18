@@ -336,7 +336,10 @@ Copyright (C) 2019 The noVNC Authors
             <li class="axonos-wallet-dialog-header">
                 <h2>AXGT Wallet Required</h2>
                 <p class="axonos-wallet-description">
-                    To access AxonOS, you must hold AXGT in your wallet or use your 7-day free trial.
+                    Hold-based access is enforced. Your usage credit is tracked off-chain by wallet.
+                </p>
+                <p class="axonos-wallet-contract">
+                    Policy: <code id="axonos-credit-policy">(loading...)</code>
                 </p>
                 <p class="axonos-wallet-contract">
                     AXGT Contract: <code id="axonos-axgt-contract">(loading…)</code>
@@ -357,6 +360,14 @@ Copyright (C) 2019 The noVNC Authors
             </li>
         </ul>
     </form></div>
+    </div>
+
+    <div id="axgt-credit-overlay" style="display:none; position: fixed; top: 24px; right: 24px; z-index: 4000; max-width: 420px; background: rgba(18,18,22,0.95); color: #f5f5f5; border: 1px solid #4682B4; border-radius: 10px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.35);">
+        <div id="axgt-credit-overlay-title" style="font-weight: 600; margin-bottom: 6px;">AXGT Access Credit</div>
+        <div id="axgt-credit-overlay-message" style="font-size: 13px; line-height: 1.45;">Checking wallet status...</div>
+        <div style="margin-top: 10px;">
+            <button id="axgt-credit-overlay-action" type="button" class="noVNC_submit">Re-check Wallet</button>
+        </div>
     </div>
 
     <!-- Transition Screens -->
@@ -659,6 +670,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // AXGT Wallet Verification (in credentials dialog)
     let verifiedWalletAddress = null;
     window.verifiedWalletAddress = null; // Make it globally accessible for ui.js
+    let walletStatusPollInterval = null;
+    let policyWarningThresholdMinutes = 10;
+    let policyMinHoldAmount = '100';
     
     const walletInput = document.getElementById('noVNC_wallet_input');
     const verifyBtn = document.getElementById('noVNC_credentials_button');
@@ -666,6 +680,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const walletStatusContent = document.getElementById('axonos-wallet-status-content');
     const connectButton = document.getElementById('noVNC_connect_button');
     const contractEl = document.getElementById('axonos-axgt-contract');
+    const policyEl = document.getElementById('axonos-credit-policy');
+    const creditOverlay = document.getElementById('axgt-credit-overlay');
+    const creditOverlayTitle = document.getElementById('axgt-credit-overlay-title');
+    const creditOverlayMessage = document.getElementById('axgt-credit-overlay-message');
+    const creditOverlayAction = document.getElementById('axgt-credit-overlay-action');
 
     // Populate AXGT contract display dynamically (same-origin; avoids hardcoding in static HTML)
     if (contractEl) {
@@ -675,10 +694,114 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(cfg => {
                 const addr = (cfg && cfg.axgt_contract_address) ? String(cfg.axgt_contract_address) : '';
                 contractEl.textContent = addr || '(not configured)';
+                const minHold = (cfg && cfg.axgt_min_hold_amount) ? String(cfg.axgt_min_hold_amount) : policyMinHoldAmount;
+                const minutesPerHundred = (cfg && cfg.axgt_credit_per_100_axgt_minutes) ? Number(cfg.axgt_credit_per_100_axgt_minutes) : 60;
+                const warningMins = (cfg && cfg.axgt_warning_threshold_minutes) ? Number(cfg.axgt_warning_threshold_minutes) : policyWarningThresholdMinutes;
+                policyMinHoldAmount = minHold;
+                policyWarningThresholdMinutes = warningMins;
+                if (policyEl) {
+                    policyEl.textContent = `${minHold} AXGT minimum hold, ${minutesPerHundred} min credit per 100 AXGT`;
+                }
             })
             .catch(() => {
                 contractEl.textContent = '(not configured)';
+                if (policyEl) {
+                    policyEl.textContent = `${policyMinHoldAmount} AXGT minimum hold, 60 min credit per 100 AXGT`;
+                }
             });
+    }
+
+    function hideCreditOverlay() {
+        if (!creditOverlay) return;
+        creditOverlay.style.display = 'none';
+    }
+
+    function showCreditOverlay(mode, message) {
+        if (!creditOverlay || !creditOverlayTitle || !creditOverlayMessage) return;
+        creditOverlay.style.display = 'block';
+        if (mode === 'locked') {
+            creditOverlay.style.borderColor = '#b44d4d';
+            creditOverlayTitle.textContent = 'AXGT Access Locked';
+        } else {
+            creditOverlay.style.borderColor = '#b48b46';
+            creditOverlayTitle.textContent = 'AXGT Access Warning';
+        }
+        creditOverlayMessage.textContent = message;
+    }
+
+    function stopWalletStatusPolling() {
+        if (walletStatusPollInterval) {
+            clearInterval(walletStatusPollInterval);
+            walletStatusPollInterval = null;
+        }
+    }
+
+    function forceWalletReverify() {
+        const credentialsDialog = document.getElementById('noVNC_credentials_dlg');
+        if (credentialsDialog) {
+            credentialsDialog.style.display = 'block';
+            credentialsDialog.classList.add('noVNC_open');
+        }
+    }
+
+    function applyWalletStatusState(data) {
+        const remainingMinutes = Number(data && data.remaining_minutes ? data.remaining_minutes : 0);
+        const warningThreshold = Number(data && data.warning_threshold_minutes ? data.warning_threshold_minutes : policyWarningThresholdMinutes);
+
+        if (!data || !data.verified || data.locked || remainingMinutes <= 0) {
+            const lockMessage = (data && (data.error || data.reason))
+                ? `${data.error || data.reason} Increase held AXGT and verify again.`
+                : 'Usage credit exhausted. Increase held AXGT and verify again.';
+            showCreditOverlay('locked', lockMessage);
+            stopWalletStatusPolling();
+            verifiedWalletAddress = null;
+            window.verifiedWalletAddress = null;
+            if (typeof UI !== 'undefined' && typeof UI.disconnect === 'function') {
+                try {
+                    UI.disconnect();
+                } catch (err) {
+                    console.log('Disconnect on lock failed:', err);
+                }
+            }
+            forceWalletReverify();
+            return;
+        }
+
+        if (remainingMinutes <= warningThreshold) {
+            showCreditOverlay(
+                'warning',
+                `Less than ${warningThreshold} minutes remaining (${remainingMinutes.toFixed(1)} min left). Add more AXGT soon to avoid lockout.`
+            );
+            return;
+        }
+
+        hideCreditOverlay();
+    }
+
+    function pollWalletStatus(walletAddress) {
+        if (!walletAddress) return;
+        const statusUrl = new URL('/api/auth/wallet-status', window.location.origin);
+        statusUrl.searchParams.set('wallet_address', walletAddress);
+        fetch(statusUrl.toString(), { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                applyWalletStatusState(data);
+            })
+            .catch(error => {
+                console.log('Wallet status polling error:', error);
+            });
+    }
+
+    function startWalletStatusPolling(walletAddress) {
+        stopWalletStatusPolling();
+        pollWalletStatus(walletAddress);
+        walletStatusPollInterval = setInterval(() => {
+            if (!window.verifiedWalletAddress) {
+                stopWalletStatusPolling();
+                return;
+            }
+            pollWalletStatus(walletAddress);
+        }, 30000);
     }
     
     function setWalletStatus(state, message) {
@@ -751,10 +874,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 // Show appropriate message based on access type
                 let statusMessage = 'Wallet verified - Connecting...';
-                if (data.access_type === 'trial' && data.trial_days_remaining !== undefined) {
-                    statusMessage = `7-day trial active (${data.trial_days_remaining.toFixed(1)} days remaining) - Connecting...`;
-                } else if (data.access_type === 'balance') {
-                    statusMessage = 'AXGT holder - Connecting...';
+                if (data.access_type === 'holding_credit') {
+                    const remaining = Number(data.remaining_minutes || 0);
+                    statusMessage = `AXGT holder verified (${remaining.toFixed(1)} min remaining) - Connecting...`;
                 } else if (data.message) {
                     statusMessage = data.message + ' - Connecting...';
                 }
@@ -763,6 +885,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Set wallet address immediately (before setTimeout)
                 window.verifiedWalletAddress = walletAddress;
                 verifiedWalletAddress = walletAddress;
+                applyWalletStatusState(data);
+                startWalletStatusPolling(walletAddress);
                 
                 // Close dialog and proceed with connection
                 setTimeout(() => {
@@ -797,12 +921,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }, 1500);
             } else {
+                stopWalletStatusPolling();
+                hideCreditOverlay();
                 verifiedWalletAddress = null;
                 window.verifiedWalletAddress = null;
                 setWalletStatus('not-verified', data.error || 'No access available for this wallet');
             }
         })
         .catch(error => {
+            stopWalletStatusPolling();
+            hideCreditOverlay();
             verifiedWalletAddress = null;
             window.verifiedWalletAddress = null;
             setWalletStatus('error', 'Error verifying wallet: ' + error.message);
@@ -814,6 +942,11 @@ document.addEventListener("DOMContentLoaded", function() {
     
     if (verifyBtn) {
         verifyBtn.addEventListener('click', verifyWallet);
+    }
+    if (creditOverlayAction) {
+        creditOverlayAction.addEventListener('click', function() {
+            forceWalletReverify();
+        });
     }
     
     // Handle credentials form submission (wallet verification)
