@@ -1014,7 +1014,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             var credentialsDialog = document.getElementById('noVNC_credentials_dlg');
                             if (credentialsDialog) credentialsDialog.classList.remove('noVNC_open');
                             if (typeof UI !== 'undefined' && UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
-                                var password = WebUtil.getConfigVar('password') || 'axonpassword';
+                                var password = WebUtil.getConfigVar('password');
+                                if (!password) {
+                                    setWalletStatus('error', 'VNC password is not configured. Set a strong password and retry.');
+                                    return;
+                                }
                                 UI.reconnectPassword = password;
                                 try {
                                     UI.rfb.sendCredentials({ username: '', password: password });
@@ -1022,7 +1026,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                     if (typeof UI.connect === 'function') UI.connect(null, password);
                                 }
                             } else if (typeof UI !== 'undefined' && typeof UI.connect === 'function') {
-                                var pwd = WebUtil.getConfigVar('password') || 'axonpassword';
+                                var pwd = WebUtil.getConfigVar('password');
+                                if (!pwd) {
+                                    setWalletStatus('error', 'VNC password is not configured. Set a strong password and retry.');
+                                    return;
+                                }
                                 UI.reconnectPassword = pwd;
                                 UI.connect(null, pwd);
                             }
@@ -1050,7 +1058,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (hasEthereum && window.ethereum && walletAddress) {
-            var challengeUrl = new URL('/api/auth/challenge', window.location.origin).toString();
+            var challengeRequestUrl = new URL('/api/auth/challenge', window.location.origin);
+            challengeRequestUrl.searchParams.set('wallet_address', walletAddress);
+            var challengeUrl = challengeRequestUrl.toString();
             fetch(challengeUrl, { method: 'GET' })
                 .then(function (r) { return r.json(); })
                 .then(function (json) {

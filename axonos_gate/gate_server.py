@@ -30,6 +30,7 @@ try:
         mask_wallet_address,
         get_credit_policy,
         get_challenge_message,
+        get_challenge_ttl_seconds,
         verify_signed_challenge,
     )
 except ImportError:
@@ -41,6 +42,7 @@ except ImportError:
             mask_wallet_address,
             get_credit_policy,
             get_challenge_message,
+            get_challenge_ttl_seconds,
             verify_signed_challenge,
         )
     except ImportError as e:
@@ -121,7 +123,7 @@ def verify_wallet():
                 'error': 'Signature verification failed. Sign the challenge with the same wallet.'
             }), 401
         
-        status = get_wallet_access_status(wallet_address)
+        status = get_wallet_access_status(wallet_address, consume_usage=False)
         if status.get("verified"):
             status['message'] = f"Wallet verified - {status.get('remaining_minutes', 0)} minutes remaining"
             logger.info(
@@ -143,7 +145,21 @@ def auth_challenge():
     """Return a short-lived challenge string for the client to sign (sign-to-verify)."""
     if request.method == 'OPTIONS':
         return '', 200
-    return jsonify({'challenge': get_challenge_message()})
+    wallet_address = (
+        request.args.get('wallet_address', '').strip()
+        or request.headers.get('X-Wallet-Address', '').strip()
+        or request.args.get('wallet', '').strip()
+    )
+    if not wallet_address:
+        return jsonify({'error': 'wallet_address is required'}), 400
+    if not validate_wallet_address(wallet_address):
+        return jsonify({
+            'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
+        }), 400
+    return jsonify({
+        'challenge': get_challenge_message(wallet_address),
+        'challenge_expires_in_seconds': get_challenge_ttl_seconds(),
+    })
 
 @app.route('/api/auth/wallet-status', methods=['GET', 'OPTIONS'])
 def wallet_status():
@@ -165,7 +181,7 @@ def wallet_status():
                 'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
             }), 400
 
-        status = get_wallet_access_status(wallet_address)
+        status = get_wallet_access_status(wallet_address, consume_usage=False)
         status['wallet_address'] = wallet_address
         if not status.get("verified"):
             status['error'] = status.get("reason") or 'Access denied for this wallet.'

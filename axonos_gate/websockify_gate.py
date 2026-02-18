@@ -12,6 +12,7 @@ import logging
 import json
 import time
 import secrets
+from http.cookies import SimpleCookie
 from threading import Lock
 from urllib.parse import parse_qs, urlparse
 
@@ -50,6 +51,7 @@ try:
         mask_wallet_address,
         get_credit_policy,
         get_challenge_message,
+        get_challenge_ttl_seconds,
         verify_signed_challenge,
     )
 except ImportError:
@@ -61,6 +63,7 @@ except ImportError:
             mask_wallet_address,
             get_credit_policy,
             get_challenge_message,
+            get_challenge_ttl_seconds,
             verify_signed_challenge,
         )
     except ImportError as e:
@@ -91,6 +94,30 @@ def _auth_ttl_seconds() -> int:
     except ValueError:
         logger.warning("Invalid AXGT_AUTH_TOKEN_TTL_SECONDS '%s', using default 300", raw)
         return 300
+
+
+def _auth_cookie_name() -> str:
+    raw = (os.getenv("AXGT_AUTH_COOKIE_NAME") or "").strip()
+    return raw or "axgt_auth_token"
+
+
+def _auth_cookie_secure() -> bool:
+    raw = (os.getenv("AXGT_AUTH_COOKIE_SECURE") or "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
+def _build_auth_cookie(token: str | None, ttl_seconds: int) -> str:
+    name = _auth_cookie_name()
+    max_age = max(0, int(ttl_seconds))
+    value = token or ""
+    cookie = f"{name}={value}; Path=/; Max-Age={max_age}; HttpOnly; SameSite=Strict"
+    if _auth_cookie_secure():
+        cookie += "; Secure"
+    return cookie
+
+
+def _clear_auth_cookie() -> str:
+    return _build_auth_cookie(None, 0)
 
 
 def _prune_expired_auth_tokens(now_ts: float) -> None:
@@ -184,17 +211,22 @@ def _extract_wallet_from_path_and_headers(path: str, headers) -> str | None:
     return wallet_address.strip()
 
 
-def _extract_auth_token_from_path_and_headers(path: str, headers) -> str | None:
-    """Extract auth token from query string (?auth_token=...) or X-AXGT-Auth-Token header."""
-    try:
-        parsed = urlparse(path if path else '/')
-        query_params = parse_qs(parsed.query)
-        token = query_params.get('auth_token', [None])[0]
-    except Exception:
-        token = None
-
-    if not token:
-        token = headers.get('X-AXGT-Auth-Token') if headers else None
+def _extract_auth_token_from_path_and_headers(_path: str, headers) -> str | None:
+    """Extract auth token from HttpOnly cookie or X-AXGT-Auth-Token header."""
+    token = None
+    if headers:
+        cookie_raw = headers.get("Cookie")
+        if cookie_raw:
+            try:
+                cookie = SimpleCookie()
+                cookie.load(cookie_raw)
+                morsel = cookie.get(_auth_cookie_name())
+                if morsel:
+                    token = morsel.value
+            except Exception:
+                token = None
+    if not token and headers:
+        token = headers.get('X-AXGT-Auth-Token')
     return token.strip() if token else None
 
 
@@ -205,11 +237,13 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
     - Gate WebSocket upgrades using wallet AXGT minimum-hold policy
     """
 
-    def _send_json(self, status_code: int, payload: dict):
+    def _send_json(self, status_code: int, payload: dict, set_cookie: str | None = None):
         body = json.dumps(payload).encode('utf-8')
         self.send_response(status_code)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))
+        if set_cookie:
+            self.send_header('Set-Cookie', set_cookie)
         # CORS: default is same-origin (no wildcard). For unusual deployments set AXGT_CORS_ORIGINS.
         origin = cors_origin_for_request(
             self.headers.get("Origin"),
@@ -220,8 +254,9 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         if origin:
             self.send_header('Access-Control-Allow-Origin', origin)
             self.send_header('Vary', 'Origin')
+            self.send_header('Access-Control-Allow-Credentials', 'true')
             self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address, X-AXGT-Auth-Token')
-            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.end_headers()
         self.wfile.write(body)
 
@@ -242,6 +277,7 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
             if origin:
                 self.send_header('Access-Control-Allow-Origin', origin)
                 self.send_header('Vary', 'Origin')
+                self.send_header('Access-Control-Allow-Credentials', 'true')
                 self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Wallet-Address, X-AXGT-Auth-Token')
                 self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Content-Length', '0')
@@ -273,30 +309,48 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
                     'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
                 })
             auth_token = _extract_auth_token_from_path_and_headers(self.path, self.headers)
-            if auth_token and not _is_auth_token_valid(auth_token, wallet_address):
+            if not auth_token:
+                return self._send_json(401, {
+                    'verified': False,
+                    'error': 'AXGT auth token required. Please verify wallet again.'
+                }, set_cookie=_clear_auth_cookie())
+            if not _is_auth_token_valid(auth_token, wallet_address):
                 return self._send_json(401, {
                     'verified': False,
                     'error': 'Invalid or expired AXGT auth token. Please verify wallet again.'
-                })
+                }, set_cookie=_clear_auth_cookie())
 
-            status = get_wallet_access_status(wallet_address)
+            status = get_wallet_access_status(wallet_address, consume_usage=True)
             status['wallet_address'] = wallet_address
             if not status.get("verified"):
                 status['error'] = status.get("reason") or 'Access denied for this wallet.'
-            elif auth_token:
-                # Sliding token rotation while session is healthy to reduce reconnect friction.
-                new_token, ttl = _rotate_auth_token(auth_token, wallet_address)
-                if not new_token:
-                    return self._send_json(401, {
-                        'verified': False,
-                        'error': 'AXGT auth token refresh failed. Please verify wallet again.'
-                    })
-                status['auth_token'] = new_token
-                status['auth_token_expires_in_seconds'] = ttl
-            return self._send_json(200, status)
+                return self._send_json(200, status)
+            # Sliding token rotation while session is healthy to reduce reconnect friction.
+            new_token, ttl = _rotate_auth_token(auth_token, wallet_address)
+            if not new_token:
+                return self._send_json(401, {
+                    'verified': False,
+                    'error': 'AXGT auth token refresh failed. Please verify wallet again.'
+                }, set_cookie=_clear_auth_cookie())
+            status['auth_token'] = new_token
+            status['auth_token_expires_in_seconds'] = ttl
+            return self._send_json(200, status, set_cookie=_build_auth_cookie(new_token, ttl))
         if self.path.startswith('/api/auth/challenge'):
-            payload = {'challenge': get_challenge_message()}
-            return self._send_json(200, payload)
+            wallet_address = _extract_wallet_from_path_and_headers(self.path, self.headers)
+            if not wallet_address:
+                return self._send_json(400, {'error': 'wallet_address is required'})
+            if not validate_wallet_address(wallet_address):
+                return self._send_json(400, {
+                    'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
+                })
+            try:
+                payload = {
+                    'challenge': get_challenge_message(wallet_address),
+                    'challenge_expires_in_seconds': get_challenge_ttl_seconds(),
+                }
+                return self._send_json(200, payload)
+            except ValueError:
+                return self._send_json(400, {'error': 'Invalid wallet address format.'})
         return super().do_GET()
 
     def do_POST(self):
@@ -345,11 +399,11 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
                 'error': 'Signature verification failed. Sign the challenge with the same wallet.'
             })
 
-        status = get_wallet_access_status(wallet_address)
+        status = get_wallet_access_status(wallet_address, consume_usage=False)
         if not status.get("verified"):
             logger.info(f"Wallet verification failed: {mask_wallet_address(wallet_address)}")
             status['error'] = status.get("reason") or 'Access denied for this wallet.'
-            return self._send_json(200, status)
+            return self._send_json(200, status, set_cookie=_clear_auth_cookie())
 
         status['message'] = (
             f"Wallet verified - {status.get('remaining_minutes', 0)} minutes remaining"
@@ -362,7 +416,7 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
         auth_token, ttl = _issue_auth_token(wallet_address)
         status['auth_token'] = auth_token
         status['auth_token_expires_in_seconds'] = ttl
-        return self._send_json(200, status)
+        return self._send_json(200, status, set_cookie=_build_auth_cookie(auth_token, ttl))
 
     def handle_upgrade(self):
         # Gate WebSocket upgrades. If wallet is missing/invalid/unverified -> 403 and do not upgrade.
@@ -383,7 +437,7 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
             self.send_error(403, "Invalid or expired AXGT auth token")
             return
 
-        status = get_wallet_access_status(wallet_address)
+        status = get_wallet_access_status(wallet_address, consume_usage=False)
         if not status.get("verified"):
             self.send_error(403, status.get("reason") or "Wallet is locked")
             return

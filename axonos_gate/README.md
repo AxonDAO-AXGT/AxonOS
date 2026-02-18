@@ -34,6 +34,9 @@ Optional hardening environment variables:
 - `AXGT_WARNING_THRESHOLD_MINUTES`: Warning threshold used by API/UI lockout warnings. Default: `10`.
 - `AXGT_USAGE_DB_PATH`: Persistent per-wallet usage ledger path (JSON). Default: `/var/lib/axonos_gate/usage.json`.
 - `AXGT_AUTH_TOKEN_TTL_SECONDS`: Short-lived websocket auth token TTL in seconds; token is rotated during active status polling. Default: `300`.
+- `AXGT_CHALLENGE_TTL_SECONDS`: One-time sign-to-verify challenge TTL in seconds. Default: `180`.
+- `AXGT_AUTH_COOKIE_NAME`: HttpOnly auth cookie name used for websocket auth. Default: `axgt_auth_token`.
+- `AXGT_AUTH_COOKIE_SECURE`: Add `Secure` flag to auth cookie (`true/false`). Set `true` behind HTTPS.
 - `AXGT_USAGE_RETENTION_DAYS`: Cleanup window for stale wallet usage entries. Default: `180`.
 - `AXGT_EXPECTED_CONTRACT_ADDRESS`: Optional safety check; if set, the gate will only accept this contract address.
 
@@ -59,7 +62,9 @@ Verify wallet hold + credit state.
 **Request:**
 ```json
 {
-  "wallet_address": "0x..."
+  "wallet_address": "0x...",
+  "message": "challenge text from /api/auth/challenge",
+  "signature": "0x..."
 }
 ```
 
@@ -98,8 +103,8 @@ Get current wallet credit status for warning/lock overlays.
 
 **Query:**
 - `wallet_address=0x...` (or `wallet` alias)
-**Headers (recommended):**
-- `X-AXGT-Auth-Token: <token from verify-wallet>` to rotate/refresh session token for reconnect UX.
+**Headers (required):**
+- `X-AXGT-Auth-Token: <token from verify-wallet>` to authorize status checks and rotate session token.
 
 **Response:**
 ```json
@@ -115,10 +120,27 @@ Get current wallet credit status for warning/lock overlays.
 }
 ```
 
+### GET /api/auth/challenge
+
+Issue a one-time wallet-bound challenge for `personal_sign`.
+
+**Query:**
+- `wallet_address=0x...` (or `wallet` alias)
+
+**Response:**
+```json
+{
+  "challenge": "AxonOS verify\nWallet: 0x...\nNonce: ...\nIssuedAt: ...",
+  "challenge_expires_in_seconds": 180
+}
+```
+
 ## Security
 
+- The gate uses wallet-bound one-time challenge nonces to reduce signature replay risk.
+- WebSocket auth tokens are transported via HttpOnly cookies (not URL query strings).
+- Wallet status polling requires a valid auth token, preventing unauthenticated usage metering.
 - The gate performs basic input validation and avoids logging full wallet addresses.
-- The verification path is designed to behave conservatively if upstream dependencies (e.g., RPC) are unavailable.
 
 ## Installation
 

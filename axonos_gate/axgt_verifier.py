@@ -10,6 +10,7 @@ import re
 import logging
 import time
 import json
+import secrets
 from decimal import Decimal, InvalidOperation, ROUND_CEILING
 from threading import Lock
 from typing import Optional, Tuple, Dict, Any
@@ -47,27 +48,94 @@ def validate_wallet_address(address: str) -> bool:
     pattern = r'^0x[a-fA-F0-9]{40}$'
     return bool(re.match(pattern, address))
 
-# Sign-to-verify: EIP-191 personal_sign challenge (minute-grained, no server state)
+# Sign-to-verify: wallet-bound, one-time challenge nonces.
 _CHALLENGE_PREFIX = "AxonOS verify\n"
-_CHALLENGE_VALID_WINDOW_MINUTES = 2
+_CHALLENGE_TTL_SECONDS_DEFAULT = 180
+_challenges_lock = Lock()
+_challenge_registry: Dict[str, Dict[str, Any]] = {}
 
 
-def get_challenge_message() -> str:
-    """Return a time-based challenge string for the client to sign (minute granularity)."""
-    minute_ts = int(time.time() // 60)
-    return _CHALLENGE_PREFIX + str(minute_ts)
-
-
-def is_challenge_message_recent(message: str) -> bool:
-    """Return True if message is our challenge format and within the allowed time window."""
-    if not message or not message.startswith(_CHALLENGE_PREFIX):
-        return False
+def _challenge_ttl_seconds() -> int:
+    raw = (os.getenv("AXGT_CHALLENGE_TTL_SECONDS") or "").strip()
+    if not raw:
+        return _CHALLENGE_TTL_SECONDS_DEFAULT
     try:
-        minute_ts = int(message[len(_CHALLENGE_PREFIX) :].strip())
+        value = int(raw)
+        if value <= 0:
+            raise ValueError("must be positive")
+        return value
     except ValueError:
-        return False
-    now_minute = int(time.time() // 60)
-    return 0 <= (now_minute - minute_ts) <= _CHALLENGE_VALID_WINDOW_MINUTES
+        logger.warning(
+            "Invalid AXGT_CHALLENGE_TTL_SECONDS value '%s'; using default %s",
+            raw,
+            _CHALLENGE_TTL_SECONDS_DEFAULT,
+        )
+        return _CHALLENGE_TTL_SECONDS_DEFAULT
+
+
+def get_challenge_ttl_seconds() -> int:
+    return _challenge_ttl_seconds()
+
+
+def _prune_expired_challenges(now_ts: float) -> None:
+    expired = [
+        nonce
+        for nonce, record in _challenge_registry.items()
+        if float(record.get("expires_at", 0)) <= now_ts
+    ]
+    for nonce in expired:
+        _challenge_registry.pop(nonce, None)
+
+
+def get_challenge_message(wallet_address: str) -> str:
+    """Return a wallet-bound one-time challenge string for personal_sign."""
+    normalized_wallet = (wallet_address or "").strip().lower()
+    if not validate_wallet_address(normalized_wallet):
+        raise ValueError("wallet_address is invalid")
+
+    now_ts = time.time()
+    ttl_seconds = _challenge_ttl_seconds()
+    issued_at = int(now_ts)
+    nonce = secrets.token_urlsafe(24)
+    challenge = (
+        f"{_CHALLENGE_PREFIX}"
+        f"Wallet: {normalized_wallet}\n"
+        f"Nonce: {nonce}\n"
+        f"IssuedAt: {issued_at}"
+    )
+    with _challenges_lock:
+        _prune_expired_challenges(now_ts)
+        _challenge_registry[nonce] = {
+            "wallet_address": normalized_wallet,
+            "expires_at": now_ts + ttl_seconds,
+            "used": False,
+        }
+    return challenge
+
+
+def _extract_challenge_fields(message: str) -> tuple[Optional[str], Optional[str], Optional[int]]:
+    """Extract wallet, nonce, and issued timestamp from challenge message."""
+    if not message or not message.startswith(_CHALLENGE_PREFIX):
+        return None, None, None
+    parts = message.splitlines()
+    if len(parts) < 4:
+        return None, None, None
+    wallet_line = parts[1].strip()
+    nonce_line = parts[2].strip()
+    issued_line = parts[3].strip()
+    if not wallet_line.lower().startswith("wallet: "):
+        return None, None, None
+    if not nonce_line.lower().startswith("nonce: "):
+        return None, None, None
+    if not issued_line.lower().startswith("issuedat: "):
+        return None, None, None
+    wallet = wallet_line.split(":", 1)[1].strip().lower()
+    nonce = nonce_line.split(":", 1)[1].strip()
+    try:
+        issued_at = int(issued_line.split(":", 1)[1].strip())
+    except ValueError:
+        return None, None, None
+    return wallet, nonce, issued_at
 
 
 def recover_signer_from_signature(message: str, signature_hex: str) -> Optional[str]:
@@ -97,16 +165,42 @@ def verify_signed_challenge(
     wallet_address: str, message: str, signature_hex: str
 ) -> bool:
     """
-    Return True if message is a recent challenge and signature recovers to wallet_address.
+    Return True when signature, wallet binding, and one-time challenge checks pass.
     """
     if not validate_wallet_address(wallet_address):
         return False
-    if not is_challenge_message_recent(message):
+    expected_wallet = wallet_address.lower()
+    challenge_wallet, challenge_nonce, _issued_at = _extract_challenge_fields(message)
+    if not challenge_wallet or not challenge_nonce:
         return False
+    if challenge_wallet != expected_wallet:
+        return False
+
+    now_ts = time.time()
+    with _challenges_lock:
+        _prune_expired_challenges(now_ts)
+        challenge_record = _challenge_registry.get(challenge_nonce)
+        if not challenge_record:
+            return False
+        if challenge_record.get("wallet_address") != expected_wallet:
+            return False
+        if bool(challenge_record.get("used")):
+            return False
+        if float(challenge_record.get("expires_at", 0)) <= now_ts:
+            _challenge_registry.pop(challenge_nonce, None)
+            return False
+
     recovered = recover_signer_from_signature(message, signature_hex)
     if not recovered:
         return False
-    return recovered.lower() == wallet_address.lower()
+    if recovered.lower() != expected_wallet:
+        return False
+    with _challenges_lock:
+        challenge_record = _challenge_registry.get(challenge_nonce)
+        if not challenge_record or bool(challenge_record.get("used")):
+            return False
+        challenge_record["used"] = True
+    return True
 
 
 def _usage_db_path() -> str:
@@ -372,7 +466,7 @@ def has_axgt_balance(wallet_address: str) -> bool:
     min_hold_amount = _get_min_hold_amount()
     return details["balance_axgt"] >= min_hold_amount
 
-def get_wallet_access_status(wallet_address: str) -> Dict[str, Any]:
+def get_wallet_access_status(wallet_address: str, consume_usage: bool = True) -> Dict[str, Any]:
     """
     Evaluate hold + off-chain usage-credit status for a wallet.
     """
@@ -425,13 +519,14 @@ def get_wallet_access_status(wallet_address: str) -> Dict[str, Any]:
                 "last_update_ts": now_ts,
             }
             _usage_registry[wallet_key] = record
-        else:
+        elif consume_usage:
             last_update_ts = float(record.get("last_update_ts", now_ts))
             elapsed_minutes = max(0.0, now_ts - last_update_ts) / 60.0
             record["consumed_minutes"] = float(record.get("consumed_minutes", 0.0)) + elapsed_minutes
             record["last_update_ts"] = now_ts
         consumed_minutes = float(record.get("consumed_minutes", 0.0))
-        _persist_usage_best_effort()
+        if consume_usage:
+            _persist_usage_best_effort()
 
     remaining_minutes = max(0.0, capacity_minutes - consumed_minutes)
     locked = remaining_minutes <= 0.0
@@ -474,7 +569,7 @@ def has_access(wallet_address: str) -> Tuple[bool, Optional[str], Optional[float
     if not validate_wallet_address(wallet_address):
         return False, None, None
     
-    status = get_wallet_access_status(wallet_address)
+    status = get_wallet_access_status(wallet_address, consume_usage=False)
     if status["verified"]:
         logger.info("Wallet %s has holding-credit access", mask_wallet_address(wallet_address))
         return True, status.get("access_type"), status.get("remaining_minutes")

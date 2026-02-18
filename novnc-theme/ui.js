@@ -1059,7 +1059,8 @@ const UI = {
         }
         url += '/' + path;
         
-        // Add wallet address + strict auth token to query string if verified
+        // Add wallet address to query string if verified.
+        // Auth token is sent via HttpOnly cookie instead of URL query params.
         const verifiedWallet = window.verifiedWalletAddress || null;
         if (verifiedWallet) {
             const verifiedAuthToken = window.verifiedWalletAuthToken || null;
@@ -1069,7 +1070,6 @@ const UI = {
             }
             const separator = url.includes('?') ? '&' : '?';
             url += separator + 'wallet=' + encodeURIComponent(verifiedWallet);
-            url += '&auth_token=' + encodeURIComponent(verifiedAuthToken);
         }
 
         UI.rfb = new RFB(document.getElementById('noVNC_container'), url,
@@ -1209,9 +1209,11 @@ const UI = {
         // the websocket connection is established.
         const verifiedWallet = window.verifiedWalletAddress || null;
         if (verifiedWallet) {
-            // Prefer explicit config (URL/config var). Fall back to the image default.
-            // NOTE: The VNC password is not a secret in this flow; access is gated by AXGT verification.
-            const password = WebUtil.getConfigVar('password') || 'axonpassword';
+            const password = WebUtil.getConfigVar('password');
+            if (!password) {
+                UI.showStatus(_("VNC password is not configured"), "error");
+                return;
+            }
             UI.reconnectPassword = password;
             try {
                 if (UI.rfb && typeof UI.rfb.sendCredentials === 'function') {
@@ -1261,9 +1263,12 @@ const UI = {
             return;
         }
 
-        // Wallet is verified, proceed with connection using default password
-        // The password is typically from config var, otherwise image default.
-        const password = WebUtil.getConfigVar('password') || 'axonpassword';
+        // Wallet is verified, proceed with configured VNC password.
+        const password = WebUtil.getConfigVar('password');
+        if (!password) {
+            UI.showStatus(_("VNC password is not configured"), "error");
+            return;
+        }
         UI.reconnectPassword = password;
         
         // Close the credentials dialog
