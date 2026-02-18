@@ -96,6 +96,41 @@ def _auth_ttl_seconds() -> int:
         return 300
 
 
+def _auth_rotate_before_expiry_seconds() -> int:
+    """Rotate only when token is close to expiry to reduce race windows."""
+    raw = (os.getenv("AXGT_AUTH_ROTATE_BEFORE_EXPIRY_SECONDS") or "").strip()
+    if not raw:
+        return 60
+    try:
+        value = int(raw)
+        if value < 0:
+            raise ValueError("must be non-negative")
+        return value
+    except ValueError:
+        logger.warning(
+            "Invalid AXGT_AUTH_ROTATE_BEFORE_EXPIRY_SECONDS '%s', using default 60",
+            raw,
+        )
+        return 60
+
+
+def _auth_grace_seconds() -> int:
+    """
+    Accept a just-rotated previous token briefly to absorb in-flight request races.
+    """
+    raw = (os.getenv("AXGT_AUTH_GRACE_SECONDS") or "").strip()
+    if not raw:
+        return 15
+    try:
+        value = int(raw)
+        if value < 0:
+            raise ValueError("must be non-negative")
+        return value
+    except ValueError:
+        logger.warning("Invalid AXGT_AUTH_GRACE_SECONDS '%s', using default 15", raw)
+        return 15
+
+
 def _auth_cookie_name() -> str:
     raw = (os.getenv("AXGT_AUTH_COOKIE_NAME") or "").strip()
     return raw or "axgt_auth_token"
@@ -141,6 +176,40 @@ def _revoke_wallet_tokens(wallet_address: str) -> None:
         _auth_tokens.pop(token, None)
 
 
+def _retire_current_wallet_tokens(wallet_address: str, now_ts: float) -> None:
+    """Mark current wallet tokens as grace-valid for a short overlap window."""
+    wallet = wallet_address.lower()
+    grace = _auth_grace_seconds()
+    grace_until = now_ts + grace
+    for record in _auth_tokens.values():
+        if record.get("wallet_address") != wallet:
+            continue
+        if not bool(record.get("current", False)):
+            continue
+        record["current"] = False
+        record["grace_until"] = grace_until
+        # Expire quickly after grace to keep memory bounded and replay surface short.
+        record["expires_at"] = min(float(record.get("expires_at", grace_until)), grace_until)
+
+
+def _current_wallet_token_and_remaining(wallet_address: str, now_ts: float) -> tuple[str | None, int]:
+    wallet = wallet_address.lower()
+    current_token = None
+    current_expires = 0.0
+    for token, record in _auth_tokens.items():
+        if record.get("wallet_address") != wallet:
+            continue
+        if not bool(record.get("current", False)):
+            continue
+        expires_at = float(record.get("expires_at", 0))
+        if expires_at > now_ts and expires_at > current_expires:
+            current_token = token
+            current_expires = expires_at
+    if not current_token:
+        return None, 0
+    return current_token, max(0, int(current_expires - now_ts))
+
+
 def _issue_auth_token(wallet_address: str) -> tuple[str, int]:
     ttl = _auth_ttl_seconds()
     now_ts = time.time()
@@ -152,6 +221,8 @@ def _issue_auth_token(wallet_address: str) -> tuple[str, int]:
         _auth_tokens[token] = {
             "wallet_address": wallet_address.lower(),
             "expires_at": now_ts + ttl,
+            "current": True,
+            "grace_until": 0.0,
         }
     return token, ttl
 
@@ -165,10 +236,31 @@ def _is_auth_token_valid(token: str, wallet_address: str) -> bool:
             return False
         if record.get("wallet_address") != wallet_address.lower():
             return False
-        if float(record.get("expires_at", 0)) <= now_ts:
+        expires_at = float(record.get("expires_at", 0))
+        if expires_at <= now_ts:
             _auth_tokens.pop(token, None)
             return False
-        return True
+        if bool(record.get("current", False)):
+            return True
+        grace_until = float(record.get("grace_until", 0))
+        return grace_until > now_ts
+
+
+def _auth_token_remaining_seconds(token: str, wallet_address: str) -> int | None:
+    """Return remaining seconds for the current token, or None when invalid."""
+    now_ts = time.time()
+    with _auth_lock:
+        _prune_expired_auth_tokens(now_ts)
+        record = _auth_tokens.get(token)
+        if not record:
+            return None
+        if record.get("wallet_address") != wallet_address.lower():
+            return None
+        expires_at = float(record.get("expires_at", 0))
+        if expires_at <= now_ts:
+            _auth_tokens.pop(token, None)
+            return None
+        return max(0, int(expires_at - now_ts))
 
 
 def _rotate_auth_token(token: str, wallet_address: str) -> tuple[str, int] | tuple[None, None]:
@@ -184,11 +276,19 @@ def _rotate_auth_token(token: str, wallet_address: str) -> tuple[str, int] | tup
         if float(record.get("expires_at", 0)) <= now_ts:
             _auth_tokens.pop(token, None)
             return None, None
-        _auth_tokens.pop(token, None)
+        if not bool(record.get("current", False)):
+            # A grace token arrived after a newer token already exists; reuse the current token.
+            existing_token, remaining = _current_wallet_token_and_remaining(wallet_address, now_ts)
+            if existing_token and remaining > 0:
+                return existing_token, remaining
+        # Keep a brief overlap window for in-flight requests that still carry the old cookie.
+        _retire_current_wallet_tokens(wallet_address, now_ts)
         new_token = secrets.token_urlsafe(32)
         _auth_tokens[new_token] = {
             "wallet_address": wallet_address.lower(),
             "expires_at": now_ts + ttl,
+            "current": True,
+            "grace_until": 0.0,
         }
         return new_token, ttl
 
@@ -325,16 +425,25 @@ class AxonOSProxyRequestHandler(websockify.websocketproxy.ProxyRequestHandler):
             if not status.get("verified"):
                 status['error'] = status.get("reason") or 'Access denied for this wallet.'
                 return self._send_json(200, status)
-            # Sliding token rotation while session is healthy to reduce reconnect friction.
-            new_token, ttl = _rotate_auth_token(auth_token, wallet_address)
-            if not new_token:
+            # Rotate only near expiry to reduce cookie races with websocket upgrades.
+            remaining = _auth_token_remaining_seconds(auth_token, wallet_address)
+            if remaining is None:
                 return self._send_json(401, {
                     'verified': False,
-                    'error': 'AXGT auth token refresh failed. Please verify wallet again.'
+                    'error': 'Invalid or expired AXGT auth token. Please verify wallet again.'
                 }, set_cookie=_clear_auth_cookie())
-            status['auth_token'] = new_token
-            status['auth_token_expires_in_seconds'] = ttl
-            return self._send_json(200, status, set_cookie=_build_auth_cookie(new_token, ttl))
+            if remaining <= _auth_rotate_before_expiry_seconds():
+                new_token, ttl = _rotate_auth_token(auth_token, wallet_address)
+                if not new_token:
+                    return self._send_json(401, {
+                        'verified': False,
+                        'error': 'AXGT auth token refresh failed. Please verify wallet again.'
+                    }, set_cookie=_clear_auth_cookie())
+                status['auth_token'] = new_token
+                status['auth_token_expires_in_seconds'] = ttl
+                return self._send_json(200, status, set_cookie=_build_auth_cookie(new_token, ttl))
+            status['auth_token_expires_in_seconds'] = remaining
+            return self._send_json(200, status)
         if self.path.startswith('/api/auth/challenge'):
             wallet_address = _extract_wallet_from_path_and_headers(self.path, self.headers)
             if not wallet_address:

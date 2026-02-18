@@ -7,4 +7,5 @@
 - [x] Harden sign-to-verify with one-time wallet-bound challenges.
 - [x] Move websocket auth token transport to HttpOnly cookie (remove URL token usage).
 - [x] Require auth token for wallet-status to block unauthenticated usage draining.
+- [x] Reduce token-race disconnects with near-expiry rotation + short grace overlap.
 - [ ] Run lint and smoke validation for lockout, warning, and unlock recovery scenarios.

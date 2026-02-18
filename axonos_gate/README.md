@@ -34,6 +34,8 @@ Optional hardening environment variables:
 - `AXGT_WARNING_THRESHOLD_MINUTES`: Warning threshold used by API/UI lockout warnings. Default: `10`.
 - `AXGT_USAGE_DB_PATH`: Persistent per-wallet usage ledger path (JSON). Default: `/var/lib/axonos_gate/usage.json`.
 - `AXGT_AUTH_TOKEN_TTL_SECONDS`: Short-lived websocket auth token TTL in seconds; token is rotated during active status polling. Default: `300`.
+- `AXGT_AUTH_ROTATE_BEFORE_EXPIRY_SECONDS`: Rotate only when token has this many seconds (or fewer) remaining. Default: `60`.
+- `AXGT_AUTH_GRACE_SECONDS`: Brief overlap where previous token remains valid after rotation to absorb in-flight request races. Default: `15`.
 - `AXGT_CHALLENGE_TTL_SECONDS`: One-time sign-to-verify challenge TTL in seconds. Default: `180`.
 - `AXGT_AUTH_COOKIE_NAME`: HttpOnly auth cookie name used for websocket auth. Default: `axgt_auth_token`.
 - `AXGT_AUTH_COOKIE_SECURE`: Add `Secure` flag to auth cookie (`true/false`). Set `true` behind HTTPS.
