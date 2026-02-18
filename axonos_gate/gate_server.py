@@ -29,6 +29,8 @@ try:
         validate_wallet_address,
         mask_wallet_address,
         get_credit_policy,
+        get_challenge_message,
+        verify_signed_challenge,
     )
 except ImportError:
     # Fallback to package import
@@ -38,6 +40,8 @@ except ImportError:
             validate_wallet_address,
             mask_wallet_address,
             get_credit_policy,
+            get_challenge_message,
+            verify_signed_challenge,
         )
     except ImportError as e:
         print(f"ERROR: Cannot import axgt_verifier: {e}", file=sys.stderr)
@@ -72,7 +76,7 @@ def after_request(response):
     if origin:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Vary"] = "Origin"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Wallet-Address"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Wallet-Address, X-AXGT-Auth-Token"
         response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
     return response
 
@@ -102,6 +106,20 @@ def verify_wallet():
                 'verified': False,
                 'error': 'Invalid wallet address format. Must be 0x followed by 40 hex characters.'
             }), 400
+
+        message = (data.get('message') or '').strip()
+        signature_hex = (data.get('signature') or '').strip()
+        if not message or not signature_hex:
+            return jsonify({
+                'verified': False,
+                'error': 'Signature required. Fetch /api/auth/challenge and sign it with this wallet.'
+            }), 401
+        if not verify_signed_challenge(wallet_address, message, signature_hex):
+            logger.info("Sign-to-verify failed for %s", mask_wallet_address(wallet_address))
+            return jsonify({
+                'verified': False,
+                'error': 'Signature verification failed. Sign the challenge with the same wallet.'
+            }), 401
         
         status = get_wallet_access_status(wallet_address)
         if status.get("verified"):
@@ -119,6 +137,13 @@ def verify_wallet():
     except Exception as e:
         logger.error(f"Error in verify_wallet: {e}", exc_info=True)
         return jsonify({'verified': False, 'error': 'Internal server error'}), 500
+
+@app.route('/api/auth/challenge', methods=['GET', 'OPTIONS'])
+def auth_challenge():
+    """Return a short-lived challenge string for the client to sign (sign-to-verify)."""
+    if request.method == 'OPTIONS':
+        return '', 200
+    return jsonify({'challenge': get_challenge_message()})
 
 @app.route('/api/auth/wallet-status', methods=['GET', 'OPTIONS'])
 def wallet_status():

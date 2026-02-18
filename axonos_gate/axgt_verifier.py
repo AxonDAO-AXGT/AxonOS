@@ -47,6 +47,68 @@ def validate_wallet_address(address: str) -> bool:
     pattern = r'^0x[a-fA-F0-9]{40}$'
     return bool(re.match(pattern, address))
 
+# Sign-to-verify: EIP-191 personal_sign challenge (minute-grained, no server state)
+_CHALLENGE_PREFIX = "AxonOS verify\n"
+_CHALLENGE_VALID_WINDOW_MINUTES = 2
+
+
+def get_challenge_message() -> str:
+    """Return a time-based challenge string for the client to sign (minute granularity)."""
+    minute_ts = int(time.time() // 60)
+    return _CHALLENGE_PREFIX + str(minute_ts)
+
+
+def is_challenge_message_recent(message: str) -> bool:
+    """Return True if message is our challenge format and within the allowed time window."""
+    if not message or not message.startswith(_CHALLENGE_PREFIX):
+        return False
+    try:
+        minute_ts = int(message[len(_CHALLENGE_PREFIX) :].strip())
+    except ValueError:
+        return False
+    now_minute = int(time.time() // 60)
+    return 0 <= (now_minute - minute_ts) <= _CHALLENGE_VALID_WINDOW_MINUTES
+
+
+def recover_signer_from_signature(message: str, signature_hex: str) -> Optional[str]:
+    """
+    Recover Ethereum address from EIP-191 personal_sign(message, signature).
+    Returns normalized 0x-prefixed address or None on failure.
+    """
+    if not message or not signature_hex:
+        return None
+    sig = (signature_hex.strip() or "").lower()
+    if not sig.startswith("0x"):
+        sig = "0x" + sig
+    # EIP-191 personal_sign: 65 bytes (r,s,v) = 130 hex chars; some wallets use 131
+    if len(sig) < 132 or len(sig) > 134:
+        return None
+    try:
+        from eth_account import Account
+        from eth_account.messages import encode_defunct
+        recovered = Account.recover_message(encode_defunct(text=message), signature=sig)
+        return recovered if recovered else None
+    except Exception as e:
+        logger.warning("Signature recovery failed: %s", e)
+        return None
+
+
+def verify_signed_challenge(
+    wallet_address: str, message: str, signature_hex: str
+) -> bool:
+    """
+    Return True if message is a recent challenge and signature recovers to wallet_address.
+    """
+    if not validate_wallet_address(wallet_address):
+        return False
+    if not is_challenge_message_recent(message):
+        return False
+    recovered = recover_signer_from_signature(message, signature_hex)
+    if not recovered:
+        return False
+    return recovered.lower() == wallet_address.lower()
+
+
 def _usage_db_path() -> str:
     return os.getenv("AXGT_USAGE_DB_PATH", _USAGE_DB_PATH_DEFAULT)
 
