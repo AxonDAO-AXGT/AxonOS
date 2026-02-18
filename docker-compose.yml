@@ -1,0 +1,38 @@
+# AxonOS – Docker Compose for online hosting
+# Full GPU support; only noVNC port (6080) exposed. Put behind a reverse proxy with TLS in production.
+#
+# Usage:
+#   cp env.example .env && $EDITOR .env   # set AXGT_*, etc.
+#   docker compose up -d
+#   # Access: http://host:6080/vnc.html
+#
+# With Cloudflare Tunnel (quick public URL for testing):
+#   docker compose --profile tunnel up -d
+#   docker compose --profile tunnel logs -f tunnel   # see the https://...trycloudflare.com URL in logs
+#   # or run tunnel in foreground:  docker compose run --rm tunnel
+#   # Or use script:  ./scripts/run_with_cloudflare_tunnel.sh "$AXONOS_VNC_PASSWORD"
+
+services:
+  axonos:
+    image: axonos:latest
+    container_name: axonos
+    env_file: .env
+    ports:
+      - "6080:6080"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --url http://axonos:6080
+    depends_on:
+      - axonos
+    profiles:
+      - tunnel
+    restart: unless-stopped
